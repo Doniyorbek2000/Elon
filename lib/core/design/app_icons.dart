@@ -1,0 +1,57 @@
+import 'package:flutter/material.dart';
+
+/// Maps semantic icon keys (from config/data) to Material rounded icons.
+/// Keeps domain data free of Flutter types and gives one place to restyle.
+abstract final class AppIcons {
+  static const _byKey = <String, IconData>{
+    'car': Icons.directions_car_filled_rounded,
+    'parts': Icons.settings_suggest_rounded,
+    'truck': Icons.local_shipping_rounded,
+    'moto': Icons.two_wheeler_rounded,
+    'home': Icons.home_rounded,
+    'apartment': Icons.apartment_rounded,
+    'key': Icons.vpn_key_rounded,
+    'store': Icons.storefront_rounded,
+    'phone': Icons.smartphone_rounded,
+    'laptop': Icons.laptop_mac_rounded,
+    'tv': Icons.tv_rounded,
+    'headphones': Icons.headphones_rounded,
+    'appliance': Icons.local_laundry_service_rounded,
+    'fridge': Icons.kitchen_rounded,
+    'climate': Icons.ac_unit_rounded,
+    'kitchen': Icons.soup_kitchen_rounded,
+    'clothes': Icons.checkroom_rounded,
+    'dress': Icons.dry_cleaning_rounded,
+    'child': Icons.child_care_rounded,
+    'shoe': Icons.ice_skating_rounded,
+    'sofa': Icons.chair_rounded,
+    'decor': Icons.texture_rounded,
+    'garden': Icons.yard_rounded,
+    'construction': Icons.construction_rounded,
+    'brick': Icons.view_module_rounded,
+    'wood': Icons.forest_rounded,
+    'tools': Icons.hardware_rounded,
+    'pets': Icons.pets_rounded,
+    'cow': Icons.agriculture_rounded,
+    'bird': Icons.egg_rounded,
+    'grass': Icons.grass_rounded,
+    'land': Icons.landscape_rounded,
+    'building': Icons.location_city_rounded,
+    'work': Icons.work_rounded,
+    'services': Icons.handyman_rounded,
+    'grid': Icons.grid_view_rounded,
+    'build': Icons.build_rounded,
+    'plumbing': Icons.plumbing_rounded,
+    'bolt': Icons.bolt_rounded,
+    'welding': Icons.local_fire_department_rounded,
+    'cleaning': Icons.cleaning_services_rounded,
+    'design': Icons.brush_rounded,
+    'school': Icons.school_rounded,
+    'barber': Icons.content_cut_rounded,
+    'beauty': Icons.spa_rounded,
+    'computer': Icons.computer_rounded,
+    'restaurant': Icons.restaurant_rounded,
+  };
+
+  static IconData forKey(String key) => _byKey[key] ?? Icons.category_rounded;
+}
