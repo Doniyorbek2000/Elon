@@ -1,5 +1,18 @@
 import { Transform, Type } from 'class-transformer';
-import { IsDate, IsIn, IsInt, IsOptional, IsString, IsUUID, IsUrl, Length, Matches, Max, MaxLength, Min } from 'class-validator';
+import {
+  IsDate,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUUID,
+  IsUrl,
+  Length,
+  Matches,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 import { CursorQuery } from '../../common/pagination';
 

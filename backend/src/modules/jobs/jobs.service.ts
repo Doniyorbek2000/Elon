@@ -109,7 +109,10 @@ export class JobsService {
       take: 30,
     });
     const picked = rotate(rows).slice(0, promotedSlots);
-    const badges = await this.promotions.badges('JOB', picked.map((r) => r.id));
+    const badges = await this.promotions.badges(
+      'JOB',
+      picked.map((r) => r.id),
+    );
     return picked.map((r) => presentJobCard(r, { badges: badges.get(r.id) }));
   }
 
@@ -158,7 +161,10 @@ export class JobsService {
           ).map((f) => f.jobId),
         )
       : new Set<string | null>();
-    const badges = await this.promotions.badges('JOB', rows.map((r) => r.id));
+    const badges = await this.promotions.badges(
+      'JOB',
+      rows.map((r) => r.id),
+    );
     return new Page(
       rows.map((r) => presentJobCard(r, { isFavorite: favorites.has(r.id), badges: badges.get(r.id) })),
       nextCursor,

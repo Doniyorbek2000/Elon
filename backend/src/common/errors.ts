@@ -69,7 +69,9 @@ export class AppError extends HttpException {
 
   /** A monetization feature switched off by configuration. */
   static featureDisabled(feature: string): AppError {
-    return new AppError('FEATURE_DISABLED', 'This feature is not available', HttpStatus.FORBIDDEN, { feature });
+    return new AppError('FEATURE_DISABLED', 'This feature is not available', HttpStatus.FORBIDDEN, {
+      feature,
+    });
   }
 
   /** Plan limit reached; `details` tells the client which limit and the value. */

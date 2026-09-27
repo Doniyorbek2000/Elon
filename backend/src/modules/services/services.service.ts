@@ -126,9 +126,14 @@ export class ServicesService {
     const picked = rotate(rows).slice(0, promotedSlots);
     const [online, badges] = await Promise.all([
       this.presence.onlineMany(picked.map((r) => r.userId)),
-      this.promotions.badges('PROVIDER', picked.map((r) => r.id)),
+      this.promotions.badges(
+        'PROVIDER',
+        picked.map((r) => r.id),
+      ),
     ]);
-    return picked.map((r) => presentProviderCard(r, { isOnline: online.has(r.userId), badges: badges.get(r.id) }));
+    return picked.map((r) =>
+      presentProviderCard(r, { isOnline: online.has(r.userId), badges: badges.get(r.id) }),
+    );
   }
 
   /** Featured providers for a region or category placement. */
@@ -184,7 +189,10 @@ export class ServicesService {
             select: { providerId: true },
           })
         : Promise.resolve([]),
-      this.promotions.badges('PROVIDER', rows.map((r) => r.id)),
+      this.promotions.badges(
+        'PROVIDER',
+        rows.map((r) => r.id),
+      ),
     ]);
     const saved = new Set(favorites.map((f) => f.providerId));
     let items = rows.map((r) =>

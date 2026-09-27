@@ -70,7 +70,11 @@ const schema = z
   })
   .superRefine((env, ctx) => {
     if (env.PAYMENT_DEV_ENABLED && !env.PAYMENT_DEV_SECRET) {
-      ctx.addIssue({ code: 'custom', message: 'PAYMENT_DEV_SECRET is required when PAYMENT_DEV_ENABLED=true', path: ['PAYMENT_DEV_SECRET'] });
+      ctx.addIssue({
+        code: 'custom',
+        message: 'PAYMENT_DEV_SECRET is required when PAYMENT_DEV_ENABLED=true',
+        path: ['PAYMENT_DEV_SECRET'],
+      });
     }
     if (env.NODE_ENV !== 'production') return;
     if (env.OTP_PROVIDER === 'dev' || env.OTP_DEV_ECHO) {
@@ -95,7 +99,11 @@ const schema = z
       });
     }
     if (env.PAYMENT_DEV_ENABLED) {
-      ctx.addIssue({ code: 'custom', message: 'The dev payment provider is forbidden in production', path: ['PAYMENT_DEV_ENABLED'] });
+      ctx.addIssue({
+        code: 'custom',
+        message: 'The dev payment provider is forbidden in production',
+        path: ['PAYMENT_DEV_ENABLED'],
+      });
     }
     if (!env.CORS_ORIGINS) {
       ctx.addIssue({

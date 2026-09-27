@@ -29,7 +29,9 @@ import { presentProviderCard, providerCardSelect } from '../services/provider.pr
 import { AddMemberDto, BusinessDto, UpdateBusinessDto } from './business.dto';
 
 const businessInclude = {
-  members: { select: { userId: true, role: true, user: { select: { profile: { select: { displayName: true } } } } } },
+  members: {
+    select: { userId: true, role: true, user: { select: { profile: { select: { displayName: true } } } } },
+  },
 } as const;
 
 /**
@@ -50,7 +52,13 @@ export class BusinessService {
   private async assertLogo(userId: string, logoId?: string) {
     if (!logoId) return;
     const media = await this.prisma.media.findFirst({
-      where: { id: logoId, ownerId: userId, purpose: MediaPurpose.AVATAR, deletedAt: null, status: { not: MediaStatus.FAILED } },
+      where: {
+        id: logoId,
+        ownerId: userId,
+        purpose: MediaPurpose.AVATAR,
+        deletedAt: null,
+        status: { not: MediaStatus.FAILED },
+      },
     });
     if (!media) throw AppError.validation('Invalid logo', { field: 'logoId' });
   }
@@ -81,8 +89,13 @@ export class BusinessService {
           logoId: dto.logoId,
         },
       });
-      await tx.businessMember.create({ data: { businessId: business.id, userId: user.userId, role: BusinessRole.OWNER } });
-      await tx.profile.update({ where: { userId: user.userId }, data: { accountType: AccountType.BUSINESS } });
+      await tx.businessMember.create({
+        data: { businessId: business.id, userId: user.userId, role: BusinessRole.OWNER },
+      });
+      await tx.profile.update({
+        where: { userId: user.userId },
+        data: { accountType: AccountType.BUSINESS },
+      });
       return business;
     });
     await this.entitlements.invalidate([user.userId]);
@@ -90,17 +103,26 @@ export class BusinessService {
   }
 
   private async membership(userId: string) {
-    const member = await this.prisma.businessMember.findFirst({ where: { userId }, include: { business: true } });
+    const member = await this.prisma.businessMember.findFirst({
+      where: { userId },
+      include: { business: true },
+    });
     if (!member) throw AppError.notFound('Business');
     return member;
   }
 
   async mine(userId: string, businessId?: string) {
     const member = businessId
-      ? await this.prisma.businessMember.findUnique({ where: { businessId_userId: { businessId, userId } }, include: { business: true } })
+      ? await this.prisma.businessMember.findUnique({
+          where: { businessId_userId: { businessId, userId } },
+          include: { business: true },
+        })
       : await this.prisma.businessMember.findFirst({ where: { userId }, include: { business: true } });
     if (!member) throw AppError.notFound('Business');
-    const business = await this.prisma.business.findUniqueOrThrow({ where: { id: member.businessId }, include: businessInclude });
+    const business = await this.prisma.business.findUniqueOrThrow({
+      where: { id: member.businessId },
+      include: businessInclude,
+    });
     const effective = await this.entitlements.effectivePlan(business.ownerId);
     return {
       ...(await this.present(business)),
@@ -110,7 +132,12 @@ export class BusinessService {
         name: m.user.profile?.displayName ?? '',
         role: apiEnum(m.role),
       })),
-      plan: { id: effective.plan.id, title: effective.plan.title, storefront: effective.plan.storefront, maxManagers: effective.plan.maxManagers },
+      plan: {
+        id: effective.plan.id,
+        title: effective.plan.title,
+        storefront: effective.plan.storefront,
+        maxManagers: effective.plan.maxManagers,
+      },
     };
   }
 
@@ -131,7 +158,9 @@ export class BusinessService {
     if (dto.telegram) data.telegram = dto.telegram.replace(/^@/, '');
     // Name/category changes of a verified business require re-verification.
     const reverify =
-      member.business.verification === BusinessVerification.VERIFIED && dto.name && dto.name !== member.business.name;
+      member.business.verification === BusinessVerification.VERIFIED &&
+      dto.name &&
+      dto.name !== member.business.name;
     await this.prisma.business.update({
       where: { id: member.businessId },
       data: { ...data, ...(reverify ? { verification: BusinessVerification.PENDING } : {}) },
@@ -142,8 +171,12 @@ export class BusinessService {
   async requestVerification(userId: string) {
     const member = await this.membership(userId);
     if (member.role !== BusinessRole.OWNER) throw AppError.forbidden();
-    if (member.business.verification === BusinessVerification.VERIFIED) throw AppError.invalidState('Already verified');
-    await this.prisma.business.update({ where: { id: member.businessId }, data: { verification: BusinessVerification.PENDING } });
+    if (member.business.verification === BusinessVerification.VERIFIED)
+      throw AppError.invalidState('Already verified');
+    await this.prisma.business.update({
+      where: { id: member.businessId },
+      data: { verification: BusinessVerification.PENDING },
+    });
     return this.mine(userId, member.businessId);
   }
 
@@ -151,15 +184,21 @@ export class BusinessService {
     const member = await this.membership(userId);
     if (member.role !== BusinessRole.OWNER) throw AppError.forbidden('Only the owner manages members');
     const maxManagers = await this.entitlements.maxManagers(userId);
-    const managers = await this.prisma.businessMember.count({ where: { businessId: member.businessId, role: BusinessRole.MANAGER } });
+    const managers = await this.prisma.businessMember.count({
+      where: { businessId: member.businessId, role: BusinessRole.MANAGER },
+    });
     if (managers >= maxManagers) throw AppError.limitReached('managers', maxManagers);
     const phone = normalizeUzPhone(dto.phone);
-    const target = phone ? await this.prisma.user.findUnique({ where: { phone }, select: { id: true } }) : null;
+    const target = phone
+      ? await this.prisma.user.findUnique({ where: { phone }, select: { id: true } })
+      : null;
     if (!target) throw AppError.notFound('User');
     if (await this.prisma.businessMember.findFirst({ where: { userId: target.id } })) {
       throw AppError.conflict('This user already belongs to a business');
     }
-    await this.prisma.businessMember.create({ data: { businessId: member.businessId, userId: target.id, role: BusinessRole.MANAGER } });
+    await this.prisma.businessMember.create({
+      data: { businessId: member.businessId, userId: target.id, role: BusinessRole.MANAGER },
+    });
     await this.entitlements.invalidate([target.id]);
     return this.mine(userId, member.businessId);
   }
@@ -182,7 +221,8 @@ export class BusinessService {
       where: { id, status: BusinessStatus.ACTIVE },
       include: businessInclude,
     });
-    if (!business || !(await this.entitlements.canUseStorefront(business.ownerId))) throw AppError.notFound('Business');
+    if (!business || !(await this.entitlements.canUseStorefront(business.ownerId)))
+      throw AppError.notFound('Business');
     return business;
   }
 
@@ -190,7 +230,9 @@ export class BusinessService {
     const business = await this.publicBusiness(id);
     const memberIds = business.members.map((m) => m.userId);
     const [listingCount, jobs, providers] = await Promise.all([
-      this.prisma.listing.count({ where: { sellerId: { in: memberIds }, status: ListingStatus.ACTIVE, deletedAt: null } }),
+      this.prisma.listing.count({
+        where: { sellerId: { in: memberIds }, status: ListingStatus.ACTIVE, deletedAt: null },
+      }),
       this.prisma.job.findMany({
         where: { employerId: { in: memberIds }, status: JobStatus.ACTIVE, deletedAt: null },
         select: jobCardSelect,
@@ -207,7 +249,8 @@ export class BusinessService {
     const reviewed = providers.filter((p) => p.reviewCount > 0);
     const reviewCount = reviewed.reduce((sum, p) => sum + p.reviewCount, 0);
     const rating = reviewCount
-      ? Math.round((reviewed.reduce((sum, p) => sum + p.ratingAvg * p.reviewCount, 0) / reviewCount) * 10) / 10
+      ? Math.round((reviewed.reduce((sum, p) => sum + p.ratingAvg * p.reviewCount, 0) / reviewCount) * 10) /
+        10
       : null;
     return {
       ...(await this.present(business)),
@@ -234,15 +277,41 @@ export class BusinessService {
       take: take + 1,
     });
     const page = keysetPage(rows, take, (r) => r.rankedAt ?? r.createdAt);
-    const badges = await this.promotions.badges('LISTING', page.items.map((r) => r.id));
-    return new Page(page.items.map((r) => presentListingCard(r, { badges: badges.get(r.id) })), page.nextCursor);
+    const badges = await this.promotions.badges(
+      'LISTING',
+      page.items.map((r) => r.id),
+    );
+    return new Page(
+      page.items.map((r) => presentListingCard(r, { badges: badges.get(r.id) })),
+      page.nextCursor,
+    );
   }
 
-  private async present(business: { id: string; ownerId: string; name: string; description: string; logoId: string | null; categoryId: string | null; regionId: string; districtId: string | null; address: string | null; phone: string | null; website: string | null; telegram: string | null; openingHours: string | null; verification: BusinessVerification; createdAt: Date }) {
+  private async present(business: {
+    id: string;
+    ownerId: string;
+    name: string;
+    description: string;
+    logoId: string | null;
+    categoryId: string | null;
+    regionId: string;
+    districtId: string | null;
+    address: string | null;
+    phone: string | null;
+    website: string | null;
+    telegram: string | null;
+    openingHours: string | null;
+    verification: BusinessVerification;
+    createdAt: Date;
+  }) {
     const [logo, region, district, effective] = await Promise.all([
-      business.logoId ? this.prisma.media.findUnique({ where: { id: business.logoId }, select: mediaSelect }) : null,
+      business.logoId
+        ? this.prisma.media.findUnique({ where: { id: business.logoId }, select: mediaSelect })
+        : null,
       this.prisma.region.findUnique({ where: { id: business.regionId }, select: { name: true } }),
-      business.districtId ? this.prisma.district.findUnique({ where: { id: business.districtId }, select: { name: true } }) : null,
+      business.districtId
+        ? this.prisma.district.findUnique({ where: { id: business.districtId }, select: { name: true } })
+        : null,
       this.entitlements.effectivePlan(business.ownerId),
     ]);
     return {
@@ -252,7 +321,12 @@ export class BusinessService {
       description: business.description,
       logo: logo ? presentMedia(logo) : null,
       categoryId: business.categoryId,
-      place: { regionId: business.regionId, regionName: region?.name ?? '', districtId: business.districtId, districtName: district?.name ?? null },
+      place: {
+        regionId: business.regionId,
+        regionName: region?.name ?? '',
+        districtId: business.districtId,
+        districtName: district?.name ?? null,
+      },
       address: business.address,
       phone: business.phone,
       website: business.website,
@@ -273,10 +347,12 @@ export class BusinessService {
     await this.prisma.profile.update({
       where: { userId: business.ownerId },
       data: {
-        verification: verification === BusinessVerification.VERIFIED ? VerificationLevel.BUSINESS : VerificationLevel.PHONE,
+        verification:
+          verification === BusinessVerification.VERIFIED
+            ? VerificationLevel.BUSINESS
+            : VerificationLevel.PHONE,
       },
     });
     return business;
   }
 }
-

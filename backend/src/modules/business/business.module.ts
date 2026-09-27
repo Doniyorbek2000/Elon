@@ -1,9 +1,32 @@
-import { Body, Controller, Delete, Get, Global, HttpCode, Module, Param, ParseUUIDPipe, Patch, Post, Query, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Global,
+  HttpCode,
+  Module,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 
 import { AuthUser, CurrentUser, MaybeUser, OptionalAuth, Public } from '../../common/auth.decorators';
-import { AdEventDto, AddMemberDto, AdsQuery, BusinessDto, CampaignDto, StatsQuery, StorefrontListingsQuery, UpdateBusinessDto } from './business.dto';
+import {
+  AdEventDto,
+  AddMemberDto,
+  AdsQuery,
+  BusinessDto,
+  CampaignDto,
+  StatsQuery,
+  StorefrontListingsQuery,
+  UpdateBusinessDto,
+} from './business.dto';
 import { AdsService } from './ads.service';
 import { AnalyticsService } from './analytics.service';
 import { BusinessService } from './business.service';
@@ -105,7 +128,12 @@ class BusinessController {
   @OptionalAuth()
   @Post('ads/:id/events')
   @HttpCode(200)
-  adEvent(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AdEventDto, @Req() request: Request, @MaybeUser() viewer?: AuthUser) {
+  adEvent(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: AdEventDto,
+    @Req() request: Request,
+    @MaybeUser() viewer?: AuthUser,
+  ) {
     const key = viewer?.userId ?? `${request.ip ?? 'unknown'}|${request.headers['user-agent'] ?? ''}`;
     return this.ads.recordEvent(id, dto.type, key);
   }
@@ -114,7 +142,11 @@ class BusinessController {
 
   @ApiBearerAuth()
   @Get('me/listings/:id/stats')
-  listingStats(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string, @Query() query: StatsQuery) {
+  listingStats(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: StatsQuery,
+  ) {
     return this.analytics.listingStats(user.userId, id, query);
   }
 

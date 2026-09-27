@@ -155,7 +155,8 @@ async function seedMonetization(prisma: PrismaClient): Promise<void> {
   for (const key of FLAG_KEYS) {
     await prisma.featureFlag.upsert({ where: { key }, create: { key, enabled: false }, update: {} });
   }
-  for (const plan of PLAN_SEEDS) await prisma.plan.upsert({ where: { id: plan.id }, create: plan, update: {} });
+  for (const plan of PLAN_SEEDS)
+    await prisma.plan.upsert({ where: { id: plan.id }, create: plan, update: {} });
   for (const [index, product] of PRODUCT_SEEDS.entries()) {
     await prisma.promotionProduct.upsert({
       where: { id: product.id },

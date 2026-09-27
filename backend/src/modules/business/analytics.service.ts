@@ -103,7 +103,9 @@ export class AnalyticsService {
    * counters for that preceding period. No causal claims are made.
    */
   async promotionStats(userId: string, activationId: string) {
-    const activation = await this.prisma.promotionActivation.findFirst({ where: { id: activationId, ownerId: userId } });
+    const activation = await this.prisma.promotionActivation.findFirst({
+      where: { id: activationId, ownerId: userId },
+    });
     if (!activation || activation.target !== 'LISTING') throw AppError.notFound('Promotion');
     const now = new Date();
     const start = activation.startsAt;
@@ -111,12 +113,21 @@ export class AnalyticsService {
     const during = await this.series(activation.targetId, start, end);
     const length = Math.max(end.getTime() - start.getTime(), DAY);
     const beforeFrom = new Date(start.getTime() - length);
-    const listing = await this.prisma.listing.findUnique({ where: { id: activation.targetId }, select: { publishedAt: true } });
-    const comparable = !!listing?.publishedAt && listing.publishedAt <= beforeFrom && activation.kind !== 'LISTING_BUMP';
-    const before = comparable ? await this.series(activation.targetId, beforeFrom, new Date(start.getTime() - 1)) : null;
+    const listing = await this.prisma.listing.findUnique({
+      where: { id: activation.targetId },
+      select: { publishedAt: true },
+    });
+    const comparable =
+      !!listing?.publishedAt && listing.publishedAt <= beforeFrom && activation.kind !== 'LISTING_BUMP';
+    const before = comparable
+      ? await this.series(activation.targetId, beforeFrom, new Date(start.getTime() - 1))
+      : null;
     return {
       activationId,
-      status: activation.status === ActivationStatus.ACTIVE && activation.expiresAt && activation.expiresAt <= now ? 'expired' : activation.status.toLowerCase(),
+      status:
+        activation.status === ActivationStatus.ACTIVE && activation.expiresAt && activation.expiresAt <= now
+          ? 'expired'
+          : activation.status.toLowerCase(),
       startsAt: start,
       expiresAt: activation.expiresAt,
       during: during.totals,

@@ -33,7 +33,18 @@ export class SettingDto {
 
 export class ProductDto {
   @Matches(/^[a-z0-9_]{3,64}$/) id!: string;
-  @IsIn(['listingTop', 'listingVip', 'listingBump', 'listingFeatured', 'jobTop', 'jobFeatured', 'jobUrgent', 'providerTop', 'providerFeatured', 'adCampaign'])
+  @IsIn([
+    'listingTop',
+    'listingVip',
+    'listingBump',
+    'listingFeatured',
+    'jobTop',
+    'jobFeatured',
+    'jobUrgent',
+    'providerTop',
+    'providerFeatured',
+    'adCampaign',
+  ])
   kind!: string;
   @IsOptional() @IsIn(['none', 'home', 'category', 'region']) placement?: string;
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(365) durationDays?: number;
@@ -76,7 +87,9 @@ export class UpdatePlanDto {
 }
 
 export class CouponDto {
-  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim().toUpperCase() : value))
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim().toUpperCase() : value,
+  )
   @Matches(/^[A-Z0-9_-]{3,32}$/)
   code!: string;
   @IsOptional() @IsString() @MaxLength(200) description?: string;
@@ -106,7 +119,9 @@ export class BusinessStatusDto {
 }
 
 export class PaymentsQuery extends CursorQuery {
-  @IsOptional() @IsIn(['created', 'pending', 'succeeded', 'failed', 'cancelled', 'refunded', 'partiallyRefunded']) status?: string;
+  @IsOptional()
+  @IsIn(['created', 'pending', 'succeeded', 'failed', 'cancelled', 'refunded', 'partiallyRefunded'])
+  status?: string;
   @IsOptional() @IsIn(['dev', 'payme', 'click', 'apple', 'google', 'credits', 'free']) provider?: string;
   @IsOptional() @Type(() => Boolean) @IsBoolean() needsReview?: boolean;
 }

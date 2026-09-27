@@ -84,12 +84,23 @@ export class PromotionService {
   }
 
   /** Owner + eligibility of the thing being promoted (ownership checked by callers). */
-  async targetInfo(target: PromotionTarget, targetId: string, db: Tx | PrismaService = this.prisma): Promise<TargetInfo | null> {
+  async targetInfo(
+    target: PromotionTarget,
+    targetId: string,
+    db: Tx | PrismaService = this.prisma,
+  ): Promise<TargetInfo | null> {
     switch (target) {
       case 'LISTING': {
         const l = await db.listing.findFirst({
           where: { id: targetId, deletedAt: null },
-          select: { sellerId: true, regionId: true, categoryId: true, status: true, rankedAt: true, publishedAt: true },
+          select: {
+            sellerId: true,
+            regionId: true,
+            categoryId: true,
+            status: true,
+            rankedAt: true,
+            publishedAt: true,
+          },
         });
         if (!l) return null;
         const lastBump = await db.promotionActivation.findFirst({
@@ -110,12 +121,24 @@ export class PromotionService {
           where: { id: targetId, deletedAt: null },
           select: { employerId: true, regionId: true, status: true },
         });
-        return j ? { ownerId: j.employerId, regionId: j.regionId, categoryId: null, eligible: j.status === JobStatus.ACTIVE } : null;
+        return j
+          ? {
+              ownerId: j.employerId,
+              regionId: j.regionId,
+              categoryId: null,
+              eligible: j.status === JobStatus.ACTIVE,
+            }
+          : null;
       }
       case 'PROVIDER': {
         const p = await db.serviceProvider.findFirst({
           where: { id: targetId, deletedAt: null },
-          select: { userId: true, regionId: true, status: true, categories: { select: { categoryId: true }, take: 1 } },
+          select: {
+            userId: true,
+            regionId: true,
+            status: true,
+            categories: { select: { categoryId: true }, take: 1 },
+          },
         });
         return p
           ? {
@@ -211,7 +234,12 @@ export class PromotionService {
   }
 
   /** Rebuilds the ranking cache of one item from its live activations. */
-  async recompute(tx: Tx | PrismaService, target: PromotionTarget, targetId: string, now = new Date()): Promise<void> {
+  async recompute(
+    tx: Tx | PrismaService,
+    target: PromotionTarget,
+    targetId: string,
+    now = new Date(),
+  ): Promise<void> {
     const live = await tx.promotionActivation.findMany({
       where: {
         target,
@@ -316,7 +344,15 @@ export class PromotionService {
           { status: { in: [ActivationStatus.ACTIVE, ActivationStatus.SCHEDULED] }, expiresAt: { lte: now } },
         ],
       },
-      select: { id: true, status: true, expiresAt: true, target: true, targetId: true, kind: true, ownerId: true },
+      select: {
+        id: true,
+        status: true,
+        expiresAt: true,
+        target: true,
+        targetId: true,
+        kind: true,
+        ownerId: true,
+      },
       take: 1000,
     });
     let started = 0;
@@ -333,7 +369,8 @@ export class PromotionService {
       if (!count) continue;
       if (ended) expired++;
       else started++;
-      if (a.target !== 'BUSINESS') touched.set(`${a.target}:${a.targetId}`, { target: a.target, targetId: a.targetId });
+      if (a.target !== 'BUSINESS')
+        touched.set(`${a.target}:${a.targetId}`, { target: a.target, targetId: a.targetId });
     }
     for (const { target, targetId } of touched.values()) {
       await this.recompute(this.prisma, target, targetId, now).catch((error: Error) =>
@@ -341,8 +378,14 @@ export class PromotionService {
       );
     }
     // Stale caches whose boostUntil passed (safety net).
-    await this.prisma.listing.updateMany({ where: { boostTier: { gt: 0 }, boostUntil: { lte: now } }, data: { boostTier: 0, boostUntil: null } });
-    await this.prisma.job.updateMany({ where: { boostTier: { gt: 0 }, boostUntil: { lte: now } }, data: { boostTier: 0, boostUntil: null } });
+    await this.prisma.listing.updateMany({
+      where: { boostTier: { gt: 0 }, boostUntil: { lte: now } },
+      data: { boostTier: 0, boostUntil: null },
+    });
+    await this.prisma.job.updateMany({
+      where: { boostTier: { gt: 0 }, boostUntil: { lte: now } },
+      data: { boostTier: 0, boostUntil: null },
+    });
     await this.prisma.serviceProvider.updateMany({
       where: { boostTier: { gt: 0 }, boostUntil: { lte: now } },
       data: { boostTier: 0, boostUntil: null },

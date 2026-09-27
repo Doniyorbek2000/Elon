@@ -68,7 +68,10 @@ class MonetizationController {
   @Public()
   @Get('config')
   async publicConfig() {
-    const [flags, free] = await Promise.all([this.config.flags(), this.prisma.plan.findUnique({ where: { id: 'FREE' } })]);
+    const [flags, free] = await Promise.all([
+      this.config.flags(),
+      this.prisma.plan.findUnique({ where: { id: 'FREE' } }),
+    ]);
     return { flags, freePlan: free ? presentEntitlements(free) : null };
   }
 
@@ -85,7 +88,9 @@ class MonetizationController {
   async promotionsFor(@CurrentUser() user: AuthUser, @Query() query: CatalogQuery) {
     const target = CheckoutService.targetFromParam(query.target);
     const products = await this.catalog.productsFor(target);
-    let eligibility: { eligible: boolean; reason?: string; bumpAvailableAt?: Date | null } = { eligible: true };
+    let eligibility: { eligible: boolean; reason?: string; bumpAvailableAt?: Date | null } = {
+      eligible: true,
+    };
     if (query.targetId && target !== 'BUSINESS') {
       const info = await this.promotions.targetInfo(target, query.targetId);
       if (!info || info.ownerId !== user.userId) throw AppError.notFound('Target');
@@ -93,11 +98,16 @@ class MonetizationController {
       eligibility = {
         eligible: info.eligible,
         reason: info.eligible ? undefined : 'inactive',
-        bumpAvailableAt: info.lastBumpAt ? new Date(info.lastBumpAt.getTime() + bumpCooldownHours * 3600_000) : null,
+        bumpAvailableAt: info.lastBumpAt
+          ? new Date(info.lastBumpAt.getTime() + bumpCooldownHours * 3600_000)
+          : null,
       };
     }
-    const providers = query.platform ? (await this.checkout.routes(query.platform)).map((k) => apiEnum(k)) : [];
-    const balance = (await this.prisma.creditAccount.findUnique({ where: { userId: user.userId } }))?.balance ?? 0;
+    const providers = query.platform
+      ? (await this.checkout.routes(query.platform)).map((k) => apiEnum(k))
+      : [];
+    const balance =
+      (await this.prisma.creditAccount.findUnique({ where: { userId: user.userId } }))?.balance ?? 0;
     return {
       products: products.map((p) => CatalogService.presentProduct(p)),
       eligibility,
@@ -154,7 +164,9 @@ class MonetizationController {
       target: apiEnum(a.target),
       targetId: a.targetId,
       status: apiEnum(
-        a.status === ActivationStatus.ACTIVE && a.expiresAt && a.expiresAt <= now ? ActivationStatus.EXPIRED : a.status,
+        a.status === ActivationStatus.ACTIVE && a.expiresAt && a.expiresAt <= now
+          ? ActivationStatus.EXPIRED
+          : a.status,
       ),
       startsAt: a.startsAt,
       expiresAt: a.expiresAt,
@@ -234,7 +246,8 @@ class PaymentWebhookController {
   @HttpCode(200)
   webhook(@Param('provider') provider: string, @Req() request: RawRequest) {
     const key = this.registry.parseKey(provider);
-    if (key === PaymentProviderKey.CREDITS || key === PaymentProviderKey.FREE) throw AppError.notFound('Payment provider');
+    if (key === PaymentProviderKey.CREDITS || key === PaymentProviderKey.FREE)
+      throw AppError.notFound('Payment provider');
     return this.payments.handleWebhook(key, {
       headers: request.headers,
       rawBody: request.rawBody ?? Buffer.alloc(0),
@@ -257,7 +270,10 @@ class PaymentWebhookController {
   async devCheckoutPage(@Param('paymentId', ParseUUIDPipe) paymentId: string, @Query('token') token: string) {
     const provider = this.dev();
     if (token !== provider.pageToken(paymentId)) throw AppError.notFound('Page');
-    const payment = await this.prisma.payment.findUnique({ where: { id: paymentId }, include: { purchase: { include: { product: true } } } });
+    const payment = await this.prisma.payment.findUnique({
+      where: { id: paymentId },
+      include: { purchase: { include: { product: true } } },
+    });
     if (!payment) throw AppError.notFound('Page');
     const amount = (payment.amountMinor / 100n).toString();
     const action = `${env().PUBLIC_API_URL}/api/v1/payments/dev/checkout/${paymentId}/complete`;
@@ -286,7 +302,10 @@ ${button('succeeded', "To'lash (muvaffaqiyatli)")}${button('failed', 'Xato')}${b
 }
 
 function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+  return value.replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!,
+  );
 }
 
 @Global()

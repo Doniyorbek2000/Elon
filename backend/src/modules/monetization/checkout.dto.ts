@@ -3,7 +3,8 @@ import { IsIn, IsOptional, IsString, IsUUID, Length, Matches, MaxLength } from '
 
 import { CursorQuery } from '../../common/pagination';
 
-const trimUpper = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim().toUpperCase() : value);
+const trimUpper = ({ value }: { value: unknown }) =>
+  typeof value === 'string' ? value.trim().toUpperCase() : value;
 
 /**
  * Checkout input. Note what is *absent*: price, amount, currency, status,

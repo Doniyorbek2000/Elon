@@ -41,7 +41,11 @@ export class DevPaymentProvider implements PaymentProvider {
   private secret(): string {
     const secret = env().PAYMENT_DEV_SECRET;
     if (!secret || !this.configured()) {
-      throw new AppError('PROVIDER_NOT_CONFIGURED', 'Payment provider is not configured', HttpStatus.SERVICE_UNAVAILABLE);
+      throw new AppError(
+        'PROVIDER_NOT_CONFIGURED',
+        'Payment provider is not configured',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
     }
     return secret;
   }
@@ -75,7 +79,10 @@ export class DevPaymentProvider implements PaymentProvider {
     const timestamp = Math.floor(Date.now() / 1000).toString();
     return {
       rawBody: Buffer.from(body),
-      headers: { [SIGNATURE_HEADER]: DevPaymentProvider.sign(this.secret(), timestamp, body), [TIMESTAMP_HEADER]: timestamp },
+      headers: {
+        [SIGNATURE_HEADER]: DevPaymentProvider.sign(this.secret(), timestamp, body),
+        [TIMESTAMP_HEADER]: timestamp,
+      },
     };
   }
 
@@ -84,7 +91,8 @@ export class DevPaymentProvider implements PaymentProvider {
     const timestamp = String(request.headers[TIMESTAMP_HEADER] ?? '');
     const expected = DevPaymentProvider.sign(this.secret(), timestamp, request.rawBody.toString('utf8'));
     const valid =
-      /^[0-9a-f]{64}$/.test(signature) && timingSafeEqual(Buffer.from(signature, 'hex'), Buffer.from(expected, 'hex'));
+      /^[0-9a-f]{64}$/.test(signature) &&
+      timingSafeEqual(Buffer.from(signature, 'hex'), Buffer.from(expected, 'hex'));
     const age = Math.abs(Date.now() / 1000 - Number(timestamp));
     if (!valid || !Number.isFinite(age) || age > MAX_SKEW_SECONDS) {
       throw new AppError('SIGNATURE_INVALID', 'Invalid webhook signature', HttpStatus.UNAUTHORIZED);
@@ -118,7 +126,8 @@ export class DevPaymentProvider implements PaymentProvider {
   }
 
   async refund(payment: Payment, amountMinor: bigint) {
-    if (amountMinor <= 0n || amountMinor > payment.amountMinor - payment.refundedMinor) return { succeeded: false };
+    if (amountMinor <= 0n || amountMinor > payment.amountMinor - payment.refundedMinor)
+      return { succeeded: false };
     return { succeeded: true, providerRefundId: `dev_refund_${payment.id}_${Date.now()}` };
   }
 }

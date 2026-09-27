@@ -37,7 +37,10 @@ export interface PaymentProvider {
   readonly capabilities: ProviderCapabilities;
   /** False until credentials exist *and* the adapter is implemented. */
   configured(): boolean;
-  createCheckout(payment: Payment, purchase: Purchase): Promise<{ action: CheckoutAction; externalId?: string }>;
+  createCheckout(
+    payment: Payment,
+    purchase: Purchase,
+  ): Promise<{ action: CheckoutAction; externalId?: string }>;
   /** Verifies the signature exactly per provider docs; throws on failure. */
   parseWebhook(request: WebhookRequest): Promise<ProviderEvent[]>;
   /** Response body the provider expects for an accepted webhook. */

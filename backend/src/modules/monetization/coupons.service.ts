@@ -45,10 +45,17 @@ export class CouponsService {
     if (lock) await tx.$queryRaw`SELECT 1 FROM "Coupon" WHERE "id" = ${found.id}::uuid FOR UPDATE`;
     const coupon = lock ? await tx.coupon.findUniqueOrThrow({ where: { id: found.id } }) : found;
     const now = new Date();
-    if (!coupon.active || coupon.validFrom > now || (coupon.validUntil && coupon.validUntil <= now)) throw invalid();
+    if (!coupon.active || coupon.validFrom > now || (coupon.validUntil && coupon.validUntil <= now))
+      throw invalid();
     const applies =
-      (scope.productId && (coupon.productIds.length === 0 ? coupon.planIds.length === 0 : coupon.productIds.includes(scope.productId))) ||
-      (scope.planId && (coupon.planIds.length === 0 ? coupon.productIds.length === 0 : coupon.planIds.includes(scope.planId)));
+      (scope.productId &&
+        (coupon.productIds.length === 0
+          ? coupon.planIds.length === 0
+          : coupon.productIds.includes(scope.productId))) ||
+      (scope.planId &&
+        (coupon.planIds.length === 0
+          ? coupon.productIds.length === 0
+          : coupon.planIds.includes(scope.planId)));
     if (!applies) throw invalid();
     const live = [RedemptionStatus.RESERVED, RedemptionStatus.REDEEMED];
     const [total, mine] = await Promise.all([

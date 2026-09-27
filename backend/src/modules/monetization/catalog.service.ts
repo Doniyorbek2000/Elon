@@ -1,5 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { BillingPeriod, Plan, PlanPrice, ProductPrice, PromotionKind, PromotionProduct, PromotionTarget } from '@prisma/client';
+import {
+  BillingPeriod,
+  Plan,
+  PlanPrice,
+  ProductPrice,
+  PromotionKind,
+  PromotionProduct,
+  PromotionTarget,
+} from '@prisma/client';
 
 import { apiEnum } from '../../common/text';
 import { PrismaService } from '../../infra/prisma.service';
@@ -71,7 +79,10 @@ export class CatalogService {
       where: { active: true },
       orderBy: { sortOrder: 'asc' },
       include: {
-        prices: { where: { active: true, ...priceNow(now) }, orderBy: [{ period: 'asc' }, { validFrom: 'desc' }] },
+        prices: {
+          where: { active: true, ...priceNow(now) },
+          orderBy: [{ period: 'asc' }, { validFrom: 'desc' }],
+        },
       },
     });
   }

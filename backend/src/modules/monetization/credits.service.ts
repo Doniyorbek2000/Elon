@@ -59,7 +59,9 @@ export class CreditsService {
     if (!Number.isInteger(amount) || amount <= 0) throw AppError.validation('Credit amount must be positive');
     const balance = await this.lock(tx, userId);
     if (balance < amount) {
-      throw new AppError('INSUFFICIENT_CREDITS', 'Not enough promotion credits', HttpStatus.CONFLICT, { balance });
+      throw new AppError('INSUFFICIENT_CREDITS', 'Not enough promotion credits', HttpStatus.CONFLICT, {
+        balance,
+      });
     }
     const now = new Date();
     const sources = await tx.creditLedgerEntry.findMany({
@@ -70,12 +72,17 @@ export class CreditsService {
     for (const source of sources) {
       if (left === 0) break;
       const take = Math.min(left, source.remaining);
-      await tx.creditLedgerEntry.update({ where: { id: source.id }, data: { remaining: source.remaining - take } });
+      await tx.creditLedgerEntry.update({
+        where: { id: source.id },
+        data: { remaining: source.remaining - take },
+      });
       left -= take;
     }
     if (left > 0) {
       // Balance cache and live grants disagree (expired but not yet swept): refuse safely.
-      throw new AppError('INSUFFICIENT_CREDITS', 'Not enough promotion credits', HttpStatus.CONFLICT, { balance });
+      throw new AppError('INSUFFICIENT_CREDITS', 'Not enough promotion credits', HttpStatus.CONFLICT, {
+        balance,
+      });
     }
     await tx.creditLedgerEntry.create({
       data: { userId, type, amount: -amount, reason, ...refs },
@@ -96,9 +103,16 @@ export class CreditsService {
   }
 
   /** Removes the unused part of grants tied to a subscription (refund/revocation). */
-  async revokeSubscriptionGrants(tx: Tx, userId: string, subscriptionId: string, reason: string): Promise<void> {
+  async revokeSubscriptionGrants(
+    tx: Tx,
+    userId: string,
+    subscriptionId: string,
+    reason: string,
+  ): Promise<void> {
     await this.lock(tx, userId);
-    const grants = await tx.creditLedgerEntry.findMany({ where: { userId, subscriptionId, remaining: { gt: 0 } } });
+    const grants = await tx.creditLedgerEntry.findMany({
+      where: { userId, subscriptionId, remaining: { gt: 0 } },
+    });
     for (const grant of grants) await this.expireEntry(tx, grant.id, grant.userId, grant.remaining, reason);
   }
 
@@ -108,7 +122,9 @@ export class CreditsService {
       data: { remaining: 0 },
     });
     if (!count) return;
-    await tx.creditLedgerEntry.create({ data: { userId, type: CreditEntryType.EXPIRE, amount: -remaining, reason } });
+    await tx.creditLedgerEntry.create({
+      data: { userId, type: CreditEntryType.EXPIRE, amount: -remaining, reason },
+    });
     await tx.creditAccount.update({ where: { userId }, data: { balance: { decrement: remaining } } });
   }
 
@@ -122,7 +138,8 @@ export class CreditsService {
       await this.prisma.$transaction(async (tx) => {
         await this.lock(tx, entry.userId);
         const fresh = await tx.creditLedgerEntry.findUnique({ where: { id: entry.id } });
-        if (fresh && fresh.remaining > 0) await this.expireEntry(tx, fresh.id, fresh.userId, fresh.remaining, 'Credits expired');
+        if (fresh && fresh.remaining > 0)
+          await this.expireEntry(tx, fresh.id, fresh.userId, fresh.remaining, 'Credits expired');
       });
     }
     return due.length;

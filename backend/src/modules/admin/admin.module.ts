@@ -141,7 +141,12 @@ class AdminMonetizationController {
       description: p.description,
       creditCost: p.creditCost,
       active: p.active,
-      prices: p.prices.map((pr) => ({ id: pr.id, ...presentAmount(pr.amountMinor, pr.currency), validFrom: pr.validFrom, validUntil: pr.validUntil })),
+      prices: p.prices.map((pr) => ({
+        id: pr.id,
+        ...presentAmount(pr.amountMinor, pr.currency),
+        validFrom: pr.validFrom,
+        validUntil: pr.validUntil,
+      })),
     }));
   }
 
@@ -150,7 +155,8 @@ class AdminMonetizationController {
     const kind = dbEnum(dto.kind) as PromotionKind;
     if (kind !== 'LISTING_BUMP' && !dto.durationDays) throw AppError.validation('durationDays is required');
     const placement = dbEnum(dto.placement ?? 'none') as Placement;
-    if (kind.endsWith('FEATURED') !== (placement !== 'NONE')) throw AppError.validation('Placement is required for featured products only');
+    if (kind.endsWith('FEATURED') !== (placement !== 'NONE'))
+      throw AppError.validation('Placement is required for featured products only');
     const product = await this.prisma.promotionProduct.create({
       data: {
         id: dto.id,
@@ -171,7 +177,8 @@ class AdminMonetizationController {
 
   @Patch('products/:id')
   async updateProduct(@CurrentUser() user: AuthUser, @Param('id') id: string, @Body() dto: UpdateProductDto) {
-    if (dto.active && !(await this.catalog.currentPrice(id))) throw AppError.invalidState('Set a price before activating');
+    if (dto.active && !(await this.catalog.currentPrice(id)))
+      throw AppError.invalidState('Set a price before activating');
     const product = await this.prisma.promotionProduct.update({ where: { id }, data: dto });
     await this.admin.audit(user.userId, 'product.update', 'PromotionProduct', id, dto);
     return product;
@@ -183,7 +190,13 @@ class AdminMonetizationController {
     await this.prisma.promotionProduct.findUniqueOrThrow({ where: { id } });
     const currency = dbEnum(dto.currency) as Currency;
     const price = await this.prisma.productPrice.create({
-      data: { productId: id, amountMinor: minor(dto.amountMinor, currency), currency, validFrom: dto.validFrom ?? new Date(), createdById: user.userId },
+      data: {
+        productId: id,
+        amountMinor: minor(dto.amountMinor, currency),
+        currency,
+        validFrom: dto.validFrom ?? new Date(),
+        createdById: user.userId,
+      },
     });
     await this.admin.audit(user.userId, 'product.price', 'PromotionProduct', id, dto);
     return { id: price.id, ...presentAmount(price.amountMinor, price.currency), validFrom: price.validFrom };
@@ -191,14 +204,23 @@ class AdminMonetizationController {
 
   @Get('plans')
   async plans() {
-    const plans = await this.prisma.plan.findMany({ orderBy: { sortOrder: 'asc' }, include: { prices: { orderBy: { validFrom: 'desc' }, take: 10 } } });
+    const plans = await this.prisma.plan.findMany({
+      orderBy: { sortOrder: 'asc' },
+      include: { prices: { orderBy: { validFrom: 'desc' }, take: 10 } },
+    });
     return plans.map((p) => ({
       id: p.id,
       title: p.title,
       description: p.description,
       active: p.active,
       entitlements: presentEntitlements(p),
-      prices: p.prices.map((pr) => ({ id: pr.id, period: apiEnum(pr.period), ...presentAmount(pr.amountMinor, pr.currency), validFrom: pr.validFrom, active: pr.active })),
+      prices: p.prices.map((pr) => ({
+        id: pr.id,
+        period: apiEnum(pr.period),
+        ...presentAmount(pr.amountMinor, pr.currency),
+        validFrom: pr.validFrom,
+        active: pr.active,
+      })),
     }));
   }
 
@@ -210,7 +232,7 @@ class AdminMonetizationController {
       data: { ...rest, ...(analytics ? { analytics: dbEnum(analytics) as AnalyticsLevel } : {}) },
     });
     await this.admin.audit(user.userId, 'plan.update', 'Plan', id, dto);
-    // Entitlements are cached for 60 s; plan edits take effect after that window.
+    await this.entitlements.invalidateAll();
     return plan;
   }
 
@@ -231,24 +253,40 @@ class AdminMonetizationController {
       },
     });
     await this.admin.audit(user.userId, 'plan.price', 'Plan', id, dto);
-    return { id: price.id, period: apiEnum(price.period), ...presentAmount(price.amountMinor, price.currency), validFrom: price.validFrom };
+    return {
+      id: price.id,
+      period: apiEnum(price.period),
+      ...presentAmount(price.amountMinor, price.currency),
+      validFrom: price.validFrom,
+    };
   }
 
   // ─── coupons
 
   @Get('coupons')
   async coupons() {
-    const rows = await this.prisma.coupon.findMany({ orderBy: { createdAt: 'desc' }, take: 100, include: { _count: { select: { redemptions: { where: { status: 'REDEEMED' } } } } } });
-    return rows.map((c) => ({ ...c, value: c.value.toString(), discountType: apiEnum(c.discountType), redeemed: c._count.redemptions }));
+    const rows = await this.prisma.coupon.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+      include: { _count: { select: { redemptions: { where: { status: 'REDEEMED' } } } } },
+    });
+    return rows.map((c) => ({
+      ...c,
+      value: c.value.toString(),
+      discountType: apiEnum(c.discountType),
+      redeemed: c._count.redemptions,
+    }));
   }
 
   @Post('coupons')
   async createCoupon(@CurrentUser() user: AuthUser, @Body() dto: CouponDto) {
     const discountType = dbEnum(dto.discountType) as CouponDiscountType;
     const value = BigInt(dto.value);
-    if (discountType === 'PERCENT' && (value < 1n || value > 100n)) throw AppError.validation('Percent must be 1..100');
+    if (discountType === 'PERCENT' && (value < 1n || value > 100n))
+      throw AppError.validation('Percent must be 1..100');
     const currency = dto.currency ? (dbEnum(dto.currency) as Currency) : null;
-    if (discountType === 'FIXED' && (!currency || !assertWholeMajor(value, currency))) throw AppError.validation('Fixed coupons need a currency and whole amount');
+    if (discountType === 'FIXED' && (!currency || !assertWholeMajor(value, currency)))
+      throw AppError.validation('Fixed coupons need a currency and whole amount');
     const coupon = await this.prisma.coupon.create({
       data: {
         code: dto.code,
@@ -270,7 +308,11 @@ class AdminMonetizationController {
   }
 
   @Patch('coupons/:id')
-  async updateCoupon(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateCouponDto) {
+  async updateCoupon(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateCouponDto,
+  ) {
     const coupon = await this.prisma.coupon.update({ where: { id }, data: dto });
     await this.admin.audit(user.userId, 'coupon.update', 'Coupon', id, dto);
     return { ...coupon, value: coupon.value.toString() };
@@ -288,15 +330,26 @@ class AdminMonetizationController {
   }
 
   @Patch('businesses/:id/verification')
-  async verify(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string, @Body() dto: VerificationDto) {
+  async verify(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: VerificationDto,
+  ) {
     const result = await this.business.setVerification(id, dbEnum(dto.verification) as BusinessVerification);
     await this.admin.audit(user.userId, 'business.verification', 'Business', id, dto);
     return result;
   }
 
   @Patch('businesses/:id/status')
-  async businessStatus(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string, @Body() dto: BusinessStatusDto) {
-    const result = await this.prisma.business.update({ where: { id }, data: { status: dbEnum(dto.status) as BusinessStatus } });
+  async businessStatus(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: BusinessStatusDto,
+  ) {
+    const result = await this.prisma.business.update({
+      where: { id },
+      data: { status: dbEnum(dto.status) as BusinessStatus },
+    });
     await this.entitlements.invalidateBusiness(id);
     await this.admin.audit(user.userId, 'business.status', 'Business', id, dto);
     return result;
@@ -319,7 +372,11 @@ class AdminMonetizationController {
   }
 
   @Post('campaigns/:id/reject')
-  async reject(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string, @Body() dto: ReasonDto) {
+  async reject(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ReasonDto,
+  ) {
     await this.ads.reject(id, dto.reason);
     await this.admin.audit(user.userId, 'campaign.reject', 'AdCampaign', id, dto);
     return { ok: true };
@@ -337,14 +394,22 @@ class AdminMonetizationController {
   }
 
   @Post('activations/:id/cancel')
-  async cancelActivation(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string, @Body() dto: ReasonDto) {
+  async cancelActivation(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ReasonDto,
+  ) {
     await this.prisma.$transaction((tx) => this.promotions.cancel(tx, id));
     await this.admin.audit(user.userId, 'activation.cancel', 'PromotionActivation', id, dto);
     return { ok: true };
   }
 
   @Post('users/:id/credits')
-  async adjustCredits(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string, @Body() dto: CreditAdjustDto) {
+  async adjustCredits(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreditAdjustDto,
+  ) {
     if (dto.amount === 0) throw AppError.validation('Amount must not be zero');
     await this.credits.adjust(id, dto.amount, dto.reason, user.userId);
     await this.admin.audit(user.userId, 'credits.adjust', 'CreditAccount', id, dto);
@@ -366,10 +431,15 @@ class AdminMonetizationController {
       },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: take + 1,
-      include: { purchase: { select: { id: true, userId: true, kind: true, productId: true, status: true } } },
+      include: {
+        purchase: { select: { id: true, userId: true, kind: true, productId: true, status: true } },
+      },
     });
     const page = keysetPage(rows, take, (r) => r.createdAt);
-    return new Page(page.items.map((p) => AdminMonetizationController.presentPayment(p)), page.nextCursor);
+    return new Page(
+      page.items.map((p) => AdminMonetizationController.presentPayment(p)),
+      page.nextCursor,
+    );
   }
 
   @Roles('ADMIN', 'FINANCE')
@@ -382,14 +452,30 @@ class AdminMonetizationController {
     if (!payment) throw AppError.notFound('Payment');
     return {
       ...AdminMonetizationController.presentPayment(payment),
-      events: payment.events.map((e) => ({ eventId: e.eventId, source: e.source, type: e.type, outcome: e.outcome, receivedAt: e.receivedAt })),
-      refunds: payment.refunds.map((r) => ({ id: r.id, status: apiEnum(r.status), amountMinor: r.amountMinor.toString(), reason: r.reason, createdAt: r.createdAt })),
+      events: payment.events.map((e) => ({
+        eventId: e.eventId,
+        source: e.source,
+        type: e.type,
+        outcome: e.outcome,
+        receivedAt: e.receivedAt,
+      })),
+      refunds: payment.refunds.map((r) => ({
+        id: r.id,
+        status: apiEnum(r.status),
+        amountMinor: r.amountMinor.toString(),
+        reason: r.reason,
+        createdAt: r.createdAt,
+      })),
     };
   }
 
   @Roles('ADMIN', 'FINANCE')
   @Post('payments/:id/refunds')
-  async refund(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string, @Body() dto: RefundDto) {
+  async refund(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RefundDto,
+  ) {
     const refund = await this.payments.refund({
       paymentId: id,
       amountMinor: dto.amountMinor ? BigInt(dto.amountMinor) : undefined,
@@ -397,7 +483,13 @@ class AdminMonetizationController {
       actorId: user.userId,
       overridePolicy: dto.overridePolicy ?? false,
     });
-    await this.admin.audit(user.userId, dto.overridePolicy ? 'payment.refund.override' : 'payment.refund', 'Payment', id, dto);
+    await this.admin.audit(
+      user.userId,
+      dto.overridePolicy ? 'payment.refund.override' : 'payment.refund',
+      'Payment',
+      id,
+      dto,
+    );
     return { id: refund.id, status: apiEnum(refund.status), amountMinor: refund.amountMinor.toString() };
   }
 
@@ -446,7 +538,13 @@ class AdminMonetizationController {
       needsReview: p.needsReview,
       createdAt: p.createdAt,
       succeededAt: p.succeededAt,
-      purchase: { id: p.purchase.id, userId: p.purchase.userId, kind: apiEnum(p.purchase.kind), productId: p.purchase.productId, status: apiEnum(p.purchase.status) },
+      purchase: {
+        id: p.purchase.id,
+        userId: p.purchase.userId,
+        kind: apiEnum(p.purchase.kind),
+        productId: p.purchase.productId,
+        status: apiEnum(p.purchase.status),
+      },
     };
   }
 }

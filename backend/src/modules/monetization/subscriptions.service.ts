@@ -22,10 +22,15 @@ type Tx = Prisma.TransactionClient;
 
 const LIVE: SubscriptionStatus[] = [SubscriptionStatus.ACTIVE, SubscriptionStatus.GRACE_PERIOD];
 
+/** Calendar period in UTC, clamped to month end (Jan 31 + 1 month = Feb 28/29). */
 export function addPeriod(from: Date, period: BillingPeriod): Date {
+  const months = period === BillingPeriod.MONTH ? 1 : 12;
   const next = new Date(from);
-  if (period === BillingPeriod.MONTH) next.setUTCMonth(next.getUTCMonth() + 1);
-  else next.setUTCFullYear(next.getUTCFullYear() + 1);
+  const day = next.getUTCDate();
+  next.setUTCDate(1);
+  next.setUTCMonth(next.getUTCMonth() + months);
+  const lastDay = new Date(Date.UTC(next.getUTCFullYear(), next.getUTCMonth() + 1, 0)).getUTCDate();
+  next.setUTCDate(Math.min(day, lastDay));
   return next;
 }
 
@@ -46,9 +51,17 @@ export class SubscriptionsService {
   ) {}
 
   /** Called inside the fulfillment transaction of a verified payment. */
-  async applyPaidPeriod(tx: Tx, purchase: Purchase, provider: PaymentProviderKey, now = new Date()): Promise<Subscription> {
+  async applyPaidPeriod(
+    tx: Tx,
+    purchase: Purchase,
+    provider: PaymentProviderKey,
+    now = new Date(),
+  ): Promise<Subscription> {
     if (!purchase.planPriceId) throw new Error('Subscription purchase without plan price');
-    const price = await tx.planPrice.findUniqueOrThrow({ where: { id: purchase.planPriceId }, include: { plan: true } });
+    const price = await tx.planPrice.findUniqueOrThrow({
+      where: { id: purchase.planPriceId },
+      include: { plan: true },
+    });
     const current = await tx.subscription.findFirst({
       where: { userId: purchase.userId, businessId: purchase.businessId, status: { in: LIVE } },
       orderBy: { currentPeriodEnd: 'desc' },
@@ -113,8 +126,13 @@ export class SubscriptionsService {
     const subscription = await this.prisma.subscription.findFirst({ where: { id: subscriptionId, userId } });
     if (!subscription) throw AppError.notFound('Subscription');
     if (!LIVE.includes(subscription.status)) throw AppError.invalidState('Subscription is not active');
-    if (subscription.provider === PaymentProviderKey.APPLE || subscription.provider === PaymentProviderKey.GOOGLE) {
-      throw AppError.invalidState('Store subscriptions are cancelled in the App Store / Google Play settings');
+    if (
+      subscription.provider === PaymentProviderKey.APPLE ||
+      subscription.provider === PaymentProviderKey.GOOGLE
+    ) {
+      throw AppError.invalidState(
+        'Store subscriptions are cancelled in the App Store / Google Play settings',
+      );
     }
     const updated = await this.prisma.subscription.update({
       where: { id: subscription.id },
@@ -144,7 +162,9 @@ export class SubscriptionsService {
     return rows.map((s) => SubscriptionsService.present(s));
   }
 
-  static present(s: Subscription & { plan: { id: string; title: string } & Parameters<typeof presentEntitlements>[0] }) {
+  static present(
+    s: Subscription & { plan: { id: string; title: string } & Parameters<typeof presentEntitlements>[0] },
+  ) {
     return {
       id: s.id,
       plan: { id: s.plan.id, title: s.plan.title, entitlements: presentEntitlements(s.plan) },
@@ -178,7 +198,10 @@ export class SubscriptionsService {
       const { count } = await this.prisma.subscription.updateMany({
         where: { id: s.id, status: s.status },
         data: toGrace
-          ? { status: SubscriptionStatus.GRACE_PERIOD, graceUntil: new Date(s.currentPeriodEnd.getTime() + subscriptionGraceDays * 86400_000) }
+          ? {
+              status: SubscriptionStatus.GRACE_PERIOD,
+              graceUntil: new Date(s.currentPeriodEnd.getTime() + subscriptionGraceDays * 86400_000),
+            }
           : { status: SubscriptionStatus.EXPIRED },
       });
       if (!count) continue;
@@ -201,7 +224,11 @@ export class SubscriptionsService {
     }
     const soon = new Date(now.getTime() + subscriptionExpiringDays * 86400_000);
     const expiring = await this.prisma.subscription.findMany({
-      where: { status: SubscriptionStatus.ACTIVE, currentPeriodEnd: { gt: now, lte: soon }, expiringNotifiedAt: null },
+      where: {
+        status: SubscriptionStatus.ACTIVE,
+        currentPeriodEnd: { gt: now, lte: soon },
+        expiringNotifiedAt: null,
+      },
       take: 500,
     });
     let notified = 0;

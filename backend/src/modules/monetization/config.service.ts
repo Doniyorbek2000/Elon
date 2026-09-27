@@ -69,7 +69,10 @@ export class MonetizationConfig {
 
   private async load() {
     if (this.cache && Date.now() - this.cache.at < TTL_MS) return this.cache;
-    const [flags, settings] = await Promise.all([this.prisma.featureFlag.findMany(), this.prisma.appSetting.findMany()]);
+    const [flags, settings] = await Promise.all([
+      this.prisma.featureFlag.findMany(),
+      this.prisma.appSetting.findMany(),
+    ]);
     this.cache = {
       at: Date.now(),
       flags: new Map(flags.map((f) => [f.key, f.enabled])),
@@ -98,7 +101,7 @@ export class MonetizationConfig {
     const { settings } = await this.load();
     const stored = settings.get(key);
     const defaults = SETTING_DEFAULTS[key];
-    return stored && typeof stored === 'object' ? { ...defaults, ...(stored as object) } : defaults;
+    return stored && typeof stored === 'object' ? { ...defaults, ...stored } : defaults;
   }
 
   async setFlag(key: FlagKey, enabled: boolean, actorId: string, description?: string) {

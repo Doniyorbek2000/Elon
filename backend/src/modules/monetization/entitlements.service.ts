@@ -58,9 +58,22 @@ export class EntitlementService {
     if (userIds.length) await this.redis.client.del(...userIds.map((id) => this.key(id)));
   }
 
+  /** After a plan edit: drop every cached entitlement (rare admin action). */
+  async invalidateAll(): Promise<void> {
+    let cursor = '0';
+    do {
+      const [next, keys] = await this.redis.client.scan(cursor, 'MATCH', 'ent:*', 'COUNT', 500);
+      if (keys.length) await this.redis.client.del(...keys);
+      cursor = next;
+    } while (cursor !== '0');
+  }
+
   /** Invalidate every member of a business (plan is shared). */
   async invalidateBusiness(businessId: string): Promise<void> {
-    const members = await this.prisma.businessMember.findMany({ where: { businessId }, select: { userId: true } });
+    const members = await this.prisma.businessMember.findMany({
+      where: { businessId },
+      select: { userId: true },
+    });
     await this.invalidate(members.map((m) => m.userId));
   }
 
@@ -71,7 +84,10 @@ export class EntitlementService {
       if (!parsed.until || new Date(parsed.until) > new Date()) return parsed;
     }
     const now = new Date();
-    const memberships = await this.prisma.businessMember.findMany({ where: { userId }, select: { businessId: true } });
+    const memberships = await this.prisma.businessMember.findMany({
+      where: { userId },
+      select: { businessId: true },
+    });
     const businessIds = memberships.map((m) => m.businessId);
     const subscription = await this.prisma.subscription.findFirst({
       where: {
@@ -119,7 +135,8 @@ export class EntitlementService {
           ...(excludeListingId ? { id: { not: excludeListingId } } : {}),
         },
       });
-      if (active >= plan.activeListingLimit) throw AppError.limitReached('activeListings', plan.activeListingLimit);
+      if (active >= plan.activeListingLimit)
+        throw AppError.limitReached('activeListings', plan.activeListingLimit);
     }
   }
 
@@ -128,8 +145,11 @@ export class EntitlementService {
     if (photoCount > plan.photoLimit) throw AppError.limitReached('photos', plan.photoLimit);
     if (plan.monthlyListingLimit != null) {
       const since = new Date(Date.now() - 30 * 24 * 3600 * 1000);
-      const created = await this.prisma.listing.count({ where: { sellerId: userId, createdAt: { gte: since } } });
-      if (created >= plan.monthlyListingLimit) throw AppError.limitReached('monthlyListings', plan.monthlyListingLimit);
+      const created = await this.prisma.listing.count({
+        where: { sellerId: userId, createdAt: { gte: since } },
+      });
+      if (created >= plan.monthlyListingLimit)
+        throw AppError.limitReached('monthlyListings', plan.monthlyListingLimit);
     }
   }
 

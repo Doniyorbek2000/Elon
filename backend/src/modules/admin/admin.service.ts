@@ -19,7 +19,10 @@ export function validateSetting(key: string, value: Record<string, unknown>): Pr
         throw AppError.validation(`${field} must be an integer 0..720`);
       }
     } else if (Array.isArray(fallback)) {
-      if (!Array.isArray(next) || next.some((v) => typeof v !== 'string' || !PROVIDERS.includes(v.toUpperCase()))) {
+      if (
+        !Array.isArray(next) ||
+        next.some((v) => typeof v !== 'string' || !PROVIDERS.includes(v.toUpperCase()))
+      ) {
         throw AppError.validation(`${field} must list known providers`);
       }
     }
@@ -49,7 +52,12 @@ export class AdminService {
         action,
         entity,
         entityId,
-        data: data === undefined ? undefined : (JSON.parse(JSON.stringify(data, (_k, v: unknown) => (typeof v === 'bigint' ? v.toString() : v))) as Prisma.InputJsonValue),
+        data:
+          data === undefined
+            ? undefined
+            : (JSON.parse(
+                JSON.stringify(data, (_k, v: unknown) => (typeof v === 'bigint' ? v.toString() : v)),
+              ) as Prisma.InputJsonValue),
       },
     });
   }
@@ -62,7 +70,8 @@ export class AdminService {
    * Credit- and coupon-settled purchases move no money and are counted separately.
    */
   async revenue(from: Date, to: Date, groupBy: 'day' | 'week' | 'month') {
-    if (to <= from || to.getTime() - from.getTime() > 400 * 86400_000) throw AppError.validation('Invalid range');
+    if (to <= from || to.getTime() - from.getTime() > 400 * 86400_000)
+      throw AppError.validation('Invalid range');
     const money = Prisma.sql`p."provider" NOT IN ('CREDITS', 'FREE')`;
     const succeeded = Prisma.sql`p."status" IN ('SUCCEEDED', 'REFUNDED', 'PARTIALLY_REFUNDED') AND p."succeededAt" >= ${from} AND p."succeededAt" < ${to}`;
     const unit = Prisma.raw(`'${groupBy}'`);
@@ -72,10 +81,14 @@ export class AdminService {
                SUM(p."amountMinor")::bigint AS gross_minor, COUNT(*)::bigint AS payments
         FROM "Payment" p WHERE ${money} AND ${succeeded}
         GROUP BY 1, 2 ORDER BY 1`,
-      this.prisma.$queryRaw<Array<{ provider: string; currency: string; gross_minor: bigint; payments: bigint }>>`
+      this.prisma.$queryRaw<
+        Array<{ provider: string; currency: string; gross_minor: bigint; payments: bigint }>
+      >`
         SELECT p."provider"::text AS provider, p."currency"::text AS currency, SUM(p."amountMinor")::bigint AS gross_minor, COUNT(*)::bigint AS payments
         FROM "Payment" p WHERE ${money} AND ${succeeded} GROUP BY 1, 2 ORDER BY 3 DESC`,
-      this.prisma.$queryRaw<Array<{ product: string; currency: string; gross_minor: bigint; payments: bigint }>>`
+      this.prisma.$queryRaw<
+        Array<{ product: string; currency: string; gross_minor: bigint; payments: bigint }>
+      >`
         SELECT COALESCE(pp."kind"::text, 'SUBSCRIPTION:' || pl."planId") AS product, p."currency"::text AS currency,
                SUM(p."amountMinor")::bigint AS gross_minor, COUNT(*)::bigint AS payments
         FROM "Payment" p JOIN "Purchase" pu ON pu."id" = p."purchaseId"
@@ -97,8 +110,12 @@ export class AdminService {
     ]);
     const currencies = new Set([...series.map((r) => r.currency), ...refunds.map((r) => r.currency)]);
     const totals = [...currencies].map((currency) => {
-      const gross = series.filter((r) => r.currency === currency).reduce((sum, r) => sum + BigInt(r.gross_minor), 0n);
-      const refunded = refunds.filter((r) => r.currency === currency).reduce((sum, r) => sum + BigInt(r.refunded_minor), 0n);
+      const gross = series
+        .filter((r) => r.currency === currency)
+        .reduce((sum, r) => sum + BigInt(r.gross_minor), 0n);
+      const refunded = refunds
+        .filter((r) => r.currency === currency)
+        .reduce((sum, r) => sum + BigInt(r.refunded_minor), 0n);
       return {
         currency: currency.toLowerCase(),
         grossPaymentVolumeMinor: gross.toString(),
@@ -126,8 +143,18 @@ export class AdminService {
         grossPaymentVolumeMinor: BigInt(r.gross_minor).toString(),
         payments: Number(r.payments),
       })),
-      byProvider: byProvider.map((r) => ({ provider: r.provider.toLowerCase(), currency: r.currency.toLowerCase(), grossPaymentVolumeMinor: BigInt(r.gross_minor).toString(), payments: Number(r.payments) })),
-      byProduct: byKind.map((r) => ({ product: r.product, currency: r.currency.toLowerCase(), grossPaymentVolumeMinor: BigInt(r.gross_minor).toString(), payments: Number(r.payments) })),
+      byProvider: byProvider.map((r) => ({
+        provider: r.provider.toLowerCase(),
+        currency: r.currency.toLowerCase(),
+        grossPaymentVolumeMinor: BigInt(r.gross_minor).toString(),
+        payments: Number(r.payments),
+      })),
+      byProduct: byKind.map((r) => ({
+        product: r.product,
+        currency: r.currency.toLowerCase(),
+        grossPaymentVolumeMinor: BigInt(r.gross_minor).toString(),
+        payments: Number(r.payments),
+      })),
       note: 'Gross/net payment volume before provider or store fees and taxes; not profit.',
     };
   }

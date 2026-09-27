@@ -57,20 +57,34 @@ export class CheckoutService {
   /** Providers the client may use for this platform, per configured routes. */
   async routes(platform: string): Promise<PaymentProviderKey[]> {
     const routes = await this.config.setting('checkoutRoutes');
-    const allowed = new Set((routes[platform as keyof typeof routes] ?? []).map((k) => k.toUpperCase() as PaymentProviderKey));
+    const allowed = new Set(
+      (routes[platform as keyof typeof routes] ?? []).map((k) => k.toUpperCase() as PaymentProviderKey),
+    );
     const devAllowed = env().NODE_ENV !== 'production';
     const configured = this.registry.configuredKeys();
     return configured.filter((key) => allowed.has(key) || (key === PaymentProviderKey.DEV && devAllowed));
   }
 
   /** Resolves what is bought and its *server* price. Ownership is checked here. */
-  private async price(user: AuthUser, input: { productId?: string; planPriceId?: string; targetId?: string }): Promise<Priced> {
+  private async price(
+    user: AuthUser,
+    input: { productId?: string; planPriceId?: string; targetId?: string },
+  ): Promise<Priced> {
     if (!(await this.config.enabled('monetization'))) throw AppError.featureDisabled('monetization');
-    if (!!input.productId === !!input.planPriceId) throw AppError.validation('Choose exactly one product or plan');
+    if (!!input.productId === !!input.planPriceId)
+      throw AppError.validation('Choose exactly one product or plan');
     if (input.planPriceId) {
       const planPrice = await this.catalog.sellablePlanPrice(input.planPriceId);
-      if (!planPrice) throw new AppError('PRICE_UNAVAILABLE', 'This plan is not available', HttpStatus.UNPROCESSABLE_ENTITY);
-      const business = await this.prisma.business.findUnique({ where: { ownerId: user.userId }, select: { id: true } });
+      if (!planPrice)
+        throw new AppError(
+          'PRICE_UNAVAILABLE',
+          'This plan is not available',
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      const business = await this.prisma.business.findUnique({
+        where: { ownerId: user.userId },
+        select: { id: true },
+      });
       return {
         kind: PurchaseKind.SUBSCRIPTION,
         planPrice,
@@ -80,14 +94,20 @@ export class CheckoutService {
       };
     }
     const product = await this.catalog.sellableProduct(input.productId!);
-    if (!product) throw new AppError('PRICE_UNAVAILABLE', 'This product is not available', HttpStatus.UNPROCESSABLE_ENTITY);
+    if (!product)
+      throw new AppError(
+        'PRICE_UNAVAILABLE',
+        'This product is not available',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
     if (!input.targetId) throw AppError.validation('targetId is required', { field: 'targetId' });
     if (product.kind === 'AD_CAMPAIGN') {
       const campaign = await this.prisma.adCampaign.findFirst({
         where: { id: input.targetId, business: { members: { some: { userId: user.userId } } } },
       });
       if (!campaign) throw AppError.notFound('Campaign');
-      if (campaign.status !== 'DRAFT' && campaign.status !== 'AWAITING_PAYMENT') throw AppError.invalidState('Campaign is already paid');
+      if (campaign.status !== 'DRAFT' && campaign.status !== 'AWAITING_PAYMENT')
+        throw AppError.invalidState('Campaign is already paid');
     } else {
       const info = await this.promotions.targetInfo(product.target, input.targetId);
       // Someone else's content is indistinguishable from missing content.
@@ -112,7 +132,7 @@ export class CheckoutService {
       await this.limiter.consume(`coupon:${user.userId}`, 20, 3600);
       discountMinor = (
         await this.coupons.evaluate(
-          this.prisma as unknown as Prisma.TransactionClient,
+          this.prisma,
           dto.couponCode,
           user.userId,
           { productId: priced.product?.id, planId: priced.planPrice?.planId },
@@ -122,7 +142,8 @@ export class CheckoutService {
         )
       ).discountMinor;
     }
-    const balance = (await this.prisma.creditAccount.findUnique({ where: { userId: user.userId } }))?.balance ?? 0;
+    const balance =
+      (await this.prisma.creditAccount.findUnique({ where: { userId: user.userId } }))?.balance ?? 0;
     const creditCost = priced.product?.creditCost ?? null;
     const providers = (await this.routes(dto.platform)).map((k) => apiEnum(k));
     return {
@@ -133,7 +154,8 @@ export class CheckoutService {
       credits: {
         cost: creditCost,
         balance,
-        usable: creditCost != null && balance >= creditCost && (await this.config.enabled('promotionCredits')),
+        usable:
+          creditCost != null && balance >= creditCost && (await this.config.enabled('promotionCredits')),
       },
     };
   }
@@ -149,19 +171,33 @@ export class CheckoutService {
     const providerKey = dto.provider.toUpperCase() as PaymentProviderKey;
     if (providerKey === PaymentProviderKey.CREDITS) {
       if (!(await this.config.enabled('promotionCredits')) || priced.product?.creditCost == null) {
-        throw new AppError('PAYMENT_ROUTE_UNAVAILABLE', 'Credits cannot be used for this product', HttpStatus.UNPROCESSABLE_ENTITY);
+        throw new AppError(
+          'PAYMENT_ROUTE_UNAVAILABLE',
+          'Credits cannot be used for this product',
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
       }
     } else if (providerKey !== PaymentProviderKey.FREE) {
       const allowed = await this.routes(dto.platform);
       if (!allowed.includes(providerKey)) {
         const provider = this.registry.get(providerKey);
         throw provider.configured()
-          ? new AppError('PAYMENT_ROUTE_UNAVAILABLE', 'This payment method is not available here', HttpStatus.UNPROCESSABLE_ENTITY, {
-              providers: allowed.map((k) => apiEnum(k)),
-            })
-          : new AppError('PROVIDER_NOT_CONFIGURED', 'This payment method is not available', HttpStatus.SERVICE_UNAVAILABLE, {
-              provider: dto.provider,
-            });
+          ? new AppError(
+              'PAYMENT_ROUTE_UNAVAILABLE',
+              'This payment method is not available here',
+              HttpStatus.UNPROCESSABLE_ENTITY,
+              {
+                providers: allowed.map((k) => apiEnum(k)),
+              },
+            )
+          : new AppError(
+              'PROVIDER_NOT_CONFIGURED',
+              'This payment method is not available',
+              HttpStatus.SERVICE_UNAVAILABLE,
+              {
+                provider: dto.provider,
+              },
+            );
       }
     }
 
@@ -187,7 +223,11 @@ export class CheckoutService {
         const credits = providerKey === PaymentProviderKey.CREDITS;
         const total = credits ? 0n : priced.listAmountMinor - discountMinor;
         if (providerKey === PaymentProviderKey.FREE && total !== 0n) {
-          throw new AppError('PAYMENT_ROUTE_UNAVAILABLE', 'Payment is required', HttpStatus.UNPROCESSABLE_ENTITY);
+          throw new AppError(
+            'PAYMENT_ROUTE_UNAVAILABLE',
+            'Payment is required',
+            HttpStatus.UNPROCESSABLE_ENTITY,
+          );
         }
         const settleNow = credits || total === 0n;
         const purchase = await tx.purchase.create({
@@ -209,7 +249,10 @@ export class CheckoutService {
             idempotencyKey: dto.idempotencyKey,
           },
         });
-        if (couponId) await tx.couponRedemption.create({ data: { couponId, userId: user.userId, purchaseId: purchase.id } });
+        if (couponId)
+          await tx.couponRedemption.create({
+            data: { couponId, userId: user.userId, purchaseId: purchase.id },
+          });
         if (priced.product?.kind === 'AD_CAMPAIGN') {
           const { count } = await tx.adCampaign.updateMany({
             where: { id: priced.targetId!, status: { in: ['DRAFT', 'AWAITING_PAYMENT'] } },
@@ -220,15 +263,25 @@ export class CheckoutService {
         const payment = await tx.payment.create({
           data: {
             purchaseId: purchase.id,
-            provider: settleNow ? (credits ? PaymentProviderKey.CREDITS : PaymentProviderKey.FREE) : providerKey,
+            provider: settleNow
+              ? credits
+                ? PaymentProviderKey.CREDITS
+                : PaymentProviderKey.FREE
+              : providerKey,
             amountMinor: total,
             currency: priced.currency,
           },
         });
         if (credits) {
-          await this.credits.consume(tx, user.userId, purchase.creditsUsed, `Promotion ${priced.product!.id}`, {
-            purchaseId: purchase.id,
-          });
+          await this.credits.consume(
+            tx,
+            user.userId,
+            purchase.creditsUsed,
+            `Promotion ${priced.product!.id}`,
+            {
+              purchaseId: purchase.id,
+            },
+          );
         }
         if (settleNow) await this.payments.settleInternally(tx, payment, purchase, effects);
         return { purchase, paymentId: payment.id, settled: settleNow };
@@ -264,7 +317,10 @@ export class CheckoutService {
     if (!same) throw AppError.conflict('Idempotency key was used for a different purchase');
     let action: CheckoutAction = { type: 'none' };
     if (purchase.status === PurchaseStatus.AWAITING_PAYMENT) {
-      const payment = await this.prisma.payment.findFirst({ where: { purchaseId: purchase.id }, orderBy: { createdAt: 'desc' } });
+      const payment = await this.prisma.payment.findFirst({
+        where: { purchaseId: purchase.id },
+        orderBy: { createdAt: 'desc' },
+      });
       if (payment && (payment.status === PaymentStatus.PENDING || payment.status === PaymentStatus.CREATED)) {
         const provider = this.registry.get(payment.provider);
         if (provider.configured()) action = (await provider.createCheckout(payment, purchase)).action;
@@ -281,10 +337,17 @@ export class CheckoutService {
       where: { userId, ...keysetWhere(cursor) },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: take + 1,
-      include: { product: true, planPrice: { include: { plan: true } }, payments: { orderBy: { createdAt: 'desc' }, take: 1 } },
+      include: {
+        product: true,
+        planPrice: { include: { plan: true } },
+        payments: { orderBy: { createdAt: 'desc' }, take: 1 },
+      },
     });
     const page = keysetPage(rows, take, (r) => r.createdAt);
-    return new Page(page.items.map((p) => CheckoutService.presentPurchase(p)), page.nextCursor);
+    return new Page(
+      page.items.map((p) => CheckoutService.presentPurchase(p)),
+      page.nextCursor,
+    );
   }
 
   async present(purchaseId: string, userId: string, action?: CheckoutAction) {
@@ -298,9 +361,10 @@ export class CheckoutService {
       },
     });
     if (!purchase) throw AppError.notFound('Purchase');
-    const subscription = purchase.kind === PurchaseKind.SUBSCRIPTION
-      ? await this.prisma.subscription.findFirst({ where: { lastPurchaseId: purchase.id } })
-      : null;
+    const subscription =
+      purchase.kind === PurchaseKind.SUBSCRIPTION
+        ? await this.prisma.subscription.findFirst({ where: { lastPurchaseId: purchase.id } })
+        : null;
     return {
       ...CheckoutService.presentPurchase(purchase),
       payments: purchase.payments.map((p) => ({
@@ -311,7 +375,12 @@ export class CheckoutService {
         refunded: presentAmount(p.refundedMinor, p.currency),
         createdAt: p.createdAt,
         succeededAt: p.succeededAt,
-        refunds: p.refunds.map((r) => ({ id: r.id, status: apiEnum(r.status), amount: presentAmount(r.amountMinor, p.currency), createdAt: r.createdAt })),
+        refunds: p.refunds.map((r) => ({
+          id: r.id,
+          status: apiEnum(r.status),
+          amount: presentAmount(r.amountMinor, p.currency),
+          createdAt: r.createdAt,
+        })),
       })),
       activation: purchase.activation
         ? {
@@ -322,19 +391,28 @@ export class CheckoutService {
           }
         : null,
       subscription: subscription
-        ? { id: subscription.id, status: apiEnum(subscription.status), currentPeriodEnd: subscription.currentPeriodEnd }
+        ? {
+            id: subscription.id,
+            status: apiEnum(subscription.status),
+            currentPeriodEnd: subscription.currentPeriodEnd,
+          }
         : null,
       ...(action ? { action } : {}),
     };
   }
 
-  static presentPurchase(p: Prisma.PurchaseGetPayload<{ include: { product: true; planPrice: { include: { plan: true } }; payments: true } }>) {
+  static presentPurchase(
+    p: Prisma.PurchaseGetPayload<{
+      include: { product: true; planPrice: { include: { plan: true } }; payments: true };
+    }>,
+  ) {
     const payment = p.payments[0];
     return {
       id: p.id,
       kind: apiEnum(p.kind),
       status: apiEnum(p.status),
-      title: p.product?.title ?? (p.planPrice ? `${p.planPrice.plan.title} (${apiEnum(p.planPrice.period)})` : ''),
+      title:
+        p.product?.title ?? (p.planPrice ? `${p.planPrice.plan.title} (${apiEnum(p.planPrice.period)})` : ''),
       productId: p.productId,
       planId: p.planPrice?.planId ?? null,
       target: p.target ? apiEnum(p.target) : null,
@@ -358,16 +436,28 @@ export class CheckoutService {
   async cancel(userId: string, purchaseId: string) {
     const purchase = await this.prisma.purchase.findFirst({ where: { id: purchaseId, userId } });
     if (!purchase) throw AppError.notFound('Purchase');
-    if (purchase.status !== PurchaseStatus.AWAITING_PAYMENT) throw AppError.invalidState('Purchase cannot be cancelled');
-    const payment = await this.prisma.payment.findFirst({ where: { purchaseId }, orderBy: { createdAt: 'desc' } });
+    if (purchase.status !== PurchaseStatus.AWAITING_PAYMENT)
+      throw AppError.invalidState('Purchase cannot be cancelled');
+    const payment = await this.prisma.payment.findFirst({
+      where: { purchaseId },
+      orderBy: { createdAt: 'desc' },
+    });
     if (payment) {
       await this.payments.applyEvent(
         payment.provider,
-        { eventId: `user-cancel:${payment.id}`, paymentId: payment.id, type: 'cancelled', failureCode: 'user_cancelled' },
+        {
+          eventId: `user-cancel:${payment.id}`,
+          paymentId: payment.id,
+          type: 'cancelled',
+          failureCode: 'user_cancelled',
+        },
         'internal',
       );
     }
-    await this.prisma.couponRedemption.updateMany({ where: { purchaseId, status: RedemptionStatus.RESERVED }, data: { status: RedemptionStatus.RELEASED } });
+    await this.prisma.couponRedemption.updateMany({
+      where: { purchaseId, status: RedemptionStatus.RESERVED },
+      data: { status: RedemptionStatus.RELEASED },
+    });
     return this.present(purchaseId, userId);
   }
 }

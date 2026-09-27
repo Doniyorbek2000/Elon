@@ -29,7 +29,8 @@ export async function createApp(options: { logger?: boolean } = {}): Promise<INe
       limit: '256kb',
       // Payment webhooks are verified against the exact bytes received.
       verify: (req, _res, buf) => {
-        if ((req as { url?: string }).url?.includes('/payments/webhooks/')) (req as { rawBody?: Buffer }).rawBody = Buffer.from(buf);
+        if ((req as { url?: string }).url?.includes('/payments/webhooks/'))
+          (req as { rawBody?: Buffer }).rawBody = Buffer.from(buf);
       },
     }),
   );

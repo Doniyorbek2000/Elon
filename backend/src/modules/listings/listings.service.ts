@@ -127,7 +127,10 @@ export class ListingsService {
    * above the organic feed. Limited slots, VIP first, fair hourly rotation.
    */
   async promoted(query: FeedQuery, viewer?: AuthUser) {
-    const [top, vip] = await Promise.all([this.config.enabled('listingTop'), this.config.enabled('listingVip')]);
+    const [top, vip] = await Promise.all([
+      this.config.enabled('listingTop'),
+      this.config.enabled('listingVip'),
+    ]);
     if (!top && !vip) return [];
     const { promotedSlots } = await this.config.setting('ranking');
     const { sql } = buildFeedQuery(
@@ -145,10 +148,15 @@ export class ListingsService {
     if (!(await this.config.enabled('featuredListings'))) return [];
     const { featuredSlots } = await this.config.setting('ranking');
     const placement = dbEnum(query.placement) as Placement;
-    const ids = await this.promotions.featuredIds('LISTING_FEATURED', placement, {
-      regionId: query.region,
-      categoryIds: query.category ? await this.categories.subtreeIds(query.category) : undefined,
-    }, featuredSlots);
+    const ids = await this.promotions.featuredIds(
+      'LISTING_FEATURED',
+      placement,
+      {
+        regionId: query.region,
+        categoryIds: query.category ? await this.categories.subtreeIds(query.category) : undefined,
+      },
+      featuredSlots,
+    );
     if (!ids.length) return [];
     const { sql } = buildFeedQuery(
       { onlyIds: ids, viewerId: viewer?.userId },

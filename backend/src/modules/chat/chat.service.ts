@@ -114,7 +114,8 @@ export class ChatService {
             participants: { create: [{ userId: user.userId }, { userId: peerId }] },
           },
         });
-        if ('listingId' in context && context.listingId) await this.analytics.bump(context.listingId, 'chats');
+        if ('listingId' in context && context.listingId)
+          await this.analytics.bump(context.listingId, 'chats');
       } catch (error) {
         // Concurrent open by the other side: the unique key already exists.
         if (!(error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002')) throw error;
