@@ -43,12 +43,10 @@ class RemoteProfilesRepository implements ProfilesRepository {
 }
 
 final profilesRepositoryProvider = Provider<ProfilesRepository>((ref) {
-  if (ref.watch(appConfigProvider).useDemoData)
-    return DemoProfilesRepository(ref.watch(demoDatabaseProvider));
+  if (ref.watch(appConfigProvider).useDemoData) return DemoProfilesRepository(ref.watch(demoDatabaseProvider));
   return RemoteProfilesRepository(ref.watch(apiClientProvider));
 });
 
-final publicProfileProvider = FutureProvider.autoDispose
-    .family<PublicProfile, String>((ref, userId) {
-      return ref.watch(profilesRepositoryProvider).getProfile(userId);
-    });
+final publicProfileProvider = FutureProvider.autoDispose.family<PublicProfile, String>((ref, userId) {
+  return ref.watch(profilesRepositoryProvider).getProfile(userId);
+});

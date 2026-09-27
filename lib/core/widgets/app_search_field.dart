@@ -49,27 +49,18 @@ class AppSearchField extends StatelessWidget {
                 borderRadius: AppRadii.mdAll,
                 onTap: onTap,
                 child: Container(
-                  constraints: const BoxConstraints(
-                    minHeight: AppTouch.inputHeight,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.lg,
-                  ),
+                  constraints: const BoxConstraints(minHeight: AppTouch.inputHeight),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.search_rounded,
-                        color: palette.textTertiary,
-                        size: AppIconSize.md,
-                      ),
+                      Icon(Icons.search_rounded, color: palette.textTertiary, size: AppIconSize.md),
                       const SizedBox(width: AppSpacing.md),
                       Expanded(
                         child: Text(
                           hint,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: palette.textTertiary),
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: palette.textTertiary),
                         ),
                       ),
                     ],
@@ -82,8 +73,7 @@ class AppSearchField extends StatelessWidget {
         ? _input(showClear: false)
         : ValueListenableBuilder<TextEditingValue>(
             valueListenable: controller!,
-            builder: (context, value, _) =>
-                _input(showClear: value.text.isNotEmpty),
+            builder: (context, value, _) => _input(showClear: value.text.isNotEmpty),
           );
 
     if (onFilterTap == null) return field;
@@ -94,9 +84,7 @@ class AppSearchField extends StatelessWidget {
         CountBadge(
           count: activeFilters,
           child: Material(
-            color: activeFilters > 0
-                ? palette.primarySoft
-                : palette.surfaceMuted,
+            color: activeFilters > 0 ? palette.primarySoft : palette.surfaceMuted,
             borderRadius: AppRadii.mdAll,
             child: InkWell(
               borderRadius: AppRadii.mdAll,
@@ -106,9 +94,7 @@ class AppSearchField extends StatelessWidget {
                 child: Icon(
                   Icons.tune_rounded,
                   semanticLabel: 'Filtrlar',
-                  color: activeFilters > 0
-                      ? palette.primary
-                      : palette.textSecondary,
+                  color: activeFilters > 0 ? palette.primary : palette.textSecondary,
                 ),
               ),
             ),

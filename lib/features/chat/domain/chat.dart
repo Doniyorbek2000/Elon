@@ -38,12 +38,8 @@ class ConversationContext {
       title: json['title'] as String? ?? '',
       subtitle:
           json['subtitle'] as String? ??
-          (price == null
-              ? null
-              : '${price['amount']} ${price['currency'] == 'usd' ? 'y.e.' : 'so‘m'}'),
-      image: json['image'] == null
-          ? null
-          : MediaImage.fromJson(json['image'] as Map<String, dynamic>),
+          (price == null ? null : '${price['amount']} ${price['currency'] == 'usd' ? 'y.e.' : 'so‘m'}'),
+      image: json['image'] == null ? null : MediaImage.fromJson(json['image'] as Map<String, dynamic>),
     );
   }
 }
@@ -71,18 +67,10 @@ class Conversation {
   factory Conversation.fromJson(Map<String, dynamic> json) => Conversation(
     id: json['id'] as String,
     peer: json['peer'] == null
-        ? PublicProfile(
-            id: '',
-            name: 'O‘chirilgan foydalanuvchi',
-            memberSince: DateTime.fromMillisecondsSinceEpoch(0),
-          )
+        ? PublicProfile(id: '', name: 'O‘chirilgan foydalanuvchi', memberSince: DateTime.fromMillisecondsSinceEpoch(0))
         : PublicProfile.fromJson(json['peer'] as Map<String, dynamic>),
-    updatedAt: DateTime.parse(
-      (json['lastMessageAt'] ?? json['updatedAt']) as String,
-    ),
-    context: ConversationContext.fromJson(
-      json['context'] as Map<String, dynamic>?,
-    ),
+    updatedAt: DateTime.parse((json['lastMessageAt'] ?? json['updatedAt']) as String),
+    context: ConversationContext.fromJson(json['context'] as Map<String, dynamic>?),
     lastMessagePreview: json['lastMessagePreview'] as String?,
     unreadCount: (json['unreadCount'] as num?)?.toInt() ?? 0,
     isBlocked: json['isBlocked'] as bool? ?? false,
@@ -139,14 +127,9 @@ class ChatMessage {
         _ => MessageKind.text,
       },
       text: json['text'] as String? ?? shared?['title'] as String?,
-      image: images.isEmpty
-          ? null
-          : MediaImage.fromJson(images.first as Map<String, dynamic>),
+      image: images.isEmpty ? null : MediaImage.fromJson(images.first as Map<String, dynamic>),
       sharedRefId: shared?['id'] as String?,
-      delivery: DeliveryState.values.firstWhere(
-        (d) => d.name == json['delivery'],
-        orElse: () => DeliveryState.sent,
-      ),
+      delivery: DeliveryState.values.firstWhere((d) => d.name == json['delivery'], orElse: () => DeliveryState.sent),
       clientId: json['clientId'] as String?,
     );
   }
@@ -198,33 +181,21 @@ final class MessageReceived extends ChatEvent {
 }
 
 final class TypingChanged extends ChatEvent {
-  const TypingChanged(
-    super.conversationId, {
-    required this.userId,
-    required this.isTyping,
-  });
+  const TypingChanged(super.conversationId, {required this.userId, required this.isTyping});
 
   final String userId;
   final bool isTyping;
 }
 
 final class DeliveryChanged extends ChatEvent {
-  const DeliveryChanged(
-    super.conversationId, {
-    required this.messageIds,
-    required this.state,
-  });
+  const DeliveryChanged(super.conversationId, {required this.messageIds, required this.state});
 
   final List<String> messageIds;
   final DeliveryState state;
 }
 
 final class PresenceChanged extends ChatEvent {
-  const PresenceChanged(
-    super.conversationId, {
-    required this.userId,
-    required this.isOnline,
-  });
+  const PresenceChanged(super.conversationId, {required this.userId, required this.isOnline});
 
   final String userId;
   final bool isOnline;
@@ -246,10 +217,7 @@ abstract interface class ChatRepository {
   Future<Conversation> getConversation(String conversationId);
 
   /// Returns the existing thread for (peer, context) or creates one.
-  Future<Conversation> openConversation({
-    required PublicProfile peer,
-    ConversationContext? context,
-  });
+  Future<Conversation> openConversation({required PublicProfile peer, ConversationContext? context});
   Future<void> sendText(String conversationId, String text);
   Future<void> sendImage(String conversationId, MediaImage image);
   Future<void> markRead(String conversationId);

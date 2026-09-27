@@ -35,9 +35,7 @@ final listingRepositoryProvider = Provider<ListingRepository>((ref) {
 });
 
 /// Bumped after mutations (publish, status change) so feeds refetch.
-final listingsRevisionProvider = NotifierProvider<ListingsRevision, int>(
-  ListingsRevision.new,
-);
+final listingsRevisionProvider = NotifierProvider<ListingsRevision, int>(ListingsRevision.new);
 
 class ListingsRevision extends Notifier<int> {
   @override
@@ -48,9 +46,7 @@ class ListingsRevision extends Notifier<int> {
 
 /// Infinite, pull-to-refreshable feed for any [ListingQuery].
 final listingFeedProvider = AsyncNotifierProvider.autoDispose
-    .family<ListingFeedController, PagedState<Listing>, ListingQuery>(
-      ListingFeedController.new,
-    );
+    .family<ListingFeedController, PagedState<Listing>, ListingQuery>(ListingFeedController.new);
 
 class ListingFeedController extends AsyncNotifier<PagedState<Listing>> {
   ListingFeedController(this.query);
@@ -74,11 +70,7 @@ class ListingFeedController extends AsyncNotifier<PagedState<Listing>> {
 
   Future<void> loadMore() async {
     final current = state.value;
-    if (current == null ||
-        !current.hasMore ||
-        current.isLoadingMore ||
-        state.isLoading)
-      return;
+    if (current == null || !current.hasMore || current.isLoadingMore || state.isLoading) return;
     state = AsyncData(current.copyWith(isLoadingMore: true, clearError: true));
     try {
       final page = await _repository.search(query, cursor: current.nextCursor);
@@ -86,28 +78,21 @@ class ListingFeedController extends AsyncNotifier<PagedState<Listing>> {
       state = AsyncData(current.appending(page));
     } on Object catch (error) {
       if (!ref.mounted) return;
-      state = AsyncData(
-        current.copyWith(
-          isLoadingMore: false,
-          loadMoreError: error.asFailure(),
-        ),
-      );
+      state = AsyncData(current.copyWith(isLoadingMore: false, loadMoreError: error.asFailure()));
     }
   }
 }
 
-final listingDetailProvider = FutureProvider.autoDispose
-    .family<Listing, String>((ref, id) async {
-      final repository = ref.watch(listingRepositoryProvider);
-      final listing = await repository.getById(id);
-      await repository.recordView(id);
-      return listing;
-    });
+final listingDetailProvider = FutureProvider.autoDispose.family<Listing, String>((ref, id) async {
+  final repository = ref.watch(listingRepositoryProvider);
+  final listing = await repository.getById(id);
+  await repository.recordView(id);
+  return listing;
+});
 
-final similarListingsProvider = FutureProvider.autoDispose
-    .family<List<Listing>, Listing>((ref, listing) {
-      return ref.watch(listingRepositoryProvider).similar(listing);
-    });
+final similarListingsProvider = FutureProvider.autoDispose.family<List<Listing>, Listing>((ref, listing) {
+  return ref.watch(listingRepositoryProvider).similar(listing);
+});
 
 /// The signed-in user's listings in every status.
 final myListingsProvider = FutureProvider.autoDispose<List<Listing>>((ref) {
@@ -115,19 +100,13 @@ final myListingsProvider = FutureProvider.autoDispose<List<Listing>>((ref) {
   return ref.watch(listingRepositoryProvider).mine();
 });
 
-final sellerListingsProvider = FutureProvider.autoDispose
-    .family<List<Listing>, String>((ref, sellerId) {
-      ref.watch(listingsRevisionProvider);
-      return ref.watch(listingRepositoryProvider).bySeller(sellerId);
-    });
+final sellerListingsProvider = FutureProvider.autoDispose.family<List<Listing>, String>((ref, sellerId) {
+  ref.watch(listingsRevisionProvider);
+  return ref.watch(listingRepositoryProvider).bySeller(sellerId);
+});
 
 /// Typical price for a category, used to flag suspicious outliers. Served by
 /// backend market statistics in production.
-final categoryReferencePriceProvider = Provider.family<Money?, String>((
-  ref,
-  categoryId,
-) {
-  return ref.watch(appConfigProvider).useDemoData
-      ? DemoSeed.referencePrices[categoryId]
-      : null;
+final categoryReferencePriceProvider = Provider.family<Money?, String>((ref, categoryId) {
+  return ref.watch(appConfigProvider).useDemoData ? DemoSeed.referencePrices[categoryId] : null;
 });

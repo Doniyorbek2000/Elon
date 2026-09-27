@@ -15,12 +15,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../helpers/test_app.dart';
 
 /// Scrolls the nearest scrollable containing [anchor] until [target] is built.
-Future<void> scrollTo(
-  WidgetTester tester,
-  Finder target, {
-  Finder? anchor,
-  double delta = 150,
-}) async {
+Future<void> scrollTo(WidgetTester tester, Finder target, {Finder? anchor, double delta = 150}) async {
   final scrollable = anchor == null
       ? find.byType(Scrollable).first
       : find.ancestor(of: anchor, matching: find.byType(Scrollable)).first;
@@ -38,14 +33,9 @@ Future<void> tapText(WidgetTester tester, String text, {int index = 0}) async {
 
 void main() {
   group('Navigation', () {
-    testWidgets('first launch shows onboarding, then location, then home', (
-      tester,
-    ) async {
+    testWidgets('first launch shows onboarding, then location, then home', (tester) async {
       final harness = await pumpBozorApp(tester, onboarded: false);
-      expect(
-        find.text('Hududingizdagi hamma narsa\nbitta ilovada'),
-        findsOneWidget,
-      );
+      expect(find.text('Hududingizdagi hamma narsa\nbitta ilovada'), findsOneWidget);
       expect(find.text('E’lonlar'), findsOneWidget);
 
       await tapText(tester, 'Boshlash');
@@ -57,18 +47,12 @@ void main() {
     });
 
     testWidgets('deep link opens content even on first launch', (tester) async {
-      await pumpBozorApp(
-        tester,
-        onboarded: false,
-        location: '/listing/l_cobalt_2023',
-      );
+      await pumpBozorApp(tester, onboarded: false, location: '/listing/l_cobalt_2023');
       expect(find.byType(ListingDetailScreen), findsOneWidget);
       expect(find.text('Cobalt 2023'), findsWidgets);
     });
 
-    testWidgets('bottom navigation switches tabs and preserves tab state', (
-      tester,
-    ) async {
+    testWidgets('bottom navigation switches tabs and preserves tab state', (tester) async {
       await pumpBozorApp(tester);
       await tester.tap(find.bySemanticsLabel('Qidiruv'));
       await settle(tester);
@@ -84,11 +68,7 @@ void main() {
 
       await tester.tap(find.bySemanticsLabel('Qidiruv'));
       await settle(tester);
-      expect(
-        find.widgetWithText(TextField, 'santexnik'),
-        findsOneWidget,
-        reason: 'search tab keeps its state',
-      );
+      expect(find.widgetWithText(TextField, 'santexnik'), findsOneWidget, reason: 'search tab keeps its state');
     });
 
     testWidgets('center + opens the create flow', (tester) async {
@@ -106,40 +86,32 @@ void main() {
   });
 
   group('Home & listings', () {
-    testWidgets(
-      'home shows header, verticals, categories and nearby listings',
-      (tester) async {
-        await pumpBozorApp(tester);
-        expect(find.text('Chust, Namangan'), findsOneWidget);
-        expect(find.text('Bozor'), findsOneWidget);
-        expect(find.text('Ish'), findsWidgets);
-        expect(find.text('Xizmatlar'), findsWidgets);
-        expect(find.text('Avtomobil'), findsOneWidget);
-        expect(find.text('Yaqin atrofdagi e’lonlar'), findsOneWidget);
-        expect(find.byType(ListingCard), findsWidgets);
-      },
-    );
+    testWidgets('home shows header, verticals, categories and nearby listings', (tester) async {
+      await pumpBozorApp(tester);
+      expect(find.text('Chust, Namangan'), findsOneWidget);
+      expect(find.text('Bozor'), findsOneWidget);
+      expect(find.text('Ish'), findsWidgets);
+      expect(find.text('Xizmatlar'), findsWidgets);
+      expect(find.text('Avtomobil'), findsOneWidget);
+      expect(find.text('Yaqin atrofdagi e’lonlar'), findsOneWidget);
+      expect(find.byType(ListingCard), findsWidgets);
+    });
 
-    testWidgets(
-      'tapping a listing opens detail with seller and contact actions',
-      (tester) async {
-        final harness = await pumpBozorApp(tester);
-        await tester.tap(find.byType(ListingCard).first);
-        await settle(tester);
-        expect(find.byType(ListingDetailScreen), findsOneWidget);
-        expect(find.text('Sotuvchi'), findsOneWidget);
+    testWidgets('tapping a listing opens detail with seller and contact actions', (tester) async {
+      final harness = await pumpBozorApp(tester);
+      await tester.tap(find.byType(ListingCard).first);
+      await settle(tester);
+      expect(find.byType(ListingDetailScreen), findsOneWidget);
+      expect(find.text('Sotuvchi'), findsOneWidget);
 
-        await tester.tap(find.text('Qo‘ng‘iroq'));
-        await settle(tester);
-        await tester.tap(find.text('Qo‘ng‘iroq qilish'));
-        await settle(tester);
-        expect(harness.external.calls, hasLength(1));
-      },
-    );
+      await tester.tap(find.text('Qo‘ng‘iroq'));
+      await settle(tester);
+      await tester.tap(find.text('Qo‘ng‘iroq qilish'));
+      await settle(tester);
+      expect(harness.external.calls, hasLength(1));
+    });
 
-    testWidgets('favorite toggles from the card and is persisted', (
-      tester,
-    ) async {
+    testWidgets('favorite toggles from the card and is persisted', (tester) async {
       final harness = await pumpBozorApp(tester);
       final firstFavorite = find.byType(FavoriteButton).first;
       await tester.ensureVisible(firstFavorite);
@@ -148,10 +120,7 @@ void main() {
       await settle(tester);
       expect(harness.container.read(savedItemsProvider), hasLength(1));
       expect(harness.store.getStringList(StoreKeys.savedItems), hasLength(1));
-      expect(
-        find.bySemanticsLabel('Saqlanganlardan olib tashlash'),
-        findsWidgets,
-      );
+      expect(find.bySemanticsLabel('Saqlanganlardan olib tashlash'), findsWidgets);
     });
 
     testWidgets('filter sheet applies sorting', (tester) async {
@@ -165,32 +134,19 @@ void main() {
       await tester.tap(find.text('Natijalarni ko‘rsatish'));
       await settle(tester);
 
-      final titles = tester
-          .widgetList<ListingTile>(find.byType(ListingTile))
-          .map((t) => t.listing.title)
-          .toList();
+      final titles = tester.widgetList<ListingTile>(find.byType(ListingTile)).map((t) => t.listing.title).toList();
       expect(titles.first, 'Damas 2021', reason: 'cheapest car first');
-      expect(
-        find.text('Narxi arzon'),
-        findsOneWidget,
-        reason: 'sort chip reflects selection',
-      );
+      expect(find.text('Narxi arzon'), findsOneWidget, reason: 'sort chip reflects selection');
     });
 
     testWidgets('share sheet sends a deep link to Telegram', (tester) async {
-      final harness = await pumpBozorApp(
-        tester,
-        location: '/listing/l_cobalt_2023',
-      );
+      final harness = await pumpBozorApp(tester, location: '/listing/l_cobalt_2023');
       await tester.tap(find.byTooltip('Ulashish'));
       await settle(tester);
       expect(find.text('bozor.uz'), findsOneWidget);
       await tester.tap(find.text('Telegram’da ulashish'));
       await settle(tester);
-      expect(
-        harness.share.shared.single.url.toString(),
-        'https://bozor.uz/listing/l_cobalt_2023',
-      );
+      expect(harness.share.shared.single.url.toString(), 'https://bozor.uz/listing/l_cobalt_2023');
     });
   });
 
@@ -226,22 +182,13 @@ void main() {
       await tapText(tester, 'Telefonlar');
       expect(find.text('Elektronika › Telefonlar'), findsOneWidget);
 
-      final fields = find.descendant(
-        of: find.byType(DetailsStep),
-        matching: find.byType(TextField),
-      );
+      final fields = find.descendant(of: find.byType(DetailsStep), matching: find.byType(TextField));
       await tester.enterText(fields.at(0), 'iPhone 13');
       await tester.enterText(fields.at(1), '5200000');
       await settle(tester);
-      expect(
-        find.text('5 200 000'),
-        findsOneWidget,
-        reason: 'price is grouped while typing',
-      );
+      expect(find.text('5 200 000'), findsOneWidget, reason: 'price is grouped while typing');
       await tapText(tester, 'Apple');
-      final description = find.byWidgetPredicate(
-        (w) => w is TextField && w.maxLength == 3000,
-      );
+      final description = find.byWidgetPredicate((w) => w is TextField && w.maxLength == 3000);
       await scrollTo(tester, description, anchor: fields.at(0));
       await tester.enterText(description, 'Ideal holatda, qutisi bilan.');
       await settle(tester);
@@ -257,19 +204,14 @@ void main() {
       expect(find.text('Muqova'), findsOneWidget);
 
       await tapText(tester, 'Davom etish');
-      expect(
-        find.text('Xaridorlar e’loningizni shunday ko‘radi'),
-        findsOneWidget,
-      );
+      expect(find.text('Xaridorlar e’loningizni shunday ko‘radi'), findsOneWidget);
 
       await tapText(tester, 'E’lonni joylash');
       expect(find.text('E’loningiz joylandi!'), findsOneWidget);
       expect(find.text('Telegram’da ulashish'), findsOneWidget);
     });
 
-    testWidgets('closing with content offers to keep the draft', (
-      tester,
-    ) async {
+    testWidgets('closing with content offers to keep the draft', (tester) async {
       final harness = await pumpBozorApp(tester, location: '/create');
       await tester.enterText(find.byType(TextField).first, 'Divan');
       await settle(tester);
@@ -281,29 +223,18 @@ void main() {
   });
 
   group('Jobs', () {
-    testWidgets('browse vacancies, switch intent, apply to a job', (
-      tester,
-    ) async {
+    testWidgets('browse vacancies, switch intent, apply to a job', (tester) async {
       await pumpBozorApp(tester, location: '/jobs');
       expect(find.text('Oshpaz kerak'), findsOneWidget);
 
-      await scrollTo(
-        tester,
-        find.text('Masofaviy'),
-        anchor: find.text('To‘liq stavka'),
-      );
+      await scrollTo(tester, find.text('Masofaviy'), anchor: find.text('To‘liq stavka'));
       await tapText(tester, 'Masofaviy');
       expect(find.text('Dasturchi (Frontend)'), findsOneWidget);
       expect(find.text('Oshpaz kerak'), findsNothing);
 
       await tapText(tester, 'Ishchi qidiraman');
       expect(find.text('Vakansiya joylash'), findsOneWidget);
-      await scrollTo(
-        tester,
-        find.text('Barchasi'),
-        anchor: find.text('Masofaviy'),
-        delta: -150,
-      );
+      await scrollTo(tester, find.text('Barchasi'), anchor: find.text('Masofaviy'), delta: -150);
       await tapText(tester, 'Barchasi');
       expect(find.text('Haydovchi (B, C toifa)'), findsOneWidget);
 
@@ -318,9 +249,7 @@ void main() {
   });
 
   group('Services', () {
-    testWidgets('category → provider profile with portfolio and reviews', (
-      tester,
-    ) async {
+    testWidgets('category → provider profile with portfolio and reviews', (tester) async {
       await pumpBozorApp(tester, location: '/services');
       expect(find.text('Tavsiya etilgan ustalar'), findsOneWidget);
       await tapText(tester, 'Santexnik');
@@ -333,9 +262,7 @@ void main() {
   });
 
   group('Chat', () {
-    testWidgets('conversation shows listing context and sends messages', (
-      tester,
-    ) async {
+    testWidgets('conversation shows listing context and sends messages', (tester) async {
       await pumpBozorApp(tester, location: '/chat/c_cobalt');
       expect(find.byType(ConversationScreen), findsOneWidget);
       expect(find.text('120 000 000 so‘m'), findsOneWidget);
@@ -348,10 +275,7 @@ void main() {
 
     testWidgets('prepayment requests trigger a safety warning', (tester) async {
       await pumpBozorApp(tester, location: '/chat/c_cobalt');
-      await tester.enterText(
-        find.byType(TextField),
-        'Oldindan to‘lov qilsam bo‘ladimi?',
-      );
+      await tester.enterText(find.byType(TextField), 'Oldindan to‘lov qilsam bo‘ladimi?');
       await settle(tester);
       await tester.tap(find.byTooltip('Yuborish'));
       await settle(tester);
@@ -360,9 +284,7 @@ void main() {
   });
 
   group('Profile & trust', () {
-    testWidgets('sign out then protected actions require phone verification', (
-      tester,
-    ) async {
+    testWidgets('sign out then protected actions require phone verification', (tester) async {
       await pumpBozorApp(tester, location: '/profile');
       await tapText(tester, 'Chiqish');
       await tester.tap(find.text('Chiqish').last);
@@ -376,11 +298,7 @@ void main() {
       await tapText(tester, 'Kod olish');
       await tester.enterText(find.byType(TextField), '123456');
       await settle(tester);
-      expect(
-        find.byType(CreateListingScreen),
-        findsOneWidget,
-        reason: 'continues to the original destination',
-      );
+      expect(find.byType(CreateListingScreen), findsOneWidget, reason: 'continues to the original destination');
     });
 
     testWidgets('report sheet submits a reason', (tester) async {

@@ -5,12 +5,7 @@ import '../design/app_tokens.dart';
 
 /// Round translucent button for use over photos (back/share/save).
 class CircleIconButton extends StatelessWidget {
-  const CircleIconButton({
-    super.key,
-    required this.icon,
-    required this.tooltip,
-    required this.onPressed,
-  });
+  const CircleIconButton({super.key, required this.icon, required this.tooltip, required this.onPressed});
 
   final IconData icon;
   final String tooltip;
@@ -78,17 +73,12 @@ class _ExpandableTextState extends State<ExpandableText> {
                 widget.text,
                 style: style,
                 maxLines: _expanded ? null : widget.maxLines,
-                overflow: _expanded
-                    ? TextOverflow.visible
-                    : TextOverflow.ellipsis,
+                overflow: _expanded ? TextOverflow.visible : TextOverflow.ellipsis,
               ),
             ),
             if (overflows || _expanded)
               TextButton(
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(0, AppTouch.minTarget),
-                ),
+                style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(0, AppTouch.minTarget)),
                 onPressed: () => setState(() => _expanded = !_expanded),
                 child: Text(_expanded ? 'Yashirish' : 'Ko‘proq'),
               ),
@@ -117,27 +107,15 @@ class SafetyTipsCard extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: palette.warningSoft,
-        borderRadius: AppRadii.lgAll,
-      ),
+      decoration: BoxDecoration(color: palette.warningSoft, borderRadius: AppRadii.lgAll),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                Icons.shield_outlined,
-                color: palette.warning,
-                size: AppIconSize.md,
-              ),
+              Icon(Icons.shield_outlined, color: palette.warning, size: AppIconSize.md),
               const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(
-                  'Xavfsizlik bo‘yicha maslahat',
-                  style: text.titleSmall,
-                ),
-              ),
+              Expanded(child: Text('Xavfsizlik bo‘yicha maslahat', style: text.titleSmall)),
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -148,26 +126,15 @@ class SafetyTipsCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(
-                      top: 7,
-                      right: AppSpacing.sm,
-                    ),
+                    padding: const EdgeInsets.only(top: 7, right: AppSpacing.sm),
                     child: Container(
                       width: 5,
                       height: 5,
-                      decoration: BoxDecoration(
-                        color: palette.warning,
-                        shape: BoxShape.circle,
-                      ),
+                      decoration: BoxDecoration(color: palette.warning, shape: BoxShape.circle),
                     ),
                   ),
                   Expanded(
-                    child: Text(
-                      tip,
-                      style: text.bodySmall?.copyWith(
-                        color: palette.textPrimary,
-                      ),
-                    ),
+                    child: Text(tip, style: text.bodySmall?.copyWith(color: palette.textPrimary)),
                   ),
                 ],
               ),
@@ -180,12 +147,7 @@ class SafetyTipsCard extends StatelessWidget {
 
 /// Titled content block inside detail pages.
 class DetailSection extends StatelessWidget {
-  const DetailSection({
-    super.key,
-    required this.title,
-    required this.child,
-    this.trailing,
-  });
+  const DetailSection({super.key, required this.title, required this.child, this.trailing});
 
   final String title;
   final Widget child;
@@ -205,8 +167,7 @@ class DetailSection extends StatelessWidget {
                   header: true,
                   child: Text(
                     title,
-                    style: Theme.of(context).textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w700),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                   ),
                 ),
               ),

@@ -31,24 +31,20 @@ class SearchScreen extends ConsumerStatefulWidget {
 }
 
 class _SearchScreenState extends ConsumerState<SearchScreen> {
-  late final _controller = TextEditingController(
-    text: widget.initialQuery ?? '',
-  );
+  late final _controller = TextEditingController(text: widget.initialQuery ?? '');
   final _focus = FocusNode();
   late String? _submitted = _nonEmpty(widget.initialQuery);
   String _typing = '';
   SearchScope _scope = SearchScope.all;
   ListingQuery _filters = const ListingQuery();
 
-  static String? _nonEmpty(String? value) =>
-      value == null || value.trim().isEmpty ? null : value.trim();
+  static String? _nonEmpty(String? value) => value == null || value.trim().isEmpty ? null : value.trim();
 
   @override
   void didUpdateWidget(SearchScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     final next = _nonEmpty(widget.initialQuery);
-    if (next != null && next != _nonEmpty(oldWidget.initialQuery))
-      _submit(next);
+    if (next != null && next != _nonEmpty(oldWidget.initialQuery)) _submit(next);
   }
 
   @override
@@ -110,11 +106,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
     Widget body;
     if (_typing.trim().isNotEmpty && _typing.trim() != submitted) {
-      body = _Suggestions(
-        query: _typing.trim(),
-        onSelect: _onSuggestion,
-        onSubmit: () => _submit(_typing),
-      );
+      body = _Suggestions(query: _typing.trim(), onSelect: _onSuggestion, onSubmit: () => _submit(_typing));
     } else if (submitted == null) {
       body = _Discovery(onSearch: _submit);
     } else {
@@ -135,12 +127,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           child: Column(
             children: [
               Padding(
-                padding: EdgeInsets.fromLTRB(
-                  gutter,
-                  AppSpacing.md,
-                  gutter,
-                  AppSpacing.sm,
-                ),
+                padding: EdgeInsets.fromLTRB(gutter, AppSpacing.md, gutter, AppSpacing.sm),
                 child: Row(
                   children: [
                     if (submitted != null || _typing.isNotEmpty)
@@ -185,20 +172,14 @@ class _Discovery extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final recent = ref.watch(recentSearchesProvider);
-    final popular =
-        ref.watch(popularSearchesProvider).value ?? const <String>[];
+    final popular = ref.watch(popularSearchesProvider).value ?? const <String>[];
     final text = Theme.of(context).textTheme;
     final palette = context.palette;
     final gutter = AppBreakpoints.pagePadding(context);
 
     return ListView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      padding: EdgeInsets.fromLTRB(
-        gutter,
-        AppSpacing.sm,
-        gutter,
-        AppSpacing.xxxl,
-      ),
+      padding: EdgeInsets.fromLTRB(gutter, AppSpacing.sm, gutter, AppSpacing.xxxl),
       children: [
         if (recent.isNotEmpty) ...[
           SectionHeader(
@@ -214,13 +195,8 @@ class _Discovery extends ConsumerWidget {
               onTap: () => onSearch(query),
               trailing: IconButton(
                 tooltip: 'O‘chirish',
-                icon: Icon(
-                  Icons.close_rounded,
-                  size: AppIconSize.sm,
-                  color: palette.textTertiary,
-                ),
-                onPressed: () =>
-                    ref.read(recentSearchesProvider.notifier).remove(query),
+                icon: Icon(Icons.close_rounded, size: AppIconSize.sm, color: palette.textTertiary),
+                onPressed: () => ref.read(recentSearchesProvider.notifier).remove(query),
               ),
             ),
           const SizedBox(height: AppSpacing.lg),
@@ -233,11 +209,7 @@ class _Discovery extends ConsumerWidget {
           children: [
             for (final query in popular)
               ActionChip(
-                avatar: Icon(
-                  Icons.trending_up_rounded,
-                  size: AppIconSize.sm,
-                  color: palette.primary,
-                ),
+                avatar: Icon(Icons.trending_up_rounded, size: AppIconSize.sm, color: palette.primary),
                 label: Text(query),
                 onPressed: () => onSearch(query),
               ),
@@ -293,20 +265,13 @@ class _ShortcutTile extends StatelessWidget {
     leading: ToneIcon(icon: icon, tone: tone, size: 42),
     title: Text(title),
     subtitle: Text(subtitle),
-    trailing: Icon(
-      Icons.chevron_right_rounded,
-      color: context.palette.textTertiary,
-    ),
+    trailing: Icon(Icons.chevron_right_rounded, color: context.palette.textTertiary),
     onTap: onTap,
   );
 }
 
 class _Suggestions extends ConsumerWidget {
-  const _Suggestions({
-    required this.query,
-    required this.onSelect,
-    required this.onSubmit,
-  });
+  const _Suggestions({required this.query, required this.onSelect, required this.onSubmit});
 
   final String query;
   final ValueChanged<SearchSuggestion> onSelect;
@@ -314,9 +279,7 @@ class _Suggestions extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final suggestions =
-        ref.watch(searchSuggestionsProvider(query)).value ??
-        const <SearchSuggestion>[];
+    final suggestions = ref.watch(searchSuggestionsProvider(query)).value ?? const <SearchSuggestion>[];
     final palette = context.palette;
     return ListView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -340,9 +303,7 @@ class _Suggestions extends ConsumerWidget {
               _ => Icons.north_west_rounded,
             }, color: palette.textTertiary),
             title: Text(suggestion.text),
-            subtitle: suggestion.subtitle == null
-                ? null
-                : Text(suggestion.subtitle!),
+            subtitle: suggestion.subtitle == null ? null : Text(suggestion.subtitle!),
             onTap: () => onSelect(suggestion),
           ),
       ],
@@ -351,12 +312,7 @@ class _Suggestions extends ConsumerWidget {
 }
 
 class _Results extends ConsumerWidget {
-  const _Results({
-    required this.request,
-    required this.scope,
-    required this.onScope,
-    required this.onSearch,
-  });
+  const _Results({required this.request, required this.scope, required this.onScope, required this.onSearch});
 
   final SearchRequest request;
   final SearchScope scope;
@@ -390,25 +346,15 @@ class _Results extends ConsumerWidget {
           child: results.when(
             loading: () => Shimmer(
               child: ListView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: gutter,
-                  vertical: AppSpacing.md,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: gutter, vertical: AppSpacing.md),
                 physics: const NeverScrollableScrollPhysics(),
                 children: List.generate(5, (_) => const ListingTileSkeleton()),
               ),
             ),
-            error: (error, _) => FailureView(
-              error: error,
-              onRetry: () => ref.invalidate(searchResultsProvider(request)),
-            ),
-            data: (data) => _ResultsList(
-              data: data,
-              scope: scope,
-              onScope: onScope,
-              onSearch: onSearch,
-              query: request.text,
-            ),
+            error: (error, _) =>
+                FailureView(error: error, onRetry: () => ref.invalidate(searchResultsProvider(request))),
+            data: (data) =>
+                _ResultsList(data: data, scope: scope, onScope: onScope, onSearch: onSearch, query: request.text),
           ),
         ),
       ],
@@ -458,9 +404,7 @@ class _ResultsList extends StatelessWidget {
         if (all)
           SectionHeader(
             title: title,
-            actionLabel: items.length > preview
-                ? 'Hammasi (${items.length})'
-                : null,
+            actionLabel: items.length > preview ? 'Hammasi (${items.length})' : null,
             onAction: () => onScope(target),
             padding: const EdgeInsets.only(top: AppSpacing.md),
           ),
@@ -474,12 +418,7 @@ class _ResultsList extends StatelessWidget {
 
     return ListView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      padding: EdgeInsets.fromLTRB(
-        gutter,
-        AppSpacing.sm,
-        gutter,
-        AppSpacing.xxxl,
-      ),
+      padding: EdgeInsets.fromLTRB(gutter, AppSpacing.sm, gutter, AppSpacing.xxxl),
       children: [
         if (data.correctedQuery != null)
           Padding(
@@ -504,30 +443,11 @@ class _ResultsList extends StatelessWidget {
           (l) => ListingTile(listing: l, heroPrefix: 'search'),
           spacing: 0,
         ),
-        ...section(
-          SearchScope.jobs,
-          'Ishlar',
-          data.jobs,
-          (j) => JobCard(job: j),
-        ),
-        ...section(
-          SearchScope.services,
-          'Xizmatlar',
-          data.providers,
-          (p) => ProviderTile(provider: p),
-        ),
-        ...section(
-          SearchScope.users,
-          'Foydalanuvchilar',
-          data.users,
-          (u) => _UserTile(user: u),
-        ),
+        ...section(SearchScope.jobs, 'Ishlar', data.jobs, (j) => JobCard(job: j)),
+        ...section(SearchScope.services, 'Xizmatlar', data.providers, (p) => ProviderTile(provider: p)),
+        ...section(SearchScope.users, 'Foydalanuvchilar', data.users, (u) => _UserTile(user: u)),
         if (!all && _scopeEmpty())
-          const EmptyState(
-            icon: Icons.search_off_rounded,
-            title: 'Bu bo‘limda natija yo‘q',
-            compact: true,
-          ),
+          const EmptyState(icon: Icons.search_off_rounded, title: 'Bu bo‘limda natija yo‘q', compact: true),
       ],
     );
   }
@@ -553,11 +473,7 @@ class _UserTile extends StatelessWidget {
       onTap: () => context.push(AppRoutes.seller(user.id)),
       child: Row(
         children: [
-          AppAvatar(
-            name: user.name,
-            image: user.avatar,
-            isOnline: user.isOnline,
-          ),
+          AppAvatar(name: user.name, image: user.avatar, isOnline: user.isOnline),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
@@ -565,25 +481,16 @@ class _UserTile extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Flexible(
-                      child: Text(
-                        user.name,
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                    ),
+                    Flexible(child: Text(user.name, style: Theme.of(context).textTheme.titleSmall)),
                     const SizedBox(width: AppSpacing.xs),
                     VerifiedBadge(level: user.verification),
                   ],
                 ),
-                Text(
-                  '${user.activeListings} ta faol e’lon',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+                Text('${user.activeListings} ta faol e’lon', style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
           ),
-          if (user.rating != null)
-            RatingLabel(rating: user.rating!, compact: true),
+          if (user.rating != null) RatingLabel(rating: user.rating!, compact: true),
         ],
       ),
     );

@@ -44,10 +44,7 @@ class JobDetailScreen extends ConsumerWidget {
           ),
           error: (error, _) => Scaffold(
             appBar: AppBar(),
-            body: FailureView(
-              error: error,
-              onRetry: () => ref.invalidate(jobDetailProvider(jobId)),
-            ),
+            body: FailureView(error: error, onRetry: () => ref.invalidate(jobDetailProvider(jobId))),
           ),
         );
   }
@@ -62,11 +59,7 @@ class _JobDetailView extends ConsumerWidget {
     target: ShareTarget.job,
     id: job.id,
     title: '${job.title} — ${job.company.name}',
-    subtitle: Formatters.salaryRange(
-      job.salaryMin,
-      job.salaryMax,
-      job.currency,
-    ).replaceAll(' ', ' '),
+    subtitle: Formatters.salaryRange(job.salaryMin, job.salaryMax, job.currency).replaceAll(' ', ' '),
     location: job.place.shortLabel,
     url: ref.read(deepLinksProvider).web(ShareTarget.job, job.id),
   );
@@ -98,12 +91,7 @@ class _JobDetailView extends ConsumerWidget {
         ],
       ),
       body: ListView(
-        padding: EdgeInsets.fromLTRB(
-          gutter,
-          AppSpacing.md,
-          gutter,
-          AppSpacing.huge,
-        ),
+        padding: EdgeInsets.fromLTRB(gutter, AppSpacing.md, gutter, AppSpacing.huge),
         children: [
           ContentWidth(
             child: Column(
@@ -115,11 +103,7 @@ class _JobDetailView extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          ToneIcon(
-                            icon: AppIcons.forKey(job.company.iconKey),
-                            tone: job.company.tone,
-                            size: 56,
-                          ),
+                          ToneIcon(icon: AppIcons.forKey(job.company.iconKey), tone: job.company.tone, size: 56),
                           const SizedBox(width: AppSpacing.md),
                           Expanded(
                             child: Column(
@@ -132,15 +116,11 @@ class _JobDetailView extends ConsumerWidget {
                                     Flexible(
                                       child: Text(
                                         job.company.name,
-                                        style: text.bodyMedium?.copyWith(
-                                          color: palette.textSecondary,
-                                        ),
+                                        style: text.bodyMedium?.copyWith(color: palette.textSecondary),
                                       ),
                                     ),
                                     const SizedBox(width: AppSpacing.xs),
-                                    VerifiedBadge(
-                                      level: job.company.verification,
-                                    ),
+                                    VerifiedBadge(level: job.company.verification),
                                   ],
                                 ),
                               ],
@@ -150,15 +130,8 @@ class _JobDetailView extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       Text(
-                        Formatters.salaryRange(
-                          job.salaryMin,
-                          job.salaryMax,
-                          job.currency,
-                        ),
-                        style: text.headlineSmall?.copyWith(
-                          color: palette.price,
-                          fontSize: 22,
-                        ),
+                        Formatters.salaryRange(job.salaryMin, job.salaryMax, job.currency),
+                        style: text.headlineSmall?.copyWith(color: palette.price, fontSize: 22),
                       ),
                       const SizedBox(height: AppSpacing.md),
                       Wrap(
@@ -170,15 +143,9 @@ class _JobDetailView extends ConsumerWidget {
                             style: PillStyle.primary,
                             icon: Icons.work_outline_rounded,
                           ),
-                          StatusPill(
-                            label: job.experience.label,
-                            icon: Icons.trending_up_rounded,
-                          ),
+                          StatusPill(label: job.experience.label, icon: Icons.trending_up_rounded),
                           if (job.workingHours.isNotEmpty)
-                            StatusPill(
-                              label: job.workingHours,
-                              icon: Icons.schedule_rounded,
-                            ),
+                            StatusPill(label: job.workingHours, icon: Icons.schedule_rounded),
                         ],
                       ),
                       const SizedBox(height: AppSpacing.md),
@@ -186,18 +153,11 @@ class _JobDetailView extends ConsumerWidget {
                         spacing: AppSpacing.lg,
                         runSpacing: AppSpacing.xs,
                         children: [
-                          MetaLine(
-                            icon: Icons.location_on_outlined,
-                            text: job.place.shortLabel,
-                          ),
-                          MetaLine(
-                            icon: Icons.schedule_rounded,
-                            text: Formatters.relativeTime(job.publishedAt, now),
-                          ),
+                          MetaLine(icon: Icons.location_on_outlined, text: job.place.shortLabel),
+                          MetaLine(icon: Icons.schedule_rounded, text: Formatters.relativeTime(job.publishedAt, now)),
                           MetaLine(
                             icon: Icons.visibility_outlined,
-                            text:
-                                '${Formatters.compactCount(job.views)} ko‘rish',
+                            text: '${Formatters.compactCount(job.views)} ko‘rish',
                           ),
                         ],
                       ),
@@ -208,10 +168,7 @@ class _JobDetailView extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.md),
                   _ApplicationStatusBanner(application: application),
                 ],
-                DetailSection(
-                  title: 'Tavsif',
-                  child: ExpandableText(job.description),
-                ),
+                DetailSection(title: 'Tavsif', child: ExpandableText(job.description)),
                 if (job.responsibilities.isNotEmpty)
                   DetailSection(
                     title: 'Vazifalar',
@@ -227,11 +184,7 @@ class _JobDetailView extends ConsumerWidget {
                   child: SurfaceCard(
                     child: Row(
                       children: [
-                        const ToneIcon(
-                          icon: Icons.map_rounded,
-                          tone: AccentTone.teal,
-                          size: 40,
-                        ),
+                        const ToneIcon(icon: Icons.map_rounded, tone: AccentTone.teal, size: 40),
                         const SizedBox(width: AppSpacing.md),
                         Expanded(child: Text(job.place.fullLabel)),
                       ],
@@ -243,11 +196,7 @@ class _JobDetailView extends ConsumerWidget {
                   child: SurfaceCard(
                     child: Row(
                       children: [
-                        AppAvatar(
-                          name: job.employer.name,
-                          image: job.employer.avatar,
-                          isOnline: job.employer.isOnline,
-                        ),
+                        AppAvatar(name: job.employer.name, image: job.employer.avatar, isOnline: job.employer.isOnline),
                         const SizedBox(width: AppSpacing.md),
                         Expanded(
                           child: Column(
@@ -257,9 +206,7 @@ class _JobDetailView extends ConsumerWidget {
                               if (job.employer.verification.isVerified)
                                 Text(
                                   job.employer.verification.label,
-                                  style: text.labelSmall?.copyWith(
-                                    color: palette.primary,
-                                  ),
+                                  style: text.labelSmall?.copyWith(color: palette.primary),
                                 ),
                               Text(
                                 Formatters.presence(
@@ -272,10 +219,7 @@ class _JobDetailView extends ConsumerWidget {
                             ],
                           ),
                         ),
-                        VerifiedBadge(
-                          level: job.employer.verification,
-                          size: 20,
-                        ),
+                        VerifiedBadge(level: job.employer.verification, size: 20),
                       ],
                     ),
                   ),
@@ -296,11 +240,7 @@ class _JobDetailView extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.md),
                 TextButton.icon(
                   style: TextButton.styleFrom(foregroundColor: palette.danger),
-                  onPressed: () => showReportSheet(
-                    context,
-                    type: ReportTargetType.job,
-                    targetId: job.id,
-                  ),
+                  onPressed: () => showReportSheet(context, type: ReportTargetType.job, targetId: job.id),
                   icon: const Icon(Icons.flag_outlined, size: AppIconSize.sm),
                   label: const Text('Vakansiya ustidan shikoyat qilish'),
                 ),
@@ -322,11 +262,7 @@ class _JobDetailView extends ConsumerWidget {
                       subject: ConversationSubject.job,
                       refId: job.id,
                       title: job.title,
-                      subtitle: Formatters.salaryRange(
-                        job.salaryMin,
-                        job.salaryMax,
-                        job.currency,
-                      ),
+                      subtitle: Formatters.salaryRange(job.salaryMin, job.salaryMax, job.currency),
                     ),
                   ),
                   icon: const Icon(Icons.chat_bubble_outline_rounded),
@@ -334,15 +270,11 @@ class _JobDetailView extends ConsumerWidget {
                 ),
                 application != null
                     ? FilledButton.icon(
-                        style: FilledButton.styleFrom(
-                          backgroundColor: palette.success,
-                        ),
+                        style: FilledButton.styleFrom(backgroundColor: palette.success),
                         onPressed: () => showContactSheet(
                           context,
                           person: job.employer,
-                          loadPhone: () => ref
-                              .read(jobRepositoryProvider)
-                              .revealJobPhone(job.id),
+                          loadPhone: () => ref.read(jobRepositoryProvider).revealJobPhone(job.id),
                         ),
                         icon: const Icon(Icons.call_rounded),
                         label: const Text('Qo‘ng‘iroq'),
@@ -377,18 +309,9 @@ class _Bullets extends StatelessWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.only(top: 2, right: AppSpacing.sm),
-                  child: Icon(
-                    Icons.check_circle_rounded,
-                    size: AppIconSize.sm,
-                    color: palette.success,
-                  ),
+                  child: Icon(Icons.check_circle_rounded, size: AppIconSize.sm, color: palette.success),
                 ),
-                Expanded(
-                  child: Text(
-                    item,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ),
+                Expanded(child: Text(item, style: Theme.of(context).textTheme.bodyMedium)),
               ],
             ),
           ),
@@ -407,8 +330,7 @@ class _ApplicationStatusBanner extends ConsumerWidget {
     final palette = context.palette;
     final now = ref.watch(clockProvider)();
     final (color, bg) = switch (application.status) {
-      ApplicationStatus.shortlisted ||
-      ApplicationStatus.accepted => (palette.success, palette.successSoft),
+      ApplicationStatus.shortlisted || ApplicationStatus.accepted => (palette.success, palette.successSoft),
       ApplicationStatus.rejected => (palette.danger, palette.dangerSoft),
       _ => (palette.primary, palette.primarySoft),
     };
@@ -422,8 +344,7 @@ class _ApplicationStatusBanner extends ConsumerWidget {
           Expanded(
             child: Text(
               'Ariza: ${application.status.label} · ${Formatters.relativeTime(application.appliedAt, now)}',
-              style: Theme.of(context).textTheme.labelLarge
-                  ?.copyWith(color: color),
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(color: color),
             ),
           ),
         ],
@@ -456,17 +377,10 @@ class _ApplySheetState extends ConsumerState<_ApplySheet> {
     try {
       await ref
           .read(myApplicationsProvider.notifier)
-          .apply(
-            widget.job.id,
-            message: _message.text.trim().isEmpty ? null : _message.text.trim(),
-          );
+          .apply(widget.job.id, message: _message.text.trim().isEmpty ? null : _message.text.trim());
       if (!mounted) return;
       Navigator.pop(context);
-      showAppSnack(
-        context,
-        'Arizangiz yuborildi! Ish beruvchi javobini kuting.',
-        icon: Icons.check_circle_rounded,
-      );
+      showAppSnack(context, 'Arizangiz yuborildi! Ish beruvchi javobini kuting.', icon: Icons.check_circle_rounded);
     } on Object catch (error) {
       if (!mounted) return;
       setState(() => _sending = false);
@@ -481,19 +395,11 @@ class _ApplySheetState extends ConsumerState<_ApplySheet> {
     return SheetScaffold(
       title: 'Ariza topshirish',
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.xl,
-          0,
-          AppSpacing.xl,
-          AppSpacing.lg,
-        ),
+        padding: const EdgeInsets.fromLTRB(AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '${widget.job.title} · ${widget.job.company.name}',
-              style: text.bodySmall,
-            ),
+            Text('${widget.job.title} · ${widget.job.company.name}', style: text.bodySmall),
             const SizedBox(height: AppSpacing.lg),
             if (user != null)
               SurfaceCard(
@@ -506,10 +412,7 @@ class _ApplySheetState extends ConsumerState<_ApplySheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(user.name, style: text.titleSmall),
-                          Text(
-                            Formatters.phone(user.phone),
-                            style: text.bodySmall,
-                          ),
+                          Text(Formatters.phone(user.phone), style: text.bodySmall),
                         ],
                       ),
                     ),
@@ -527,10 +430,7 @@ class _ApplySheetState extends ConsumerState<_ApplySheet> {
                 hintText: 'O‘zingiz haqingizda qisqacha: tajriba, qachondan ishlay olasiz…',
               ),
             ),
-            Text(
-              'Ish beruvchi ismingiz va telefon raqamingizni ko‘radi.',
-              style: text.bodySmall,
-            ),
+            Text('Ish beruvchi ismingiz va telefon raqamingizni ko‘radi.', style: text.bodySmall),
           ],
         ),
       ),
@@ -539,10 +439,7 @@ class _ApplySheetState extends ConsumerState<_ApplySheet> {
         child: _sending
             ? const SizedBox.square(
                 dimension: 22,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.4,
-                  color: Colors.white,
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
               )
             : const Text('Yuborish'),
       ),

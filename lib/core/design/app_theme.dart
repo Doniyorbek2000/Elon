@@ -12,13 +12,7 @@ abstract final class AppTheme {
   static ThemeData dark() => _build(AppPalette.dark, Brightness.dark);
 
   static TextTheme _textTheme(AppPalette p) {
-    TextStyle s(
-      double size,
-      FontWeight weight, {
-      double height = 1.3,
-      double spacing = 0,
-      Color? color,
-    }) => TextStyle(
+    TextStyle s(double size, FontWeight weight, {double height = 1.3, double spacing = 0, Color? color}) => TextStyle(
       fontFamily: fontFamily,
       fontSize: size,
       fontWeight: weight,
@@ -113,21 +107,12 @@ abstract final class AppTheme {
         scrolledUnderElevation: 0.6,
         shadowColor: p.border,
         centerTitle: true,
-        titleTextStyle: textTheme.titleMedium?.copyWith(
-          fontSize: 17,
-          fontWeight: FontWeight.w700,
-        ),
-        systemOverlayStyle: isDark
-            ? SystemUiOverlayStyle.light
-            : SystemUiOverlayStyle.dark,
+        titleTextStyle: textTheme.titleMedium?.copyWith(fontSize: 17, fontWeight: FontWeight.w700),
+        systemOverlayStyle: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
         iconTheme: IconThemeData(color: p.textPrimary, size: AppIconSize.md),
       ),
       iconTheme: IconThemeData(color: p.textPrimary, size: AppIconSize.md),
-      dividerTheme: DividerThemeData(
-        color: p.border,
-        thickness: AppBorders.hairline,
-        space: AppBorders.hairline,
-      ),
+      dividerTheme: DividerThemeData(color: p.border, thickness: AppBorders.hairline, space: AppBorders.hairline),
       cardTheme: CardThemeData(
         color: p.surface,
         surfaceTintColor: Colors.transparent,
@@ -151,11 +136,7 @@ abstract final class AppTheme {
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          minimumSize: buttonSize,
-          shape: buttonShape,
-          textStyle: textTheme.labelLarge,
-        ),
+        style: ElevatedButton.styleFrom(minimumSize: buttonSize, shape: buttonShape, textStyle: textTheme.labelLarge),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
@@ -175,33 +156,24 @@ abstract final class AppTheme {
         ),
       ),
       iconButtonTheme: IconButtonThemeData(
-        style: IconButton.styleFrom(
-          minimumSize: const Size(AppTouch.minTarget, AppTouch.minTarget),
-        ),
+        style: IconButton.styleFrom(minimumSize: const Size(AppTouch.minTarget, AppTouch.minTarget)),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: p.surfaceMuted,
         isDense: false,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: 15,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 15),
         hintStyle: textTheme.bodyMedium?.copyWith(color: p.textTertiary),
         labelStyle: textTheme.bodyMedium?.copyWith(color: p.textSecondary),
         floatingLabelStyle: textTheme.bodyMedium?.copyWith(color: p.primary),
         prefixIconColor: p.textTertiary,
         suffixIconColor: p.textTertiary,
         border: inputBorder,
-        enabledBorder: inputBorder.copyWith(
-          borderSide: const BorderSide(color: Colors.transparent),
-        ),
+        enabledBorder: inputBorder.copyWith(borderSide: const BorderSide(color: Colors.transparent)),
         focusedBorder: inputBorder.copyWith(
           borderSide: BorderSide(color: p.primary, width: AppBorders.focus),
         ),
-        errorBorder: inputBorder.copyWith(
-          borderSide: BorderSide(color: p.danger),
-        ),
+        errorBorder: inputBorder.copyWith(borderSide: BorderSide(color: p.danger)),
         focusedErrorBorder: inputBorder.copyWith(
           borderSide: BorderSide(color: p.danger, width: AppBorders.focus),
         ),
@@ -212,15 +184,10 @@ abstract final class AppTheme {
         selectedColor: p.primary,
         disabledColor: p.surfaceMuted,
         labelStyle: textTheme.labelMedium,
-        secondaryLabelStyle: textTheme.labelMedium?.copyWith(
-          color: p.onPrimary,
-        ),
+        secondaryLabelStyle: textTheme.labelMedium?.copyWith(color: p.onPrimary),
         side: BorderSide.none,
         shape: const StadiumBorder(),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xs,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
         showCheckmark: false,
       ),
       bottomSheetTheme: BottomSheetThemeData(
@@ -229,11 +196,7 @@ abstract final class AppTheme {
         modalBackgroundColor: p.surface,
         showDragHandle: true,
         dragHandleColor: p.borderStrong,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(AppRadii.xxl),
-          ),
-        ),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.xxl))),
         clipBehavior: Clip.antiAlias,
       ),
       dialogTheme: DialogThemeData(
@@ -241,16 +204,12 @@ abstract final class AppTheme {
         surfaceTintColor: Colors.transparent,
         shape: const RoundedRectangleBorder(borderRadius: AppRadii.xlAll),
         titleTextStyle: textTheme.titleLarge,
-        contentTextStyle: textTheme.bodyMedium?.copyWith(
-          color: p.textSecondary,
-        ),
+        contentTextStyle: textTheme.bodyMedium?.copyWith(color: p.textSecondary),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: scheme.inverseSurface,
-        contentTextStyle: textTheme.bodyMedium?.copyWith(
-          color: scheme.onInverseSurface,
-        ),
+        contentTextStyle: textTheme.bodyMedium?.copyWith(color: scheme.onInverseSurface),
         shape: const RoundedRectangleBorder(borderRadius: AppRadii.mdAll),
         insetPadding: const EdgeInsets.all(AppSpacing.lg),
       ),
@@ -262,12 +221,8 @@ abstract final class AppTheme {
         minVerticalPadding: AppSpacing.md,
       ),
       switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith(
-          (s) => s.contains(WidgetState.selected) ? Colors.white : null,
-        ),
-        trackColor: WidgetStateProperty.resolveWith(
-          (s) => s.contains(WidgetState.selected) ? p.primary : null,
-        ),
+        thumbColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? Colors.white : null),
+        trackColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? p.primary : null),
       ),
       radioTheme: RadioThemeData(
         fillColor: WidgetStateProperty.resolveWith(
@@ -275,12 +230,8 @@ abstract final class AppTheme {
         ),
       ),
       checkboxTheme: CheckboxThemeData(
-        fillColor: WidgetStateProperty.resolveWith(
-          (s) => s.contains(WidgetState.selected) ? p.primary : null,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadii.xs),
-        ),
+        fillColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? p.primary : null),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.xs)),
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: p.primary,
@@ -291,9 +242,7 @@ abstract final class AppTheme {
         labelColor: p.primary,
         unselectedLabelColor: p.textSecondary,
         labelStyle: textTheme.labelLarge,
-        unselectedLabelStyle: textTheme.labelLarge?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
+        unselectedLabelStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w500),
         indicatorColor: p.primary,
         dividerColor: p.border,
         indicatorSize: TabBarIndicatorSize.label,
@@ -303,17 +252,10 @@ abstract final class AppTheme {
         indicatorColor: p.primarySoft,
         selectedIconTheme: IconThemeData(color: p.primary),
         unselectedIconTheme: IconThemeData(color: p.textSecondary),
-        selectedLabelTextStyle: textTheme.labelMedium?.copyWith(
-          color: p.primary,
-        ),
-        unselectedLabelTextStyle: textTheme.labelMedium?.copyWith(
-          color: p.textSecondary,
-        ),
+        selectedLabelTextStyle: textTheme.labelMedium?.copyWith(color: p.primary),
+        unselectedLabelTextStyle: textTheme.labelMedium?.copyWith(color: p.textSecondary),
       ),
-      cupertinoOverrideTheme: CupertinoThemeData(
-        primaryColor: p.primary,
-        brightness: brightness,
-      ),
+      cupertinoOverrideTheme: CupertinoThemeData(primaryColor: p.primary, brightness: brightness),
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: SegmentedButton.styleFrom(
           selectedBackgroundColor: p.primarySoft,

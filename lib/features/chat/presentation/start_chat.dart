@@ -23,12 +23,9 @@ Future<void> startChat(
     return;
   }
   try {
-    final conversation = await ref
-        .read(chatRepositoryProvider)
-        .openConversation(peer: peer, context: subject);
+    final conversation = await ref.read(chatRepositoryProvider).openConversation(peer: peer, context: subject);
     if (context.mounted) await context.push(AppRoutes.chat(conversation.id));
   } on Object {
-    if (context.mounted)
-      showAppSnack(context, 'Chatni ochib bo‘lmadi. Qayta urinib ko‘ring.');
+    if (context.mounted) showAppSnack(context, 'Chatni ochib bo‘lmadi. Qayta urinib ko‘ring.');
   }
 }

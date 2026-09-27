@@ -37,13 +37,9 @@ class CurrentUser {
     name: json['name'] as String,
     phone: json['phone'] as String,
     memberSince: DateTime.parse(json['memberSince'] as String),
-    avatar: json['avatar'] == null
-        ? null
-        : MediaImage.fromJson(json['avatar'] as Map<String, dynamic>),
+    avatar: json['avatar'] == null ? null : MediaImage.fromJson(json['avatar'] as Map<String, dynamic>),
     verification: VerificationLevel.parse(json['verification']),
-    accountType: json['accountType'] == 'business'
-        ? AccountType.business
-        : AccountType.personal,
+    accountType: json['accountType'] == 'business' ? AccountType.business : AccountType.personal,
   );
 
   Map<String, dynamic> toJson() => {
@@ -67,11 +63,7 @@ class CurrentUser {
     memberSince: memberSince,
   );
 
-  CurrentUser copyWith({
-    String? name,
-    MediaImage? avatar,
-    VerificationLevel? verification,
-  }) => CurrentUser(
+  CurrentUser copyWith({String? name, MediaImage? avatar, VerificationLevel? verification}) => CurrentUser(
     id: id,
     displayId: displayId,
     name: name ?? this.name,
@@ -86,11 +78,7 @@ class CurrentUser {
 /// Result of requesting an SMS code.
 @immutable
 class OtpChallenge {
-  const OtpChallenge({
-    required this.resendIn,
-    required this.expiresIn,
-    this.devCode,
-  });
+  const OtpChallenge({required this.resendIn, required this.expiresIn, this.devCode});
 
   final Duration resendIn;
   final Duration expiresIn;

@@ -27,11 +27,7 @@ class ApiClient {
 
   /// GET returning the unwrapped `data` payload.
   Future<T> get<T>(String path, {Map<String, Object?>? query}) async =>
-      _data<T>(
-        await _send(
-          () => _dio.get<Object?>(path, queryParameters: _clean(query)),
-        ),
-      );
+      _data<T>(await _send(() => _dio.get<Object?>(path, queryParameters: _clean(query))));
 
   /// GET for cursor-paginated collections.
   Future<PageResult<T>> getPage<T>(
@@ -40,16 +36,9 @@ class ApiClient {
     Map<String, Object?>? query,
     String? cursor,
   }) async {
-    final body = await _send(
-      () => _dio.get<Object?>(
-        path,
-        queryParameters: _clean({...?query, 'cursor': cursor}),
-      ),
-    );
+    final body = await _send(() => _dio.get<Object?>(path, queryParameters: _clean({...?query, 'cursor': cursor})));
     final items = _data<List<dynamic>>(body);
-    final meta = body['meta'] is Map
-        ? body['meta'] as JsonMap
-        : const <String, dynamic>{};
+    final meta = body['meta'] is Map ? body['meta'] as JsonMap : const <String, dynamic>{};
     return PageResult(
       items: [for (final item in items) parse(item as JsonMap)],
       nextCursor: meta['nextCursor'] as String?,
@@ -86,10 +75,8 @@ class ApiClient {
     ),
   );
 
-  Map<String, Object?>? _clean(Map<String, Object?>? query) => query == null
-      ? null
-      : (Map.of(query)
-          ..removeWhere((_, value) => value == null || value == ''));
+  Map<String, Object?>? _clean(Map<String, Object?>? query) =>
+      query == null ? null : (Map.of(query)..removeWhere((_, value) => value == null || value == ''));
 
   T _data<T>(JsonMap body) {
     final data = body['data'];
@@ -103,12 +90,8 @@ class ApiClient {
       final data = response.data;
       return data is JsonMap ? data : <String, dynamic>{'data': data};
     } on DioException catch (error, stackTrace) {
-      final failure = error.error is AppFailure
-          ? error.error! as AppFailure
-          : mapDioException(error);
-      _logger.warning(
-        'API ${error.requestOptions.method} ${error.requestOptions.path} → ${failure.runtimeType}',
-      );
+      final failure = error.error is AppFailure ? error.error! as AppFailure : mapDioException(error);
+      _logger.warning('API ${error.requestOptions.method} ${error.requestOptions.path} → ${failure.runtimeType}');
       Error.throwWithStackTrace(failure, stackTrace);
     }
   }
@@ -123,55 +106,36 @@ class ApiClient {
       case DioExceptionType.connectionError:
         return const NetworkFailure();
       case DioExceptionType.badResponse:
-        return mapErrorResponse(
-          error.response?.statusCode,
-          error.response?.data,
-          error.response?.headers,
-        );
+        return mapErrorResponse(error.response?.statusCode, error.response?.data, error.response?.headers);
       case DioExceptionType.cancel:
         return const UnknownFailure('So‘rov bekor qilindi');
       case DioExceptionType.badCertificate:
         return const ServerFailure('Xavfsiz ulanib bo‘lmadi');
       case DioExceptionType.unknown:
-        return error.error is SocketException
-            ? const NetworkFailure()
-            : const UnknownFailure();
+        return error.error is SocketException ? const NetworkFailure() : const UnknownFailure();
     }
   }
 
   /// Maps the server error envelope to a typed failure.
-  static AppFailure mapErrorResponse(
-    int? status,
-    Object? body, [
-    Headers? headers,
-  ]) {
+  static AppFailure mapErrorResponse(int? status, Object? body, [Headers? headers]) {
     final error = body is Map && body['error'] is Map
         ? body['error'] as Map<Object?, Object?>
         : const <Object?, Object?>{};
     final code = error['code'] as String?;
     final serverMessage = error['message'] as String?;
-    final details = error['details'] is Map
-        ? error['details'] as Map<Object?, Object?>
-        : const <Object?, Object?>{};
+    final details = error['details'] is Map ? error['details'] as Map<Object?, Object?> : const <Object?, Object?>{};
     final message = _localizedMessage(code) ?? serverMessage ?? 'Server xatosi';
     switch (status) {
       case 401:
-        return UnauthorizedFailure(
-          _localizedMessage(code) ?? 'Tizimga qayta kiring',
-        );
+        return UnauthorizedFailure(_localizedMessage(code) ?? 'Tizimga qayta kiring');
       case 403:
-        return code == 'BLOCKED'
-            ? const BlockedFailure()
-            : ForbiddenFailure(message);
+        return code == 'BLOCKED' ? const BlockedFailure() : ForbiddenFailure(message);
       case 404:
         return const NotFoundFailure();
       case 409:
         return ConflictFailure(message, code: code);
       case 413:
-        return const ValidationFailure(
-          'Fayl hajmi juda katta',
-          code: 'PAYLOAD_TOO_LARGE',
-        );
+        return const ValidationFailure('Fayl hajmi juda katta', code: 'PAYLOAD_TOO_LARGE');
       case 415:
         return const ValidationFailure(
           'Bu fayl turi qo‘llab-quvvatlanmaydi (JPEG, PNG, WebP, HEIC)',
@@ -179,25 +143,17 @@ class ApiClient {
         );
       case 400:
       case 422:
-        return ValidationFailure(
-          message,
-          fieldErrors: _fieldErrors(details),
-          code: code,
-        );
+        return ValidationFailure(message, fieldErrors: _fieldErrors(details), code: code);
       case 429:
         final seconds =
-            (details['retryAfterSeconds'] as num?)?.toInt() ??
-            int.tryParse(headers?.value('retry-after') ?? '');
+            (details['retryAfterSeconds'] as num?)?.toInt() ?? int.tryParse(headers?.value('retry-after') ?? '');
         return RateLimitFailure(
-          _localizedMessage(code) ??
-              'Juda ko‘p so‘rov. Birozdan so‘ng urinib ko‘ring',
+          _localizedMessage(code) ?? 'Juda ko‘p so‘rov. Birozdan so‘ng urinib ko‘ring',
           seconds == null ? null : Duration(seconds: seconds),
         );
       default:
         return ServerFailure(
-          status != null && status >= 500
-              ? 'Serverda nosozlik. Keyinroq urinib ko‘ring'
-              : message,
+          status != null && status >= 500 ? 'Serverda nosozlik. Keyinroq urinib ko‘ring' : message,
           statusCode: status,
         );
     }
@@ -205,10 +161,8 @@ class ApiClient {
 
   static Map<String, String> _fieldErrors(Map<Object?, Object?> details) {
     final fields = details['fields'];
-    if (fields is Map)
-      return fields.map((key, value) => MapEntry('$key', '$value'));
-    if (details['field'] is String)
-      return {details['field'] as String: 'Noto‘g‘ri qiymat'};
+    if (fields is Map) return fields.map((key, value) => MapEntry('$key', '$value'));
+    if (details['field'] is String) return {details['field'] as String: 'Noto‘g‘ri qiymat'};
     return const {};
   }
 
@@ -219,8 +173,7 @@ class ApiClient {
     'OTP_COOLDOWN' => 'Yangi kodni biroz kutib so‘rang',
     'SESSION_REVOKED' => 'Sessiya tugatildi. Qayta kiring',
     'TOKEN_EXPIRED' => 'Sessiya muddati tugadi',
-    'NOT_ELIGIBLE' =>
-      'Sharh qoldirish uchun avval usta bilan yozishgan bo‘lishingiz kerak',
+    'NOT_ELIGIBLE' => 'Sharh qoldirish uchun avval usta bilan yozishgan bo‘lishingiz kerak',
     'BLOCKED' => 'Bu foydalanuvchi bilan yozishib bo‘lmaydi',
     _ => null,
   };
@@ -239,10 +192,7 @@ class TokenStore {
   Future<String?> get accessToken => _secure.read(SecureStoreKey.accessToken);
   Future<String?> get refreshToken => _secure.read(SecureStoreKey.refreshToken);
 
-  Future<void> save({
-    required String accessToken,
-    required String refreshToken,
-  }) async {
+  Future<void> save({required String accessToken, required String refreshToken}) async {
     await _secure.write(SecureStoreKey.accessToken, accessToken);
     await _secure.write(SecureStoreKey.refreshToken, refreshToken);
   }
@@ -264,11 +214,7 @@ class TokenStore {
 /// [QueuedInterceptor] serializes error handling, so concurrent 401s trigger
 /// a single rotation; later requests reuse the already-rotated token.
 class AuthInterceptor extends QueuedInterceptor {
-  AuthInterceptor({
-    required this.tokens,
-    required this.dio,
-    required this.refreshDio,
-  });
+  AuthInterceptor({required this.tokens, required this.dio, required this.refreshDio});
 
   final TokenStore tokens;
   final Dio dio;
@@ -279,32 +225,21 @@ class AuthInterceptor extends QueuedInterceptor {
   static const _retried = 'auth.retried';
 
   @override
-  Future<void> onRequest(
-    RequestOptions options,
-    RequestInterceptorHandler handler,
-  ) async {
+  Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     final token = await tokens.accessToken;
-    if (token != null)
-      options.headers[HttpHeaders.authorizationHeader] = 'Bearer $token';
+    if (token != null) options.headers[HttpHeaders.authorizationHeader] = 'Bearer $token';
     options.headers[HttpHeaders.acceptLanguageHeader] = 'uz';
     handler.next(options);
   }
 
   @override
-  Future<void> onError(
-    DioException err,
-    ErrorInterceptorHandler handler,
-  ) async {
+  Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
     final request = err.requestOptions;
     final unauthorized = err.response?.statusCode == 401;
-    if (!unauthorized ||
-        request.extra[_retried] == true ||
-        request.path.contains('/auth/')) {
+    if (!unauthorized || request.extra[_retried] == true || request.path.contains('/auth/')) {
       return handler.next(err);
     }
-    final sentToken =
-        (request.headers[HttpHeaders.authorizationHeader] as String?)
-            ?.replaceFirst('Bearer ', '');
+    final sentToken = (request.headers[HttpHeaders.authorizationHeader] as String?)?.replaceFirst('Bearer ', '');
     final current = await tokens.accessToken;
     if (current == null) return handler.next(err);
 
@@ -313,10 +248,7 @@ class AuthInterceptor extends QueuedInterceptor {
       final token = current != sentToken ? current : await _refresh();
       if (token == null) return handler.next(err);
       final retry = request.copyWith(
-        headers: {
-          ...request.headers,
-          HttpHeaders.authorizationHeader: 'Bearer $token',
-        },
+        headers: {...request.headers, HttpHeaders.authorizationHeader: 'Bearer $token'},
         extra: {...request.extra, _retried: true},
       );
       handler.resolve(await dio.fetch<Object?>(retry));
@@ -333,15 +265,11 @@ class AuthInterceptor extends QueuedInterceptor {
       return null;
     }
     try {
-      final response = await refreshDio.post<JsonMap>(
-        '/auth/refresh',
-        data: {'refreshToken': refreshToken},
-      );
+      final response = await refreshDio.post<JsonMap>('/auth/refresh', data: {'refreshToken': refreshToken});
       final data = response.data?['data'] as JsonMap?;
       final access = data?['accessToken'] as String?;
       final refresh = data?['refreshToken'] as String?;
-      if (access == null || refresh == null)
-        throw const ServerFailure('Kutilmagan server javobi');
+      if (access == null || refresh == null) throw const ServerFailure('Kutilmagan server javobi');
       await tokens.save(accessToken: access, refreshToken: refresh);
       return access;
     } on DioException catch (error) {
@@ -375,13 +303,7 @@ final apiClientProvider = Provider<ApiClient>((ref) {
   final config = ref.watch(appConfigProvider);
   final dio = Dio(_baseOptions(config));
   final refreshDio = Dio(_baseOptions(config));
-  dio.interceptors.add(
-    AuthInterceptor(
-      tokens: ref.watch(tokenStoreProvider),
-      dio: dio,
-      refreshDio: refreshDio,
-    ),
-  );
+  dio.interceptors.add(AuthInterceptor(tokens: ref.watch(tokenStoreProvider), dio: dio, refreshDio: refreshDio));
   ref.onDispose(() {
     dio.close();
     refreshDio.close();

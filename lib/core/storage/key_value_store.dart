@@ -24,8 +24,7 @@ class KeyValueStore {
 
   String? getString(String key) => _prefs.getString(key);
   bool? getBool(String key) => _prefs.getBool(key);
-  List<String> getStringList(String key) =>
-      _prefs.getStringList(key) ?? const [];
+  List<String> getStringList(String key) => _prefs.getStringList(key) ?? const [];
 
   Map<String, dynamic>? getJson(String key) {
     final raw = _prefs.getString(key);
@@ -38,26 +37,19 @@ class KeyValueStore {
     }
   }
 
-  Future<void> setString(String key, String value) =>
-      _prefs.setString(key, value);
-  Future<void> setBool(String key, {required bool value}) =>
-      _prefs.setBool(key, value);
-  Future<void> setStringList(String key, List<String> value) =>
-      _prefs.setStringList(key, value);
-  Future<void> setJson(String key, Map<String, dynamic> value) =>
-      _prefs.setString(key, jsonEncode(value));
+  Future<void> setString(String key, String value) => _prefs.setString(key, value);
+  Future<void> setBool(String key, {required bool value}) => _prefs.setBool(key, value);
+  Future<void> setStringList(String key, List<String> value) => _prefs.setStringList(key, value);
+  Future<void> setJson(String key, Map<String, dynamic> value) => _prefs.setString(key, jsonEncode(value));
   Future<void> remove(String key) => _prefs.remove(key);
 
   static Future<KeyValueStore> open() async {
-    final prefs = await SharedPreferencesWithCache.create(
-      cacheOptions: const SharedPreferencesWithCacheOptions(),
-    );
+    final prefs = await SharedPreferencesWithCache.create(cacheOptions: const SharedPreferencesWithCacheOptions());
     return KeyValueStore(prefs);
   }
 }
 
 /// Overridden in `main()` with an opened store.
 final keyValueStoreProvider = Provider<KeyValueStore>(
-  (ref) =>
-      throw StateError('keyValueStoreProvider must be overridden at startup'),
+  (ref) => throw StateError('keyValueStoreProvider must be overridden at startup'),
 );

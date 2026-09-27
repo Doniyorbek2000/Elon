@@ -24,10 +24,7 @@ class ThousandsInputFormatter extends TextInputFormatter {
   }
 
   @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
     var digits = newValue.text.replaceAll(RegExp(r'\D'), '');
     if (digits.length > maxDigits) digits = digits.substring(0, maxDigits);
     digits = digits.replaceFirst(RegExp(r'^0+(?=\d)'), '');
@@ -35,10 +32,7 @@ class ThousandsInputFormatter extends TextInputFormatter {
 
     // Keep the caret after the same number of digits as before formatting.
     final caret = newValue.selection.end.clamp(0, newValue.text.length);
-    final digitsBeforeCaret = newValue.text
-        .substring(0, caret)
-        .replaceAll(RegExp(r'\D'), '')
-        .length;
+    final digitsBeforeCaret = newValue.text.substring(0, caret).replaceAll(RegExp(r'\D'), '').length;
     var offset = 0;
     var seen = 0;
     while (offset < formatted.length && seen < digitsBeforeCaret) {
@@ -58,16 +52,11 @@ class UzPhoneInputFormatter extends TextInputFormatter {
 
   static String digitsOf(String text) {
     final digits = text.replaceAll(RegExp(r'\D'), '');
-    return digits.startsWith('998') && digits.length > 9
-        ? digits.substring(3)
-        : digits;
+    return digits.startsWith('998') && digits.length > 9 ? digits.substring(3) : digits;
   }
 
   @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
     var digits = newValue.text.replaceAll(RegExp(r'\D'), '');
     if (digits.length > 9) digits = digits.substring(0, 9);
     final buffer = StringBuffer();

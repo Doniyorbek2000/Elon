@@ -24,11 +24,7 @@ class ChatListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final signedIn = ref.watch(sessionProvider) != null;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Chatlar'),
-        centerTitle: false,
-        automaticallyImplyLeading: false,
-      ),
+      appBar: AppBar(title: const Text('Chatlar'), centerTitle: false, automaticallyImplyLeading: false),
       body: !signedIn
           ? EmptyState(
               icon: Icons.chat_bubble_outline_rounded,
@@ -46,11 +42,7 @@ class ChatListScreen extends ConsumerWidget {
                       children: List.generate(
                         6,
                         (_) => const ListTile(
-                          leading: SkeletonBox(
-                            width: 52,
-                            height: 52,
-                            radius: 26,
-                          ),
+                          leading: SkeletonBox(width: 52, height: 52, radius: 26),
                           title: SkeletonLine(widthFactor: 0.5),
                           subtitle: Padding(
                             padding: EdgeInsets.only(top: AppSpacing.sm),
@@ -60,10 +52,7 @@ class ChatListScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  error: (error, _) => FailureView(
-                    error: error,
-                    onRetry: () => ref.invalidate(conversationsProvider),
-                  ),
+                  error: (error, _) => FailureView(error: error, onRetry: () => ref.invalidate(conversationsProvider)),
                   data: (conversations) => conversations.isEmpty
                       ? EmptyState(
                           icon: Icons.forum_outlined,
@@ -74,15 +63,10 @@ class ChatListScreen extends ConsumerWidget {
                         )
                       : ContentWidth(
                           child: ListView.separated(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: AppSpacing.sm,
-                            ),
+                            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                             itemCount: conversations.length,
-                            separatorBuilder: (_, _) =>
-                                const Divider(indent: 84),
-                            itemBuilder: (_, index) => _ConversationTile(
-                              conversation: conversations[index],
-                            ),
+                            separatorBuilder: (_, _) => const Divider(indent: 84),
+                            itemBuilder: (_, index) => _ConversationTile(conversation: conversations[index]),
                           ),
                         ),
                 ),
@@ -115,10 +99,7 @@ class _ConversationTile extends ConsumerWidget {
       child: InkWell(
         onTap: () => context.push(AppRoutes.chat(conversation.id)),
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.md,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
           child: Row(
             children: [
               SizedBox.square(
@@ -140,15 +121,9 @@ class _ConversationTile extends ConsumerWidget {
                           height: 24,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(7),
-                            border: Border.all(
-                              color: palette.surface,
-                              width: 2,
-                            ),
+                            border: Border.all(color: palette.surface, width: 2),
                           ),
-                          child: AppImage(
-                            image: context0!.image,
-                            borderRadius: BorderRadius.circular(5),
-                          ),
+                          child: AppImage(image: context0!.image, borderRadius: BorderRadius.circular(5)),
                         ),
                       ),
                   ],
@@ -168,38 +143,27 @@ class _ConversationTile extends ConsumerWidget {
                                 child: Text(
                                   conversation.peer.name,
                                   style: text.titleSmall?.copyWith(
-                                    fontWeight: unread
-                                        ? FontWeight.w700
-                                        : FontWeight.w600,
+                                    fontWeight: unread ? FontWeight.w700 : FontWeight.w600,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               const SizedBox(width: AppSpacing.xs),
-                              VerifiedBadge(
-                                level: conversation.peer.verification,
-                                size: 14,
-                              ),
+                              VerifiedBadge(level: conversation.peer.verification, size: 14),
                             ],
                           ),
                         ),
                         Text(
                           Formatters.chatStamp(conversation.updatedAt, now),
-                          style: text.bodySmall?.copyWith(
-                            color: unread
-                                ? palette.primary
-                                : palette.textTertiary,
-                          ),
+                          style: text.bodySmall?.copyWith(color: unread ? palette.primary : palette.textTertiary),
                         ),
                       ],
                     ),
                     if (context0 != null)
                       Text(
                         context0.title,
-                        style: text.labelSmall?.copyWith(
-                          color: palette.primary,
-                        ),
+                        style: text.labelSmall?.copyWith(color: palette.primary),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -207,28 +171,19 @@ class _ConversationTile extends ConsumerWidget {
                     Row(
                       children: [
                         if (conversation.isBlocked) ...[
-                          Icon(
-                            Icons.block_rounded,
-                            size: 14,
-                            color: palette.danger,
-                          ),
+                          Icon(Icons.block_rounded, size: 14, color: palette.danger),
                           const SizedBox(width: AppSpacing.xs),
                         ],
                         Expanded(
                           child: Text(
                             conversation.isBlocked
                                 ? 'Bloklangan'
-                                : conversation.lastMessagePreview ??
-                                      'Suhbatni boshlang',
+                                : conversation.lastMessagePreview ?? 'Suhbatni boshlang',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: text.bodySmall?.copyWith(
-                              color: unread
-                                  ? palette.textPrimary
-                                  : palette.textSecondary,
-                              fontWeight: unread
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
+                              color: unread ? palette.textPrimary : palette.textSecondary,
+                              fontWeight: unread ? FontWeight.w600 : FontWeight.w400,
                             ),
                           ),
                         ),
@@ -236,20 +191,12 @@ class _ConversationTile extends ConsumerWidget {
                           const SizedBox(width: AppSpacing.sm),
                           Container(
                             constraints: const BoxConstraints(minWidth: 20),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: palette.primary,
-                              borderRadius: AppRadii.pillAll,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(color: palette.primary, borderRadius: AppRadii.pillAll),
                             child: Text(
                               '${conversation.unreadCount}',
                               textAlign: TextAlign.center,
-                              style: text.labelSmall?.copyWith(
-                                color: palette.onPrimary,
-                              ),
+                              style: text.labelSmall?.copyWith(color: palette.onPrimary),
                             ),
                           ),
                         ],

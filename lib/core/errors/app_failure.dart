@@ -39,9 +39,7 @@ final class ForbiddenFailure extends AppFailure {
 
 /// 403 BLOCKED: one of the users blocked the other.
 final class BlockedFailure extends AppFailure {
-  const BlockedFailure([
-    super.message = 'Bu foydalanuvchi bilan yozishib bo‘lmaydi',
-  ]);
+  const BlockedFailure([super.message = 'Bu foydalanuvchi bilan yozishib bo‘lmaydi']);
 }
 
 /// 409: state conflict (duplicate, invalid status transition).
@@ -52,11 +50,7 @@ final class ConflictFailure extends AppFailure {
 }
 
 final class ValidationFailure extends AppFailure {
-  const ValidationFailure(
-    super.message, {
-    this.fieldErrors = const {},
-    this.code,
-  });
+  const ValidationFailure(super.message, {this.fieldErrors = const {}, this.code});
 
   final Map<String, String> fieldErrors;
 
@@ -65,10 +59,7 @@ final class ValidationFailure extends AppFailure {
 }
 
 final class RateLimitFailure extends AppFailure {
-  const RateLimitFailure([
-    super.message = 'Juda ko‘p so‘rov. Birozdan so‘ng urinib ko‘ring',
-    this.retryAfter,
-  ]);
+  const RateLimitFailure([super.message = 'Juda ko‘p so‘rov. Birozdan so‘ng urinib ko‘ring', this.retryAfter]);
 
   final Duration? retryAfter;
 }
@@ -84,6 +75,5 @@ final class UnknownFailure extends AppFailure {
 }
 
 extension AppFailureX on Object {
-  AppFailure asFailure() =>
-      this is AppFailure ? this as AppFailure : const UnknownFailure();
+  AppFailure asFailure() => this is AppFailure ? this as AppFailure : const UnknownFailure();
 }

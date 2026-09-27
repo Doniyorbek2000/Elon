@@ -15,10 +15,7 @@ class Shimmer extends StatefulWidget {
 }
 
 class _ShimmerState extends State<Shimmer> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: AppMotion.shimmer,
-  );
+  late final AnimationController _controller = AnimationController(vsync: this, duration: AppMotion.shimmer);
 
   @override
   void didChangeDependencies() {
@@ -51,11 +48,7 @@ class _ShimmerState extends State<Shimmer> with SingleTickerProviderStateMixin {
             return ShaderMask(
               blendMode: BlendMode.srcATop,
               shaderCallback: (bounds) => LinearGradient(
-                colors: [
-                  palette.skeletonBase,
-                  palette.skeletonHighlight,
-                  palette.skeletonBase,
-                ],
+                colors: [palette.skeletonBase, palette.skeletonHighlight, palette.skeletonBase],
                 stops: const [0.25, 0.5, 0.75],
                 transform: _SlideGradient(t),
               ).createShader(bounds),
@@ -79,12 +72,7 @@ class _SlideGradient extends GradientTransform {
 }
 
 class SkeletonBox extends StatelessWidget {
-  const SkeletonBox({
-    super.key,
-    this.width,
-    this.height,
-    this.radius = AppRadii.xs,
-  });
+  const SkeletonBox({super.key, this.width, this.height, this.radius = AppRadii.xs});
 
   final double? width;
   final double? height;
@@ -94,10 +82,7 @@ class SkeletonBox extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     width: width,
     height: height,
-    decoration: BoxDecoration(
-      color: context.palette.skeletonBase,
-      borderRadius: BorderRadius.circular(radius),
-    ),
+    decoration: BoxDecoration(color: context.palette.skeletonBase, borderRadius: BorderRadius.circular(radius)),
   );
 }
 

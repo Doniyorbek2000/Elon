@@ -22,15 +22,10 @@ class AppAvatar extends StatelessWidget {
   final AccentTone tone;
 
   String get _initials {
-    final parts = name
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((p) => p.isNotEmpty)
-        .toList();
+    final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
     if (parts.isEmpty) return '?';
     if (parts.length == 1) return parts.first.characters.first.toUpperCase();
-    return (parts[0].characters.first + parts[1].characters.first)
-        .toUpperCase();
+    return (parts[0].characters.first + parts[1].characters.first).toUpperCase();
   }
 
   @override
@@ -46,19 +41,11 @@ class AppAvatar extends StatelessWidget {
                   child: Text(
                     _initials,
                     textScaler: TextScaler.noScaling,
-                    style: TextStyle(
-                      fontSize: size * 0.36,
-                      fontWeight: FontWeight.w700,
-                      color: pair.foreground,
-                    ),
+                    style: TextStyle(fontSize: size * 0.36, fontWeight: FontWeight.w700, color: pair.foreground),
                   ),
                 ),
               )
-            : AppImage(
-                image: image,
-                placeholderIcon: Icons.person_rounded,
-                tone: tone,
-              ),
+            : AppImage(image: image, placeholderIcon: Icons.person_rounded, tone: tone),
       ),
     );
     return Semantics(
@@ -71,12 +58,7 @@ class AppAvatar extends StatelessWidget {
           clipBehavior: Clip.none,
           children: [
             avatar,
-            if (isOnline)
-              PositionedDirectional(
-                end: 0,
-                bottom: 0,
-                child: OnlineDot(size: size * 0.26),
-              ),
+            if (isOnline) PositionedDirectional(end: 0, bottom: 0, child: OnlineDot(size: size * 0.26)),
           ],
         ),
       ),

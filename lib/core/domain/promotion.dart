@@ -19,8 +19,7 @@ enum PromotionType {
     PromotionType.premiumVacancy => 'Premium',
   };
 
-  static PromotionType? parse(Object? value) =>
-      PromotionType.values.where((type) => type.name == value).firstOrNull;
+  static PromotionType? parse(Object? value) => PromotionType.values.where((type) => type.name == value).firstOrNull;
 }
 
 @immutable

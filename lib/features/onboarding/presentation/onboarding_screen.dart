@@ -21,8 +21,7 @@ class OnboardingScreen extends ConsumerStatefulWidget {
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
-    with SingleTickerProviderStateMixin {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with SingleTickerProviderStateMixin {
   late final AnimationController _entrance = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 950),
@@ -53,10 +52,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     return FadeTransition(
       opacity: animation,
       child: SlideTransition(
-        position: Tween(
-          begin: const Offset(0, 0.12),
-          end: Offset.zero,
-        ).animate(animation),
+        position: Tween(begin: const Offset(0, 0.12), end: Offset.zero).animate(animation),
         child: child,
       ),
     );
@@ -75,19 +71,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     final text = Theme.of(context).textTheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     const pillars = [
-      (
-        Icons.storefront_rounded,
-        'E’lonlar',
-        'Sotish va sotib olish',
-        AccentTone.orange,
-      ),
+      (Icons.storefront_rounded, 'E’lonlar', 'Sotish va sotib olish', AccentTone.orange),
       (Icons.work_rounded, 'Ish', 'Yaqin joydagi ishlar', AccentTone.indigo),
-      (
-        Icons.handyman_rounded,
-        'Xizmatlar',
-        'Ustalar va xizmatlar',
-        AccentTone.blue,
-      ),
+      (Icons.handyman_rounded, 'Xizmatlar', 'Ustalar va xizmatlar', AccentTone.blue),
     ];
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -99,17 +85,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
             SafeArea(
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: AppBreakpoints.formMaxWidth,
-                  ),
+                  constraints: const BoxConstraints(maxWidth: AppBreakpoints.formMaxWidth),
                   child: CustomScrollView(
                     slivers: [
                       SliverFillRemaining(
                         hasScrollBody: false,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.xxl,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
                           child: Column(
                             children: [
                               const SizedBox(height: AppSpacing.huge),
@@ -124,25 +106,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                                   textAlign: TextAlign.center,
                                   style: text.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w500,
-                                    color: isDark
-                                        ? palette.textSecondary
-                                        : const Color(0xFF1E2A4A),
+                                    color: isDark ? palette.textSecondary : const Color(0xFF1E2A4A),
                                     height: 1.35,
                                   ),
                                 ),
                               ),
                               const Spacer(),
                               const SizedBox(height: AppSpacing.xxxl),
-                              for (final (index, (icon, title, subtitle, tone))
-                                  in pillars.indexed) ...[
+                              for (final (index, (icon, title, subtitle, tone)) in pillars.indexed) ...[
                                 _staggered(
                                   3 + index,
-                                  _PillarCard(
-                                    icon: icon,
-                                    title: title,
-                                    subtitle: subtitle,
-                                    tone: tone,
-                                  ),
+                                  _PillarCard(icon: icon, title: title, subtitle: subtitle, tone: tone),
                                 ),
                                 const SizedBox(height: AppSpacing.md),
                               ],
@@ -154,21 +128,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                                   child: FilledButton(
                                     onPressed: _start,
                                     style: FilledButton.styleFrom(
-                                      minimumSize: const Size.fromHeight(
-                                        AppTouch.buttonHeight + 4,
-                                      ),
+                                      minimumSize: const Size.fromHeight(AppTouch.buttonHeight + 4),
                                       shape: const StadiumBorder(),
                                     ),
                                     child: const Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         Text('Boshlash'),
                                         SizedBox(width: AppSpacing.sm),
-                                        Icon(
-                                          Icons.arrow_forward_rounded,
-                                          size: AppIconSize.md,
-                                        ),
+                                        Icon(Icons.arrow_forward_rounded, size: AppIconSize.md),
                                       ],
                                     ),
                                   ),
@@ -198,12 +166,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
 }
 
 class _PillarCard extends StatelessWidget {
-  const _PillarCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.tone,
-  });
+  const _PillarCard({required this.icon, required this.title, required this.subtitle, required this.tone});
 
   final IconData icon;
   final String title;
@@ -218,20 +181,12 @@ class _PillarCard extends StatelessWidget {
       label: '$title. $subtitle',
       excludeSemantics: true,
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.md,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
         decoration: BoxDecoration(
-          color: palette.surface.withValues(
-            alpha: Theme.of(context).brightness == Brightness.dark ? 0.9 : 0.94,
-          ),
+          color: palette.surface.withValues(alpha: Theme.of(context).brightness == Brightness.dark ? 0.9 : 0.94),
           borderRadius: AppRadii.lgAll,
           border: Border.all(color: palette.border.withValues(alpha: 0.7)),
-          boxShadow: AppShadows.card(
-            palette,
-            dark: Theme.of(context).brightness == Brightness.dark,
-          ),
+          boxShadow: AppShadows.card(palette, dark: Theme.of(context).brightness == Brightness.dark),
         ),
         child: Row(
           children: [
@@ -241,12 +196,7 @@ class _PillarCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: text.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  Text(title, style: text.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
                   const SizedBox(height: 2),
                   Text(subtitle, style: text.bodySmall),
                 ],

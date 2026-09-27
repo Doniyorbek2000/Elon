@@ -36,11 +36,7 @@ class CandidateDetailScreen extends ConsumerWidget {
           ),
           error: (error, _) => Scaffold(
             appBar: AppBar(),
-            body: FailureView(
-              error: error,
-              onRetry: () =>
-                  ref.invalidate(candidateDetailProvider(candidateId)),
-            ),
+            body: FailureView(error: error, onRetry: () => ref.invalidate(candidateDetailProvider(candidateId))),
           ),
         );
   }
@@ -64,53 +60,30 @@ class _CandidateView extends ConsumerWidget {
           IconButton(
             tooltip: 'Shikoyat',
             icon: const Icon(Icons.flag_outlined),
-            onPressed: () => showReportSheet(
-              context,
-              type: ReportTargetType.user,
-              targetId: profile.id,
-            ),
+            onPressed: () => showReportSheet(context, type: ReportTargetType.user, targetId: profile.id),
           ),
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.lg,
-          AppSpacing.lg,
-          AppSpacing.lg,
-          AppSpacing.huge,
-        ),
+        padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.huge),
         children: [
           ContentWidth(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Center(
-                  child: AppAvatar(
-                    name: profile.name,
-                    image: profile.avatar,
-                    size: 96,
-                    isOnline: profile.isOnline,
-                  ),
+                  child: AppAvatar(name: profile.name, image: profile.avatar, size: 96, isOnline: profile.isOnline),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Center(
-                  child: Text(
-                    candidate.desiredPosition,
-                    style: text.titleLarge,
-                    textAlign: TextAlign.center,
-                  ),
+                  child: Text(candidate.desiredPosition, style: text.titleLarge, textAlign: TextAlign.center),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Center(
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        profile.name,
-                        style: text.bodyMedium?.copyWith(
-                          color: palette.textSecondary,
-                        ),
-                      ),
+                      Text(profile.name, style: text.bodyMedium?.copyWith(color: palette.textSecondary)),
                       const SizedBox(width: AppSpacing.xs),
                       VerifiedBadge(level: profile.verification),
                     ],
@@ -123,10 +96,7 @@ class _CandidateView extends ConsumerWidget {
                   child: Row(
                     children: [
                       Expanded(
-                        child: InfoTile(
-                          label: 'Tajriba',
-                          value: '${candidate.experienceYears} yil',
-                        ),
+                        child: InfoTile(label: 'Tajriba', value: '${candidate.experienceYears} yil'),
                       ),
                       Expanded(
                         child: InfoTile(
@@ -137,10 +107,7 @@ class _CandidateView extends ConsumerWidget {
                         ),
                       ),
                       Expanded(
-                        child: InfoTile(
-                          label: 'Hudud',
-                          value: candidate.place.shortLabel,
-                        ),
+                        child: InfoTile(label: 'Hudud', value: candidate.place.shortLabel),
                       ),
                     ],
                   ),
@@ -151,8 +118,7 @@ class _CandidateView extends ConsumerWidget {
                     spacing: AppSpacing.sm,
                     runSpacing: AppSpacing.sm,
                     children: [
-                      for (final skill in candidate.skills)
-                        StatusPill(label: skill, style: PillStyle.primary),
+                      for (final skill in candidate.skills) StatusPill(label: skill, style: PillStyle.primary),
                     ],
                   ),
                 ),
@@ -161,10 +127,7 @@ class _CandidateView extends ConsumerWidget {
                   child: Wrap(
                     spacing: AppSpacing.sm,
                     runSpacing: AppSpacing.sm,
-                    children: [
-                      for (final type in candidate.employmentTypes)
-                        StatusPill(label: type.label),
-                    ],
+                    children: [for (final type in candidate.employmentTypes) StatusPill(label: type.label)],
                   ),
                 ),
                 DetailSection(
@@ -172,10 +135,7 @@ class _CandidateView extends ConsumerWidget {
                   child: Text(candidate.about, style: text.bodyMedium),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                Text(
-                  'Yangilangan: ${Formatters.relativeTime(candidate.updatedAt, now)}',
-                  style: text.bodySmall,
-                ),
+                Text('Yangilangan: ${Formatters.relativeTime(candidate.updatedAt, now)}', style: text.bodySmall),
               ],
             ),
           ),
@@ -188,9 +148,7 @@ class _CandidateView extends ConsumerWidget {
             onPressed: () => showContactSheet(
               context,
               person: profile,
-              loadPhone: () => ref
-                  .read(jobRepositoryProvider)
-                  .revealCandidatePhone(candidate.id),
+              loadPhone: () => ref.read(jobRepositoryProvider).revealCandidatePhone(candidate.id),
             ),
             icon: const Icon(Icons.call_rounded),
             label: const Text('Qo‘ng‘iroq'),

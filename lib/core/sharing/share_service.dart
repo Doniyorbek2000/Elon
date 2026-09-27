@@ -32,13 +32,7 @@ class SharePayload {
   final MediaImage? image;
   final Uri url;
 
-  String get message => [
-    title,
-    ?subtitle,
-    if (location != null) '📍 $location',
-    '',
-    url.toString(),
-  ].join('\n');
+  String get message => [title, ?subtitle, if (location != null) '📍 $location', '', url.toString()].join('\n');
 }
 
 /// Builds canonical links. Paths mirror in-app routes so the same URL works
@@ -55,17 +49,13 @@ class DeepLinks {
     ShareTarget.seller => '/seller/$id',
   };
 
-  Uri web(ShareTarget target, String id) =>
-      Uri.parse('${_config.webBaseUrl}${pathFor(target, id)}');
+  Uri web(ShareTarget target, String id) => Uri.parse('${_config.webBaseUrl}${pathFor(target, id)}');
 
   /// `bozor://app/listing/42` — custom-scheme fallback for in-app handoff.
-  Uri app(ShareTarget target, String id) =>
-      Uri.parse('${_config.appScheme}://app${pathFor(target, id)}');
+  Uri app(ShareTarget target, String id) => Uri.parse('${_config.appScheme}://app${pathFor(target, id)}');
 }
 
-final deepLinksProvider = Provider<DeepLinks>(
-  (ref) => DeepLinks(ref.watch(appConfigProvider)),
-);
+final deepLinksProvider = Provider<DeepLinks>((ref) => DeepLinks(ref.watch(appConfigProvider)));
 
 abstract interface class ShareService {
   Future<void> shareToTelegram(SharePayload payload);
@@ -79,32 +69,21 @@ class PlatformShareService implements ShareService {
   @override
   Future<void> shareToTelegram(SharePayload payload) async {
     final text = payload.message.replaceAll(payload.url.toString(), '').trim();
-    final query =
-        'url=${Uri.encodeComponent(payload.url.toString())}&text=${Uri.encodeComponent(text)}';
+    final query = 'url=${Uri.encodeComponent(payload.url.toString())}&text=${Uri.encodeComponent(text)}';
     final appUri = Uri.parse('tg://msg_url?$query');
     if (await canLaunchUrl(appUri) && await launchUrl(appUri)) return;
-    await launchUrl(
-      Uri.parse('https://t.me/share/url?$query'),
-      mode: LaunchMode.externalApplication,
-    );
+    await launchUrl(Uri.parse('https://t.me/share/url?$query'), mode: LaunchMode.externalApplication);
   }
 
   @override
   Future<void> shareSystem(SharePayload payload, {Rect? origin}) async {
     await SharePlus.instance.share(
-      ShareParams(
-        text: payload.message,
-        subject: payload.title,
-        sharePositionOrigin: origin,
-      ),
+      ShareParams(text: payload.message, subject: payload.title, sharePositionOrigin: origin),
     );
   }
 
   @override
-  Future<void> copyLink(SharePayload payload) =>
-      Clipboard.setData(ClipboardData(text: payload.url.toString()));
+  Future<void> copyLink(SharePayload payload) => Clipboard.setData(ClipboardData(text: payload.url.toString()));
 }
 
-final shareServiceProvider = Provider<ShareService>(
-  (ref) => const PlatformShareService(),
-);
+final shareServiceProvider = Provider<ShareService>((ref) => const PlatformShareService());

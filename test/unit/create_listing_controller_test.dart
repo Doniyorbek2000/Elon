@@ -15,8 +15,7 @@ void main() {
   late TestHarness harness;
   late ProviderContainer container;
 
-  CreateListingController controller() =>
-      container.read(createListingProvider.notifier);
+  CreateListingController controller() => container.read(createListingProvider.notifier);
   ListingDraft draft() => container.read(createListingProvider);
 
   Future<void> flush() async {
@@ -51,14 +50,7 @@ void main() {
 
   test('details step validates required fields and dynamic attributes', () {
     final errors = controller().next();
-    expect(
-      errors.keys,
-      containsAll([
-        DraftField.category,
-        DraftField.title,
-        DraftField.description,
-      ]),
-    );
+    expect(errors.keys, containsAll([DraftField.category, DraftField.title, DraftField.description]));
     expect(draft().step, CreateStep.details);
 
     controller()
@@ -68,11 +60,7 @@ void main() {
     final carErrors = controller().next();
     expect(
       carErrors.keys,
-      containsAll([
-        DraftField.price,
-        DraftField.attribute('brand'),
-        DraftField.attribute('year'),
-      ]),
+      containsAll([DraftField.price, DraftField.attribute('brand'), DraftField.attribute('year')]),
     );
 
     controller()
@@ -140,43 +128,34 @@ void main() {
     expect(restored.attributes['year'], '2023');
   });
 
-  test(
-    'publishing creates a listing, clears the draft and refreshes feeds',
-    () async {
-      fillValidCar();
-      controller().addPhotos(['/a.jpg', '/b.jpg']);
-      await flush();
-      final revision = container.read(listingsRevisionProvider);
+  test('publishing creates a listing, clears the draft and refreshes feeds', () async {
+    fillValidCar();
+    controller().addPhotos(['/a.jpg', '/b.jpg']);
+    await flush();
+    final revision = container.read(listingsRevisionProvider);
 
-      final item = await controller().publish();
-      expect(item.target, ShareTarget.listing);
-      expect(item.pendingReview, isFalse);
-      expect(draft().hasContent, isFalse);
-      expect(harness.store.getJson(StoreKeys.listingDraft), isNull);
-      expect(container.read(listingsRevisionProvider), revision + 1);
+    final item = await controller().publish();
+    expect(item.target, ShareTarget.listing);
+    expect(item.pendingReview, isFalse);
+    expect(draft().hasContent, isFalse);
+    expect(harness.store.getJson(StoreKeys.listingDraft), isNull);
+    expect(container.read(listingsRevisionProvider), revision + 1);
 
-      final listing = await container
-          .read(listingRepositoryProvider)
-          .getById(item.id);
-      expect(listing.title, 'Cobalt 2023');
-      expect(listing.images, hasLength(2));
-      expect(listing.attributes.map((a) => a.value), contains('2023'));
-    },
-  );
+    final listing = await container.read(listingRepositoryProvider).getById(item.id);
+    expect(listing.title, 'Cobalt 2023');
+    expect(listing.images, hasLength(2));
+    expect(listing.attributes.map((a) => a.value), contains('2023'));
+  });
 
   test('risky listings are published for moderation', () async {
     fillValidCar();
     controller()
-      ..setDescription(
-        'Oldindan to‘lov qiling, keyin olib ketasiz. Telefon: 90 123 45 67',
-      )
+      ..setDescription('Oldindan to‘lov qiling, keyin olib ketasiz. Telefon: 90 123 45 67')
       ..addPhotos(['/a.jpg']);
     await flush();
     final item = await controller().publish();
     expect(item.pendingReview, isTrue);
-    final listing = await container
-        .read(listingRepositoryProvider)
-        .getById(item.id);
+    final listing = await container.read(listingRepositoryProvider).getById(item.id);
     expect(listing.status, ListingStatus.pendingReview);
   });
 
@@ -190,11 +169,7 @@ void main() {
       ..setAttribute('company', 'Chust Market')
       ..setAttribute('employment', EmploymentType.partTime.label);
     expect(controller().next(), isEmpty);
-    expect(
-      controller().next(),
-      isEmpty,
-      reason: 'photos are optional for vacancies',
-    );
+    expect(controller().next(), isEmpty, reason: 'photos are optional for vacancies');
 
     final item = await controller().publish();
     expect(item.target, ShareTarget.job);

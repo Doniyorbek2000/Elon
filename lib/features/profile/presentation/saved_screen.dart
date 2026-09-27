@@ -23,60 +23,38 @@ import '../../services/presentation/widgets/provider_cards.dart';
 
 /// With a backend and an account, favorites are listed by the server (one
 /// query, removed items filtered out); otherwise from the local id set.
-bool _serverFavorites(Ref ref) =>
-    !ref.watch(appConfigProvider).useDemoData &&
-    ref.watch(sessionProvider) != null;
+bool _serverFavorites(Ref ref) => !ref.watch(appConfigProvider).useDemoData && ref.watch(sessionProvider) != null;
 
 final _savedListingsProvider = FutureProvider.autoDispose<List<Listing>>((ref) {
   ref.watch(savedItemsProvider);
-  if (_serverFavorites(ref))
-    return ref
-        .watch(favoritesRepositoryProvider)
-        .list(SavedKind.listing, Listing.fromJson);
+  if (_serverFavorites(ref)) return ref.watch(favoritesRepositoryProvider).list(SavedKind.listing, Listing.fromJson);
   final ids = ref.read(savedItemsProvider.notifier).idsOf(SavedKind.listing);
-  return ids.isEmpty
-      ? Future.value(const [])
-      : ref.watch(listingRepositoryProvider).getByIds(ids);
+  return ids.isEmpty ? Future.value(const []) : ref.watch(listingRepositoryProvider).getByIds(ids);
 });
 
 final _savedJobsProvider = FutureProvider.autoDispose<List<Job>>((ref) async {
   ref.watch(savedItemsProvider);
   if (_serverFavorites(ref)) {
-    return ref
-        .watch(favoritesRepositoryProvider)
-        .list(SavedKind.job, RemoteJobRepository.jobFromJson);
+    return ref.watch(favoritesRepositoryProvider).list(SavedKind.job, RemoteJobRepository.jobFromJson);
   }
   final ids = ref.read(savedItemsProvider.notifier).idsOf(SavedKind.job);
   final repository = ref.watch(jobRepositoryProvider);
-  final jobs = await Future.wait(
-    ids.map(
-      (id) => repository.getJob(id).then<Job?>((j) => j, onError: (_) => null),
-    ),
-  );
+  final jobs = await Future.wait(ids.map((id) => repository.getJob(id).then<Job?>((j) => j, onError: (_) => null)));
   return jobs.whereType<Job>().toList();
 });
 
-final _savedProvidersProvider =
-    FutureProvider.autoDispose<List<ServiceProvider>>((ref) async {
-      ref.watch(savedItemsProvider);
-      if (_serverFavorites(ref)) {
-        return ref
-            .watch(favoritesRepositoryProvider)
-            .list(SavedKind.provider, ServiceProvider.fromJson);
-      }
-      final ids = ref
-          .read(savedItemsProvider.notifier)
-          .idsOf(SavedKind.provider);
-      final repository = ref.watch(servicesRepositoryProvider);
-      final providers = await Future.wait(
-        ids.map(
-          (id) => repository
-              .getProvider(id)
-              .then<ServiceProvider?>((p) => p, onError: (_) => null),
-        ),
-      );
-      return providers.whereType<ServiceProvider>().toList();
-    });
+final _savedProvidersProvider = FutureProvider.autoDispose<List<ServiceProvider>>((ref) async {
+  ref.watch(savedItemsProvider);
+  if (_serverFavorites(ref)) {
+    return ref.watch(favoritesRepositoryProvider).list(SavedKind.provider, ServiceProvider.fromJson);
+  }
+  final ids = ref.read(savedItemsProvider.notifier).idsOf(SavedKind.provider);
+  final repository = ref.watch(servicesRepositoryProvider);
+  final providers = await Future.wait(
+    ids.map((id) => repository.getProvider(id).then<ServiceProvider?>((p) => p, onError: (_) => null)),
+  );
+  return providers.whereType<ServiceProvider>().toList();
+});
 
 class SavedScreen extends StatelessWidget {
   const SavedScreen({super.key});
@@ -124,12 +102,7 @@ class SavedScreen extends StatelessWidget {
 }
 
 class _SavedTab<T> extends ConsumerWidget {
-  const _SavedTab({
-    required this.provider,
-    required this.emptyTitle,
-    required this.builder,
-    required this.browseRoute,
-  });
+  const _SavedTab({required this.provider, required this.emptyTitle, required this.builder, required this.browseRoute});
 
   final ProviderListenable<AsyncValue<List<T>>> provider;
   final String emptyTitle;
@@ -151,15 +124,12 @@ class _SavedTab<T> extends ConsumerWidget {
                   title: emptyTitle,
                   message: 'Yoqqan narsalarni ♥ belgisi bilan saqlang — ular shu yerda turadi.',
                   actionLabel: 'Ko‘rib chiqish',
-                  onAction: () => browseRoute == AppRoutes.home
-                      ? context.go(browseRoute)
-                      : context.push(browseRoute),
+                  onAction: () => browseRoute == AppRoutes.home ? context.go(browseRoute) : context.push(browseRoute),
                 )
               : ListView.separated(
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   itemCount: items.length,
-                  separatorBuilder: (_, _) =>
-                      const SizedBox(height: AppSpacing.md),
+                  separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
                   itemBuilder: (_, index) => builder(items[index]),
                 ),
         );

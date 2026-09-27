@@ -55,51 +55,24 @@ class ProviderCard extends ConsumerWidget {
             Row(
               children: [
                 Flexible(
-                  child: Text(
-                    provider.name,
-                    style: text.titleSmall,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  child: Text(provider.name, style: text.titleSmall, maxLines: 1, overflow: TextOverflow.ellipsis),
                 ),
                 const SizedBox(width: 3),
                 VerifiedBadge(level: provider.profile.verification, size: 14),
               ],
             ),
-            Text(
-              provider.profession,
-              style: text.bodySmall,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+            Text(provider.profession, style: text.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
             const SizedBox(height: AppSpacing.xs),
-            RatingLabel(
-              rating: provider.rating,
-              count: provider.reviewCount,
-              compact: true,
-            ),
+            RatingLabel(rating: provider.rating, count: provider.reviewCount, compact: true),
             const SizedBox(height: 2),
-            MetaLine(
-              icon: Icons.location_on_outlined,
-              text: provider.place.shortLabel,
-            ),
+            MetaLine(icon: Icons.location_on_outlined, text: provider.place.shortLabel),
             const Spacer(),
             Wrap(
               spacing: AppSpacing.xs,
               runSpacing: AppSpacing.xs,
               children: [
-                if (provider.profile.isOnline)
-                  const StatusPill(
-                    label: 'Onlayn',
-                    style: PillStyle.success,
-                    dense: true,
-                  ),
-                if (showBadges && provider.isTop)
-                  const StatusPill(
-                    label: 'TOP',
-                    style: PillStyle.warning,
-                    dense: true,
-                  ),
+                if (provider.profile.isOnline) const StatusPill(label: 'Onlayn', style: PillStyle.success, dense: true),
+                if (showBadges && provider.isTop) const StatusPill(label: 'TOP', style: PillStyle.warning, dense: true),
               ],
             ),
           ],
@@ -121,22 +94,12 @@ class ProviderTile extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final showBadges = ref.watch(featureFlagsProvider).showPromotionBadges;
     return SurfaceCard(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        AppSpacing.md,
-        0,
-        AppSpacing.md,
-      ),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, 0, AppSpacing.md),
       onTap: () => context.push(AppRoutes.provider(provider.id)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppAvatar(
-            name: provider.name,
-            image: provider.profile.avatar,
-            size: 56,
-            isOnline: provider.profile.isOnline,
-          ),
+          AppAvatar(name: provider.name, image: provider.profile.avatar, size: 56, isOnline: provider.profile.isOnline),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Semantics(
@@ -156,17 +119,10 @@ class ProviderTile extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(width: AppSpacing.xs),
-                      VerifiedBadge(
-                        level: provider.profile.verification,
-                        size: 14,
-                      ),
+                      VerifiedBadge(level: provider.profile.verification, size: 14),
                       if (showBadges && provider.isTop) ...[
                         const SizedBox(width: AppSpacing.xs),
-                        const StatusPill(
-                          label: 'TOP',
-                          style: PillStyle.warning,
-                          dense: true,
-                        ),
+                        const StatusPill(label: 'TOP', style: PillStyle.warning, dense: true),
                       ],
                     ],
                   ),
@@ -177,15 +133,8 @@ class ProviderTile extends ConsumerWidget {
                     runSpacing: AppSpacing.xs,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      RatingLabel(
-                        rating: provider.rating,
-                        count: provider.reviewCount,
-                        compact: true,
-                      ),
-                      MetaLine(
-                        icon: Icons.location_on_outlined,
-                        text: provider.place.shortLabel,
-                      ),
+                      RatingLabel(rating: provider.rating, count: provider.reviewCount, compact: true),
+                      MetaLine(icon: Icons.location_on_outlined, text: provider.place.shortLabel),
                     ],
                   ),
                   if (provider.priceFrom != null) ...[
@@ -199,11 +148,7 @@ class ProviderTile extends ConsumerWidget {
               ),
             ),
           ),
-          FavoriteButton(
-            kind: SavedKind.provider,
-            id: provider.id,
-            size: AppIconSize.sm + 2,
-          ),
+          FavoriteButton(kind: SavedKind.provider, id: provider.id, size: AppIconSize.sm + 2),
         ],
       ),
     );

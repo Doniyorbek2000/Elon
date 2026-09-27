@@ -25,12 +25,7 @@ abstract interface class MediaUploadService {
 
 @immutable
 class ListingSuggestion {
-  const ListingSuggestion({
-    this.categoryId,
-    this.title,
-    this.description,
-    this.attributes = const {},
-  });
+  const ListingSuggestion({this.categoryId, this.title, this.description, this.attributes = const {}});
 
   final String? categoryId;
   final String? title;
@@ -52,6 +47,5 @@ class DisabledListingAssist implements ListingAssistService {
   bool get isAvailable => false;
 
   @override
-  Future<ListingSuggestion?> suggestFromPhotos(List<String> localPaths) async =>
-      null;
+  Future<ListingSuggestion?> suggestFromPhotos(List<String> localPaths) async => null;
 }

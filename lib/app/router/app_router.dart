@@ -54,8 +54,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       final signedIn = ref.read(sessionProvider) != null;
       final needsAuth = AppRoutes.protectedPrefixes.any(path.startsWith);
-      if (needsAuth && !signedIn)
-        return AppRoutes.verifyThen(state.uri.toString());
+      if (needsAuth && !signedIn) return AppRoutes.verifyThen(state.uri.toString());
       return null;
     },
     errorBuilder: (context, state) => Scaffold(
@@ -69,45 +68,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
     ),
     routes: [
-      GoRoute(
-        path: AppRoutes.welcome,
-        builder: (_, _) => const OnboardingScreen(),
-      ),
+      GoRoute(path: AppRoutes.welcome, builder: (_, _) => const OnboardingScreen()),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AppShell(navigationShell: shell),
         branches: [
           StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoutes.home,
-                builder: (_, _) => const HomeScreen(),
-              ),
-            ],
+            routes: [GoRoute(path: AppRoutes.home, builder: (_, _) => const HomeScreen())],
           ),
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: AppRoutes.search,
-                builder: (_, state) =>
-                    SearchScreen(initialQuery: state.uri.queryParameters['q']),
+                builder: (_, state) => SearchScreen(initialQuery: state.uri.queryParameters['q']),
               ),
             ],
           ),
           StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoutes.chats,
-                builder: (_, _) => const ChatListScreen(),
-              ),
-            ],
+            routes: [GoRoute(path: AppRoutes.chats, builder: (_, _) => const ChatListScreen())],
           ),
           StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoutes.profile,
-                builder: (_, _) => const ProfileScreen(),
-              ),
-            ],
+            routes: [GoRoute(path: AppRoutes.profile, builder: (_, _) => const ProfileScreen())],
           ),
         ],
       ),
@@ -115,15 +95,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.create,
         pageBuilder: (_, state) => MaterialPage(
           fullscreenDialog: true,
-          child: CreateListingScreen(
-            initialCategoryId: state.uri.queryParameters['category'],
-          ),
+          child: CreateListingScreen(initialCategoryId: state.uri.queryParameters['category']),
         ),
       ),
-      GoRoute(
-        path: AppRoutes.categories,
-        builder: (_, _) => const CategoriesScreen(),
-      ),
+      GoRoute(path: AppRoutes.categories, builder: (_, _) => const CategoriesScreen()),
       GoRoute(
         path: AppRoutes.listings,
         builder: (_, state) {
@@ -131,11 +106,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return ListingsScreen(
             categoryId: params['category'],
             initialText: params['q'] ?? '',
-            initialSort:
-                ListingSort.values
-                    .where((s) => s.name == params['sort'])
-                    .firstOrNull ??
-                ListingSort.newest,
+            initialSort: ListingSort.values.where((s) => s.name == params['sort']).firstOrNull ?? ListingSort.newest,
           );
         },
       ),
@@ -148,19 +119,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.jobs,
-        builder: (_, state) => JobsScreen(
-          initialHiring: state.uri.queryParameters['mode'] == 'hire',
-        ),
+        builder: (_, state) => JobsScreen(initialHiring: state.uri.queryParameters['mode'] == 'hire'),
       ),
       GoRoute(
         path: '/job/:id',
-        builder: (_, state) =>
-            JobDetailScreen(jobId: state.pathParameters['id']!),
+        builder: (_, state) => JobDetailScreen(jobId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/candidate/:id',
-        builder: (_, state) =>
-            CandidateDetailScreen(candidateId: state.pathParameters['id']!),
+        builder: (_, state) => CandidateDetailScreen(candidateId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: AppRoutes.services,
@@ -168,25 +135,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: 'category/:id',
-            builder: (_, state) =>
-                ServiceCategoryScreen(categoryId: state.pathParameters['id']!),
+            builder: (_, state) => ServiceCategoryScreen(categoryId: state.pathParameters['id']!),
           ),
         ],
       ),
       GoRoute(
         path: '/provider/:id',
-        builder: (_, state) =>
-            ProviderProfileScreen(providerId: state.pathParameters['id']!),
+        builder: (_, state) => ProviderProfileScreen(providerId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/seller/:id',
-        builder: (_, state) =>
-            SellerProfileScreen(userId: state.pathParameters['id']!),
+        builder: (_, state) => SellerProfileScreen(userId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/chat/:id',
-        builder: (_, state) =>
-            ConversationScreen(conversationId: state.pathParameters['id']!),
+        builder: (_, state) => ConversationScreen(conversationId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: AppRoutes.location,
@@ -195,38 +158,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           pickOnly: state.uri.queryParameters['pick'] == '1',
         ),
       ),
-      GoRoute(
-        path: AppRoutes.notifications,
-        builder: (_, _) => const NotificationsScreen(),
-      ),
+      GoRoute(path: AppRoutes.notifications, builder: (_, _) => const NotificationsScreen()),
       GoRoute(
         path: AppRoutes.verifyPhone,
-        builder: (_, state) =>
-            PhoneVerificationScreen(next: state.uri.queryParameters['next']),
+        builder: (_, state) => PhoneVerificationScreen(next: state.uri.queryParameters['next']),
       ),
-      GoRoute(
-        path: AppRoutes.myListings,
-        builder: (_, _) => const MyListingsScreen(),
-      ),
+      GoRoute(path: AppRoutes.myListings, builder: (_, _) => const MyListingsScreen()),
       GoRoute(path: AppRoutes.saved, builder: (_, _) => const SavedScreen()),
-      GoRoute(
-        path: AppRoutes.applications,
-        builder: (_, _) => const MyApplicationsScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.settings,
-        builder: (_, _) => const SettingsScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.blockedUsers,
-        builder: (_, _) => const BlockedUsersScreen(),
-      ),
+      GoRoute(path: AppRoutes.applications, builder: (_, _) => const MyApplicationsScreen()),
+      GoRoute(path: AppRoutes.settings, builder: (_, _) => const SettingsScreen()),
+      GoRoute(path: AppRoutes.blockedUsers, builder: (_, _) => const BlockedUsersScreen()),
       GoRoute(path: AppRoutes.help, builder: (_, _) => const HelpScreen()),
       GoRoute(path: AppRoutes.plans, builder: (_, _) => const PlansScreen()),
-      GoRoute(
-        path: AppRoutes.editProfile,
-        builder: (_, _) => const EditProfileScreen(),
-      ),
+      GoRoute(path: AppRoutes.editProfile, builder: (_, _) => const EditProfileScreen()),
     ],
   );
   ref.onDispose(router.dispose);

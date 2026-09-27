@@ -28,9 +28,7 @@ class BozorApp extends ConsumerWidget {
         // (bottom bar, chips) cannot stay usable; 2× still covers WCAG 200%.
         final mediaQuery = MediaQuery.of(context);
         return MediaQuery(
-          data: mediaQuery.copyWith(
-            textScaler: mediaQuery.textScaler.clamp(maxScaleFactor: 2),
-          ),
+          data: mediaQuery.copyWith(textScaler: mediaQuery.textScaler.clamp(maxScaleFactor: 2)),
           child: child ?? const SizedBox.shrink(),
         );
       },

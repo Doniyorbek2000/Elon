@@ -64,9 +64,8 @@ class StaticMonetizationRepository implements MonetizationRepository {
   ];
 
   @override
-  Future<List<PromotionProduct>> promotionProducts(
-    PromotionTarget target,
-  ) async => _products.where((p) => p.target == target).toList();
+  Future<List<PromotionProduct>> promotionProducts(PromotionTarget target) async =>
+      _products.where((p) => p.target == target).toList();
 
   @override
   Future<List<SubscriptionPlan>> subscriptionPlans() async => const [
@@ -81,34 +80,20 @@ class StaticMonetizationRepository implements MonetizationRepository {
       title: 'Biznes Pro',
       monthlyPrice: Money.uzs(349000),
       highlighted: true,
-      benefits: [
-        'Cheksiz e’lonlar',
-        'Har hafta 5 ta TOP',
-        'Tasdiqlangan biznes belgisi',
-        'Ustuvor qo‘llab-quvvatlash',
-      ],
+      benefits: ['Cheksiz e’lonlar', 'Har hafta 5 ta TOP', 'Tasdiqlangan biznes belgisi', 'Ustuvor qo‘llab-quvvatlash'],
     ),
   ];
 }
 
-final monetizationRepositoryProvider = Provider<MonetizationRepository>(
-  (ref) => const StaticMonetizationRepository(),
-);
+final monetizationRepositoryProvider = Provider<MonetizationRepository>((ref) => const StaticMonetizationRepository());
 
-final promotionProductsProvider =
-    FutureProvider.family<List<PromotionProduct>, PromotionTarget>((
-      ref,
-      target,
-    ) {
-      if (!ref.watch(featureFlagsProvider).canSellPromotions) return const [];
-      return ref
-          .watch(monetizationRepositoryProvider)
-          .promotionProducts(target);
-    });
+final promotionProductsProvider = FutureProvider.family<List<PromotionProduct>, PromotionTarget>((ref, target) {
+  if (!ref.watch(featureFlagsProvider).canSellPromotions) return const [];
+  return ref.watch(monetizationRepositoryProvider).promotionProducts(target);
+});
 
 final subscriptionPlansProvider = FutureProvider<List<SubscriptionPlan>>((ref) {
   final flags = ref.watch(featureFlagsProvider);
-  if (!flags.monetizationEnabled || !flags.subscriptionsEnabled)
-    return const [];
+  if (!flags.monetizationEnabled || !flags.subscriptionsEnabled) return const [];
   return ref.watch(monetizationRepositoryProvider).subscriptionPlans();
 });

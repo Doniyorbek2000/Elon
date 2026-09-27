@@ -13,10 +13,8 @@ enum AttributeInputType {
   multiSelect,
   boolean;
 
-  static AttributeInputType parse(Object? value) => values.firstWhere(
-    (type) => type.name == value,
-    orElse: () => AttributeInputType.text,
-  );
+  static AttributeInputType parse(Object? value) =>
+      values.firstWhere((type) => type.name == value, orElse: () => AttributeInputType.text);
 }
 
 /// Multi-select values are stored in drafts as a `|`-joined string.
@@ -52,10 +50,7 @@ class AttributeField {
     key: json['key'] as String,
     label: json['label'] as String,
     type: AttributeInputType.parse(json['type']),
-    options: [
-      for (final option in json['options'] as List<dynamic>? ?? const [])
-        '$option',
-    ],
+    options: [for (final option in json['options'] as List<dynamic>? ?? const []) '$option'],
     unit: json['unit'] as String?,
     required: json['required'] as bool? ?? false,
     min: (json['min'] as num?)?.toInt(),
@@ -68,12 +63,9 @@ class AttributeField {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) return null;
     return switch (type) {
-      AttributeInputType.number => int.tryParse(
-        trimmed.replaceAll(RegExp(r'\s'), ''),
-      ),
+      AttributeInputType.number => int.tryParse(trimmed.replaceAll(RegExp(r'\s'), '')),
       AttributeInputType.boolean => trimmed == 'true',
-      AttributeInputType.multiSelect =>
-        trimmed.split(multiSelectSeparator).where((v) => v.isNotEmpty).toList(),
+      AttributeInputType.multiSelect => trimmed.split(multiSelectSeparator).where((v) => v.isNotEmpty).toList(),
       AttributeInputType.text || AttributeInputType.select => trimmed,
     };
   }
@@ -81,8 +73,7 @@ class AttributeField {
   /// Human-readable value (units appended, multi-select joined).
   String displayValue(String value) => switch (type) {
     AttributeInputType.boolean => value == 'true' ? 'Ha' : 'Yo‘q',
-    AttributeInputType.multiSelect =>
-      value.split(multiSelectSeparator).join(', '),
+    AttributeInputType.multiSelect => value.split(multiSelectSeparator).join(', '),
     _ => unit == null ? value : '$value $unit',
   };
 
@@ -90,9 +81,7 @@ class AttributeField {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) return required ? '$label kiritilishi shart' : null;
     if (type == AttributeInputType.multiSelect &&
-        trimmed
-            .split(multiSelectSeparator)
-            .any((v) => v.isNotEmpty && !options.contains(v))) {
+        trimmed.split(multiSelectSeparator).any((v) => v.isNotEmpty && !options.contains(v))) {
       return 'Ro‘yxatdan tanlang';
     }
     if (type == AttributeInputType.number) {
@@ -101,9 +90,7 @@ class AttributeField {
       if (min != null && number < min!) return 'Kamida $min';
       if (max != null && number > max!) return 'Ko‘pi bilan $max';
     }
-    if (type == AttributeInputType.select &&
-        options.isNotEmpty &&
-        !options.contains(trimmed)) {
+    if (type == AttributeInputType.select && options.isNotEmpty && !options.contains(trimmed)) {
       return 'Ro‘yxatdan tanlang';
     }
     return null;
@@ -135,21 +122,17 @@ class CategoryFormSchema {
 
   static const generic = CategoryFormSchema();
 
-  factory CategoryFormSchema.fromJson(Map<String, dynamic> json) =>
-      CategoryFormSchema(
-        fields: [
-          for (final field in json['fields'] as List<dynamic>? ?? const [])
-            AttributeField.fromJson(field as Map<String, dynamic>),
-        ],
-        priceMode: PriceMode.values.firstWhere(
-          (m) => m.name == json['priceMode'],
-          orElse: () => PriceMode.required,
-        ),
-        supportsCondition: json['supportsCondition'] as bool? ?? true,
-        photosRequired: json['photosRequired'] as bool? ?? true,
-        allowUsd: json['allowUsd'] as bool? ?? false,
-        titleHint: json['titleHint'] as String? ?? generic.titleHint,
-      );
+  factory CategoryFormSchema.fromJson(Map<String, dynamic> json) => CategoryFormSchema(
+    fields: [
+      for (final field in json['fields'] as List<dynamic>? ?? const [])
+        AttributeField.fromJson(field as Map<String, dynamic>),
+    ],
+    priceMode: PriceMode.values.firstWhere((m) => m.name == json['priceMode'], orElse: () => PriceMode.required),
+    supportsCondition: json['supportsCondition'] as bool? ?? true,
+    photosRequired: json['photosRequired'] as bool? ?? true,
+    allowUsd: json['allowUsd'] as bool? ?? false,
+    titleHint: json['titleHint'] as String? ?? generic.titleHint,
+  );
 }
 
 @immutable
@@ -186,14 +169,8 @@ class Category {
     name: json['name'] as String,
     subtitle: json['subtitle'] as String?,
     iconKey: json['iconKey'] as String? ?? 'grid',
-    tone: AccentTone.values.firstWhere(
-      (t) => t.name == json['tone'],
-      orElse: () => AccentTone.blue,
-    ),
-    kind: CategoryKind.values.firstWhere(
-      (k) => k.name == json['kind'],
-      orElse: () => CategoryKind.marketplace,
-    ),
+    tone: AccentTone.values.firstWhere((t) => t.name == json['tone'], orElse: () => AccentTone.blue),
+    kind: CategoryKind.values.firstWhere((k) => k.name == json['kind'], orElse: () => CategoryKind.marketplace),
     parentId: json['parentId'] as String?,
     schema: json['schema'] is Map<String, dynamic>
         ? CategoryFormSchema.fromJson(json['schema'] as Map<String, dynamic>)
@@ -215,11 +192,7 @@ class Category {
 class CategoryTree {
   /// [inheritRootSchema]: the bundled catalog defines forms on roots; the
   /// server defines them per category, so its tree must not inherit.
-  CategoryTree(
-    this.roots, {
-    this.inheritRootSchema = true,
-    this.homeShortcutIds,
-  }) {
+  CategoryTree(this.roots, {this.inheritRootSchema = true, this.homeShortcutIds}) {
     void index(Category category) {
       _byId[category.id] = category;
       for (final child in category.children) {
@@ -254,9 +227,7 @@ class CategoryTree {
   CategoryFormSchema schemaFor(String id) {
     final category = byId(id);
     if (category == null) return CategoryFormSchema.generic;
-    if (!inheritRootSchema ||
-        !identical(category.schema, CategoryFormSchema.generic))
-      return category.schema;
+    if (!inheritRootSchema || !identical(category.schema, CategoryFormSchema.generic)) return category.schema;
     return rootOf(id)?.schema ?? CategoryFormSchema.generic;
   }
 
@@ -270,6 +241,5 @@ class CategoryTree {
     return false;
   }
 
-  List<Category> get marketplaceRoots =>
-      roots.where((c) => c.kind == CategoryKind.marketplace).toList();
+  List<Category> get marketplaceRoots => roots.where((c) => c.kind == CategoryKind.marketplace).toList();
 }

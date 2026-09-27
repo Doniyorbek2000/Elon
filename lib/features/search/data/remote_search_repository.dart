@@ -16,10 +16,7 @@ class RemoteSearchRepository implements SearchRepository {
   @override
   Future<List<SearchSuggestion>> suggest(String query) async {
     if (query.trim().isEmpty) return const [];
-    final items = await _api.get<List<dynamic>>(
-      '/search/suggest',
-      query: {'q': query.trim()},
-    );
+    final items = await _api.get<List<dynamic>>('/search/suggest', query: {'q': query.trim()});
     return [
       for (final item in items.cast<JsonMap>())
         SearchSuggestion(
@@ -36,26 +33,16 @@ class RemoteSearchRepository implements SearchRepository {
   }
 
   @override
-  Future<List<String>> popular() async => [
-    for (final q in await _api.get<List<dynamic>>('/search/popular')) '$q',
-  ];
+  Future<List<String>> popular() async => [for (final q in await _api.get<List<dynamic>>('/search/popular')) '$q'];
 
   @override
-  Future<SearchResults> search(
-    String query, {
-    required ListingQuery listingFilters,
-  }) async {
+  Future<SearchResults> search(String query, {required ListingQuery listingFilters}) async {
     final data = await _api.get<JsonMap>(
       '/search',
-      query: {
-        'q': query.trim(),
-        'region': listingFilters.regionId,
-        'category': listingFilters.categoryId,
-      },
+      query: {'q': query.trim(), 'region': listingFilters.regionId, 'category': listingFilters.categoryId},
     );
     List<T> parse<T>(String key, T Function(JsonMap) fromJson) => [
-      for (final item in data[key] as List<dynamic>? ?? const [])
-        fromJson(item as JsonMap),
+      for (final item in data[key] as List<dynamic>? ?? const []) fromJson(item as JsonMap),
     ];
     return SearchResults(
       listings: parse('listings', Listing.fromJson),

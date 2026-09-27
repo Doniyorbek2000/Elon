@@ -48,30 +48,20 @@ enum ListingStatus {
     ListingStatus.archived => 'Arxivda',
   };
 
-  static ListingStatus parse(Object? value) => ListingStatus.values.firstWhere(
-    (s) => s.name == value,
-    orElse: () => ListingStatus.active,
-  );
+  static ListingStatus parse(Object? value) =>
+      ListingStatus.values.firstWhere((s) => s.name == value, orElse: () => ListingStatus.active);
 }
 
 @immutable
 class ListingAttribute {
-  const ListingAttribute({
-    required this.key,
-    required this.label,
-    required this.value,
-  });
+  const ListingAttribute({required this.key, required this.label, required this.value});
 
   final String key;
   final String label;
   final String value;
 
   factory ListingAttribute.fromJson(Map<String, dynamic> json) =>
-      ListingAttribute(
-        key: json['key'] as String,
-        label: json['label'] as String,
-        value: '${json['value']}',
-      );
+      ListingAttribute(key: json['key'] as String, label: json['label'] as String, value: '${json['value']}');
 
   Map<String, dynamic> toJson() => {'key': key, 'label': label, 'value': value};
 }
@@ -130,33 +120,28 @@ class Listing {
 
   MediaImage? get cover => images.isEmpty ? null : images.first;
 
-  Listing copyWith({
-    int? views,
-    int? favorites,
-    ListingStatus? status,
-    double? distanceKm,
-    Promotion? promotion,
-  }) => Listing(
-    id: id,
-    title: title,
-    description: description,
-    categoryId: categoryId,
-    images: images,
-    place: place,
-    publishedAt: publishedAt,
-    seller: seller,
-    price: price,
-    negotiable: negotiable,
-    condition: condition,
-    attributes: attributes,
-    views: views ?? this.views,
-    favorites: favorites ?? this.favorites,
-    promotion: promotion ?? this.promotion,
-    status: status ?? this.status,
-    distanceKm: distanceKm ?? this.distanceKm,
-    shareUrl: shareUrl,
-    rejectReason: rejectReason,
-  );
+  Listing copyWith({int? views, int? favorites, ListingStatus? status, double? distanceKm, Promotion? promotion}) =>
+      Listing(
+        id: id,
+        title: title,
+        description: description,
+        categoryId: categoryId,
+        images: images,
+        place: place,
+        publishedAt: publishedAt,
+        seller: seller,
+        price: price,
+        negotiable: negotiable,
+        condition: condition,
+        attributes: attributes,
+        views: views ?? this.views,
+        favorites: favorites ?? this.favorites,
+        promotion: promotion ?? this.promotion,
+        status: status ?? this.status,
+        distanceKm: distanceKm ?? this.distanceKm,
+        shareUrl: shareUrl,
+        rejectReason: rejectReason,
+      );
 
   factory Listing.fromJson(Map<String, dynamic> json) => Listing(
     id: json['id'] as String,
@@ -170,9 +155,7 @@ class Listing {
     place: Place.fromJson(json['place'] as Map<String, dynamic>),
     publishedAt: DateTime.parse(json['publishedAt'] as String),
     seller: PublicProfile.fromJson(json['seller'] as Map<String, dynamic>),
-    price: json['price'] == null
-        ? null
-        : Money.fromJson(json['price'] as Map<String, dynamic>),
+    price: json['price'] == null ? null : Money.fromJson(json['price'] as Map<String, dynamic>),
     negotiable: json['negotiable'] as bool? ?? false,
     condition: ItemCondition.parse(json['condition']),
     attributes: [
@@ -193,10 +176,7 @@ class Listing {
 
   @override
   bool operator ==(Object other) =>
-      other is Listing &&
-      other.id == id &&
-      other.views == views &&
-      other.status == status;
+      other is Listing && other.id == id && other.views == views && other.status == status;
 
   @override
   int get hashCode => Object.hash(id, views, status);

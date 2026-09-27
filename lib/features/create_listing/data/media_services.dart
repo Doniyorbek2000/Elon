@@ -19,14 +19,10 @@ class DemoMediaUploadService implements MediaUploadService {
   final Duration duration;
 
   @override
-  Stream<UploadProgress> upload(
-    String localPath, {
-    String purpose = 'listing',
-  }) async* {
+  Stream<UploadProgress> upload(String localPath, {String purpose = 'listing'}) async* {
     const steps = 8;
     for (var i = 1; i <= steps; i++) {
-      if (duration > Duration.zero)
-        await Future<void>.delayed(duration ~/ steps);
+      if (duration > Duration.zero) await Future<void>.delayed(duration ~/ steps);
       yield UploadProgress(fraction: i / steps);
     }
     yield UploadProgress(fraction: 1, remoteId: 'local:$localPath');
@@ -37,10 +33,7 @@ class DemoMediaUploadService implements MediaUploadService {
 /// produce renditions. Failures are reported, never swallowed: the draft shows
 /// a failed tile with retry.
 class RemoteMediaUploadService implements MediaUploadService {
-  const RemoteMediaUploadService(
-    this._api, {
-    this.pollInterval = const Duration(milliseconds: 700),
-  });
+  const RemoteMediaUploadService(this._api, {this.pollInterval = const Duration(milliseconds: 700)});
 
   final ApiClient _api;
   final Duration pollInterval;
@@ -48,25 +41,18 @@ class RemoteMediaUploadService implements MediaUploadService {
   static const _processingTimeout = Duration(seconds: 45);
 
   @override
-  Stream<UploadProgress> upload(
-    String localPath, {
-    String purpose = 'listing',
-  }) async* {
+  Stream<UploadProgress> upload(String localPath, {String purpose = 'listing'}) async* {
     final controller = StreamController<UploadProgress>();
     final form = FormData.fromMap({
       'purpose': purpose,
-      'file': await MultipartFile.fromFile(
-        localPath,
-        filename: localPath.split(Platform.pathSeparator).last,
-      ),
+      'file': await MultipartFile.fromFile(localPath, filename: localPath.split(Platform.pathSeparator).last),
     });
     final upload = _api
         .upload(
           '/media',
           data: form,
           onProgress: (sent, total) {
-            if (total > 0 && !controller.isClosed)
-              controller.add(UploadProgress(fraction: 0.9 * sent / total));
+            if (total > 0 && !controller.isClosed) controller.add(UploadProgress(fraction: 0.9 * sent / total));
           },
         )
         .whenComplete(controller.close);
@@ -82,18 +68,14 @@ class RemoteMediaUploadService implements MediaUploadService {
       await Future<void>.delayed(pollInterval);
       status = (await _api.get<JsonMap>('/media/$id'))['status'] as String?;
     }
-    if (status == 'failed')
-      throw const ValidationFailure(
-        'Rasmni qayta ishlab bo‘lmadi. Boshqa rasm tanlang',
-      );
+    if (status == 'failed') throw const ValidationFailure('Rasmni qayta ishlab bo‘lmadi. Boshqa rasm tanlang');
     yield UploadProgress(fraction: 1, remoteId: id);
   }
 }
 
 final mediaUploadServiceProvider = Provider<MediaUploadService>((ref) {
   final config = ref.watch(appConfigProvider);
-  if (config.useDemoData)
-    return DemoMediaUploadService(duration: config.demoLatency * 3);
+  if (config.useDemoData) return DemoMediaUploadService(duration: config.demoLatency * 3);
   return RemoteMediaUploadService(ref.watch(apiClientProvider));
 });
 
@@ -111,8 +93,7 @@ abstract interface class PhotoPicker {
 }
 
 class ImagePickerPhotoPicker implements PhotoPicker {
-  ImagePickerPhotoPicker([ImagePicker? picker])
-    : _picker = picker ?? ImagePicker();
+  ImagePickerPhotoPicker([ImagePicker? picker]) : _picker = picker ?? ImagePicker();
 
   final ImagePicker _picker;
 
@@ -143,6 +124,4 @@ class ImagePickerPhotoPicker implements PhotoPicker {
   }
 }
 
-final photoPickerProvider = Provider<PhotoPicker>(
-  (ref) => ImagePickerPhotoPicker(),
-);
+final photoPickerProvider = Provider<PhotoPicker>((ref) => ImagePickerPhotoPicker());

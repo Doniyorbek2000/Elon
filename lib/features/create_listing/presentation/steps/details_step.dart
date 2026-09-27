@@ -33,16 +33,11 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
   late final ListingDraft _initial = ref.read(createListingProvider);
   late final _title = TextEditingController(text: _initial.title);
   late final _description = TextEditingController(text: _initial.description);
-  late final _price = TextEditingController(
-    text: ThousandsInputFormatter.format(_initial.price),
-  );
-  late final _priceMax = TextEditingController(
-    text: ThousandsInputFormatter.format(_initial.priceMax),
-  );
+  late final _price = TextEditingController(text: ThousandsInputFormatter.format(_initial.price));
+  late final _priceMax = TextEditingController(text: ThousandsInputFormatter.format(_initial.priceMax));
   final Map<String, TextEditingController> _attributeControllers = {};
 
-  CreateListingController get _controller =>
-      ref.read(createListingProvider.notifier);
+  CreateListingController get _controller => ref.read(createListingProvider.notifier);
 
   @override
   void dispose() {
@@ -57,10 +52,7 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
   }
 
   TextEditingController _attributeController(String key, String? value) =>
-      _attributeControllers.putIfAbsent(
-        key,
-        () => TextEditingController(text: value ?? ''),
-      );
+      _attributeControllers.putIfAbsent(key, () => TextEditingController(text: value ?? ''));
 
   Future<void> _pickCategory() async {
     final id = await showCategoryPicker(context);
@@ -78,9 +70,7 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
   Widget build(BuildContext context) {
     final draft = ref.watch(createListingProvider);
     final tree = ref.watch(categoryTreeProvider);
-    final schema = draft.categoryId == null
-        ? CategoryFormSchema.generic
-        : tree.schemaFor(draft.categoryId!);
+    final schema = draft.categoryId == null ? CategoryFormSchema.generic : tree.schemaFor(draft.categoryId!);
     final category = tree.byId(draft.categoryId);
     final parent = category == null ? null : tree.parentOf(category.id);
     final errors = widget.errors;
@@ -88,23 +78,14 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
     final palette = context.palette;
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.md,
-        AppSpacing.lg,
-        AppSpacing.xxxl,
-      ),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xxxl),
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       children: [
         const _FieldLabel('Kategoriya', required: true),
         _PickerField(
-          icon: category == null
-              ? Icons.category_outlined
-              : AppIcons.forKey(category.iconKey),
+          icon: category == null ? Icons.category_outlined : AppIcons.forKey(category.iconKey),
           tone: category?.tone ?? AccentTone.slate,
-          value: category == null
-              ? null
-              : [?parent?.name, category.name].join(' › '),
+          value: category == null ? null : [?parent?.name, category.name].join(' › '),
           placeholder: 'Kategoriyani tanlang',
           error: errors[DraftField.category],
           onTap: _pickCategory,
@@ -117,17 +98,11 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
           textCapitalization: TextCapitalization.sentences,
           textInputAction: TextInputAction.next,
           onChanged: _controller.setTitle,
-          decoration: InputDecoration(
-            hintText: schema.titleHint,
-            errorText: errors[DraftField.title],
-          ),
+          decoration: InputDecoration(hintText: schema.titleHint, errorText: errors[DraftField.title]),
         ),
         if (schema.priceMode != PriceMode.none) ...[
           const SizedBox(height: AppSpacing.sm),
-          _FieldLabel(
-            schema.priceLabel,
-            required: schema.priceMode == PriceMode.required,
-          ),
+          _FieldLabel(schema.priceLabel, required: schema.priceMode == PriceMode.required),
           if (schema.priceMode == PriceMode.salary)
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,8 +112,7 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
                     controller: _price,
                     keyboardType: TextInputType.number,
                     inputFormatters: const [ThousandsInputFormatter()],
-                    onChanged: (v) =>
-                        _controller.setPrice(ThousandsInputFormatter.parse(v)),
+                    onChanged: (v) => _controller.setPrice(ThousandsInputFormatter.parse(v)),
                     decoration: InputDecoration(
                       hintText: 'dan',
                       suffixText: 'so‘m',
@@ -152,13 +126,8 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
                     controller: _priceMax,
                     keyboardType: TextInputType.number,
                     inputFormatters: const [ThousandsInputFormatter()],
-                    onChanged: (v) => _controller.setPriceMax(
-                      ThousandsInputFormatter.parse(v),
-                    ),
-                    decoration: const InputDecoration(
-                      hintText: 'gacha',
-                      suffixText: 'so‘m',
-                    ),
+                    onChanged: (v) => _controller.setPriceMax(ThousandsInputFormatter.parse(v)),
+                    decoration: const InputDecoration(hintText: 'gacha', suffixText: 'so‘m'),
                   ),
                 ),
               ],
@@ -170,13 +139,10 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
                 Expanded(
                   child: TextField(
                     controller: _price,
-                    enabled:
-                        !draft.negotiable ||
-                        schema.priceMode == PriceMode.optional,
+                    enabled: !draft.negotiable || schema.priceMode == PriceMode.optional,
                     keyboardType: TextInputType.number,
                     inputFormatters: const [ThousandsInputFormatter()],
-                    onChanged: (v) =>
-                        _controller.setPrice(ThousandsInputFormatter.parse(v)),
+                    onChanged: (v) => _controller.setPrice(ThousandsInputFormatter.parse(v)),
                     decoration: InputDecoration(
                       hintText: '0',
                       suffixText: schema.allowUsd ? null : 'so‘m',
@@ -188,16 +154,13 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
                   const SizedBox(width: AppSpacing.sm),
                   SegmentedButton<Currency>(
                     showSelectedIcon: false,
-                    style: SegmentedButton.styleFrom(
-                      minimumSize: const Size(0, AppTouch.inputHeight),
-                    ),
+                    style: SegmentedButton.styleFrom(minimumSize: const Size(0, AppTouch.inputHeight)),
                     segments: const [
                       ButtonSegment(value: Currency.uzs, label: Text('so‘m')),
                       ButtonSegment(value: Currency.usd, label: Text('\$')),
                     ],
                     selected: {draft.currency},
-                    onSelectionChanged: (value) =>
-                        _controller.setCurrency(value.first),
+                    onSelectionChanged: (value) => _controller.setCurrency(value.first),
                   ),
                 ],
               ],
@@ -205,10 +168,7 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
             SwitchListTile.adaptive(
               contentPadding: EdgeInsets.zero,
               title: Text('Kelishiladi', style: text.bodyMedium),
-              subtitle: Text(
-                'Narx bo‘yicha savdolashish mumkin',
-                style: text.bodySmall,
-              ),
+              subtitle: Text('Narx bo‘yicha savdolashish mumkin', style: text.bodySmall),
               value: draft.negotiable,
               onChanged: (value) => _controller.setNegotiable(value: value),
             ),
@@ -227,24 +187,19 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
                   ButtonSegment(value: condition, label: Text(condition.label)),
               ],
               selected: {?draft.condition},
-              onSelectionChanged: (value) =>
-                  _controller.setCondition(value.isEmpty ? null : value.first),
+              onSelectionChanged: (value) => _controller.setCondition(value.isEmpty ? null : value.first),
             ),
           ),
         ],
         for (final field in schema.fields) ...[
           const SizedBox(height: AppSpacing.lg),
-          _FieldLabel(
-            field.unit == null ? field.label : '${field.label}, ${field.unit}',
-            required: field.required,
-          ),
+          _FieldLabel(field.unit == null ? field.label : '${field.label}, ${field.unit}', required: field.required),
           if (field.type == AttributeInputType.select)
             _OptionChips(
               options: field.options,
               selected: draft.attributes[field.key],
               error: errors[DraftField.attribute(field.key)],
-              onSelected: (value) =>
-                  _controller.setAttribute(field.key, value ?? ''),
+              onSelected: (value) => _controller.setAttribute(field.key, value ?? ''),
             )
           else if (field.type == AttributeInputType.multiSelect)
             _MultiOptionChips(
@@ -270,29 +225,18 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
                 ButtonSegment(value: 'false', label: Text('Yo‘q')),
               ],
               selected: {?draft.attributes[field.key]},
-              onSelectionChanged: (value) => _controller.setAttribute(
-                field.key,
-                value.isEmpty ? '' : value.first,
-              ),
+              onSelectionChanged: (value) => _controller.setAttribute(field.key, value.isEmpty ? '' : value.first),
             )
           else
             TextField(
-              controller: _attributeController(
-                field.key,
-                draft.attributes[field.key],
-              ),
-              keyboardType: field.type == AttributeInputType.number
-                  ? TextInputType.number
-                  : TextInputType.text,
+              controller: _attributeController(field.key, draft.attributes[field.key]),
+              keyboardType: field.type == AttributeInputType.number ? TextInputType.number : TextInputType.text,
               inputFormatters: field.type == AttributeInputType.number
                   ? [FilteringTextInputFormatter.digitsOnly]
                   : null,
               textInputAction: TextInputAction.next,
               onChanged: (value) => _controller.setAttribute(field.key, value),
-              decoration: InputDecoration(
-                hintText: field.hint,
-                errorText: errors[DraftField.attribute(field.key)],
-              ),
+              decoration: InputDecoration(hintText: field.hint, errorText: errors[DraftField.attribute(field.key)]),
             ),
         ],
         const SizedBox(height: AppSpacing.lg),
@@ -324,11 +268,7 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
         const SizedBox(height: AppSpacing.lg),
         Row(
           children: [
-            Icon(
-              Icons.lock_outline_rounded,
-              size: AppIconSize.sm,
-              color: palette.textTertiary,
-            ),
+            Icon(Icons.lock_outline_rounded, size: AppIconSize.sm, color: palette.textTertiary),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
@@ -403,43 +343,28 @@ class _PickerField extends StatelessWidget {
             color: palette.surfaceMuted,
             shape: RoundedRectangleBorder(
               borderRadius: AppRadii.mdAll,
-              side: BorderSide(
-                color: error == null ? Colors.transparent : palette.danger,
-              ),
+              side: BorderSide(color: error == null ? Colors.transparent : palette.danger),
             ),
             child: InkWell(
               borderRadius: AppRadii.mdAll,
               onTap: onTap,
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm + 2,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
                 child: Row(
                   children: [
-                    ToneIcon(
-                      icon: icon,
-                      tone: tone,
-                      size: 34,
-                      radius: AppRadii.sm,
-                    ),
+                    ToneIcon(icon: icon, tone: tone, size: 34, radius: AppRadii.sm),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Text(
                         value ?? placeholder,
                         style: text.bodyMedium?.copyWith(
-                          color: value == null
-                              ? palette.textTertiary
-                              : palette.textPrimary,
+                          color: value == null ? palette.textTertiary : palette.textPrimary,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      color: palette.textTertiary,
-                    ),
+                    Icon(Icons.keyboard_arrow_down_rounded, color: palette.textTertiary),
                   ],
                 ),
               ),
@@ -448,14 +373,8 @@ class _PickerField extends StatelessWidget {
         ),
         if (error != null)
           Padding(
-            padding: const EdgeInsets.only(
-              top: AppSpacing.xs,
-              left: AppSpacing.md,
-            ),
-            child: Text(
-              error!,
-              style: text.bodySmall?.copyWith(color: palette.danger),
-            ),
+            padding: const EdgeInsets.only(top: AppSpacing.xs, left: AppSpacing.md),
+            child: Text(error!, style: text.bodySmall?.copyWith(color: palette.danger)),
           ),
       ],
     );
@@ -463,12 +382,7 @@ class _PickerField extends StatelessWidget {
 }
 
 class _MultiOptionChips extends StatelessWidget {
-  const _MultiOptionChips({
-    required this.options,
-    required this.selected,
-    required this.onChanged,
-    this.error,
-  });
+  const _MultiOptionChips({required this.options, required this.selected, required this.onChanged, this.error});
 
   final List<String> options;
   final Set<String> selected;
@@ -490,24 +404,14 @@ class _MultiOptionChips extends StatelessWidget {
               FilterChip(
                 label: Text(option),
                 selected: selected.contains(option),
-                onSelected: (value) => onChanged(
-                  value
-                      ? {...selected, option}
-                      : ({...selected}..remove(option)),
-                ),
+                onSelected: (value) => onChanged(value ? {...selected, option} : ({...selected}..remove(option))),
               ),
           ],
         ),
         if (error != null)
           Padding(
-            padding: const EdgeInsets.only(
-              top: AppSpacing.xs,
-              left: AppSpacing.xs,
-            ),
-            child: Text(
-              error!,
-              style: text.bodySmall?.copyWith(color: palette.danger),
-            ),
+            padding: const EdgeInsets.only(top: AppSpacing.xs, left: AppSpacing.xs),
+            child: Text(error!, style: text.bodySmall?.copyWith(color: palette.danger)),
           ),
       ],
     );
@@ -515,12 +419,7 @@ class _MultiOptionChips extends StatelessWidget {
 }
 
 class _OptionChips extends StatelessWidget {
-  const _OptionChips({
-    required this.options,
-    required this.selected,
-    required this.onSelected,
-    this.error,
-  });
+  const _OptionChips({required this.options, required this.selected, required this.onSelected, this.error});
 
   final List<String> options;
   final String? selected;
@@ -543,9 +442,7 @@ class _OptionChips extends StatelessWidget {
                 label: Text(option),
                 selected: selected == option,
                 labelStyle: text.labelMedium?.copyWith(
-                  color: selected == option
-                      ? palette.onPrimary
-                      : palette.textPrimary,
+                  color: selected == option ? palette.onPrimary : palette.textPrimary,
                 ),
                 onSelected: (value) => onSelected(value ? option : null),
               ),
@@ -553,14 +450,8 @@ class _OptionChips extends StatelessWidget {
         ),
         if (error != null)
           Padding(
-            padding: const EdgeInsets.only(
-              top: AppSpacing.xs,
-              left: AppSpacing.xs,
-            ),
-            child: Text(
-              error!,
-              style: text.bodySmall?.copyWith(color: palette.danger),
-            ),
+            padding: const EdgeInsets.only(top: AppSpacing.xs, left: AppSpacing.xs),
+            child: Text(error!, style: text.bodySmall?.copyWith(color: palette.danger)),
           ),
       ],
     );

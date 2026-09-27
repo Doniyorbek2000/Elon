@@ -43,8 +43,7 @@ class RemoteChatRepository implements ChatRepository {
   io.Socket? _socket;
   bool _disposed = false;
 
-  final _conversationsController =
-      StreamController<List<Conversation>>.broadcast();
+  final _conversationsController = StreamController<List<Conversation>>.broadcast();
   final _messagesChanged = StreamController<String>.broadcast();
   final _typingController = StreamController<(String, bool)>.broadcast();
 
@@ -67,25 +66,15 @@ class RemoteChatRepository implements ChatRepository {
           .enableReconnection()
           .setReconnectionDelay(1000)
           .setReconnectionDelayMax(15000)
-          .setAuthFn(
-            (callback) async =>
-                callback({'token': await _tokens.accessToken ?? ''}),
-          )
+          .setAuthFn((callback) async => callback({'token': await _tokens.accessToken ?? ''}))
           .build(),
     );
     socket
       ..onConnect((_) => unawaited(_resync()))
       ..onConnectError((Object? error) => unawaited(_handleConnectError(error)))
       ..on('message:new', (data) => _onMessage(data as Map<String, dynamic>))
-      ..on(
-        'message:read',
-        (data) => _onReceipt(data as Map<String, dynamic>, DeliveryState.read),
-      )
-      ..on(
-        'message:delivered',
-        (data) =>
-            _onReceipt(data as Map<String, dynamic>, DeliveryState.delivered),
-      )
+      ..on('message:read', (data) => _onReceipt(data as Map<String, dynamic>, DeliveryState.read))
+      ..on('message:delivered', (data) => _onReceipt(data as Map<String, dynamic>, DeliveryState.delivered))
       ..on('typing', (data) => _onTyping(data as Map<String, dynamic>))
       ..on('presence', (data) => _onPresence(data as Map<String, dynamic>))
       ..connect();
@@ -96,9 +85,7 @@ class RemoteChatRepository implements ChatRepository {
   /// rotates tokens), then let Socket.IO reconnect with the new token.
   Future<void> _handleConnectError(Object? error) async {
     final code = error is Map ? error['message'] : '$error';
-    if (code == 'SESSION_REVOKED' ||
-        code == 'UNAUTHENTICATED' ||
-        '$code'.contains('TOKEN')) {
+    if (code == 'SESSION_REVOKED' || code == 'UNAUTHENTICATED' || '$code'.contains('TOKEN')) {
       try {
         await _api.get<Object?>('/conversations/unread-count');
       } on AppFailure {
@@ -112,9 +99,7 @@ class RemoteChatRepository implements ChatRepository {
       await _refreshConversations();
       for (final conversationId in _messages.keys.toList()) {
         await _refreshLatest(conversationId);
-        _socket?.emit('conversation:delivered', {
-          'conversationId': conversationId,
-        });
+        _socket?.emit('conversation:delivered', {'conversationId': conversationId});
       }
       final peers = {
         for (final c in _conversations ?? const <Conversation>[])
@@ -128,10 +113,7 @@ class RemoteChatRepository implements ChatRepository {
             final data = response is Map ? response['data'] : null;
             if (data is List) {
               for (final item in data.cast<Map<String, dynamic>>()) {
-                _setPeerOnline(
-                  item['userId'] as String,
-                  isOnline: item['online'] == true,
-                );
+                _setPeerOnline(item['userId'] as String, isOnline: item['online'] == true);
               }
             }
           },
@@ -145,21 +127,15 @@ class RemoteChatRepository implements ChatRepository {
   // ─────────────────────────────────────────────────────────── realtime
 
   void _onMessage(Map<String, dynamic> data) {
-    final message = ChatMessage.fromJson(
-      data['message'] as Map<String, dynamic>,
-    );
+    final message = ChatMessage.fromJson(data['message'] as Map<String, dynamic>);
     final conversationId = message.conversationId;
     final mine = message.senderId == _currentUserId();
     if (_messages.containsKey(conversationId)) {
       _upsertMessage(message);
-      if (!mine)
-        _socket?.emit('conversation:delivered', {
-          'conversationId': conversationId,
-        });
+      if (!mine) _socket?.emit('conversation:delivered', {'conversationId': conversationId});
     }
     final conversations = _conversations;
-    final index =
-        conversations?.indexWhere((c) => c.id == conversationId) ?? -1;
+    final index = conversations?.indexWhere((c) => c.id == conversationId) ?? -1;
     if (conversations == null || index < 0) {
       unawaited(_refreshConversations().catchError((Object _) {}));
       return;
@@ -170,17 +146,12 @@ class RemoteChatRepository implements ChatRepository {
       lastMessagePreview: message.preview,
       unreadCount: mine ? 0 : current.unreadCount + 1,
     );
-    _publishConversations([
-      updated,
-      ...conversations.where((c) => c.id != conversationId),
-    ]);
+    _publishConversations([updated, ...conversations.where((c) => c.id != conversationId)]);
   }
 
   void _onReceipt(Map<String, dynamic> data, DeliveryState state) {
     final conversationId = data['conversationId'] as String;
-    final at = DateTime.tryParse(
-      (data['readAt'] ?? data['deliveredAt'] ?? '') as String,
-    );
+    final at = DateTime.tryParse((data['readAt'] ?? data['deliveredAt'] ?? '') as String);
     final list = _messages[conversationId];
     if (list == null || at == null) return;
     final me = _currentUserId();
@@ -211,26 +182,19 @@ class RemoteChatRepository implements ChatRepository {
     }
   }
 
-  void _onPresence(Map<String, dynamic> data) => _setPeerOnline(
-    data['userId'] as String,
-    isOnline: data['online'] == true,
-  );
+  void _onPresence(Map<String, dynamic> data) =>
+      _setPeerOnline(data['userId'] as String, isOnline: data['online'] == true);
 
   void _setPeerOnline(String userId, {required bool isOnline}) {
     final conversations = _conversations;
     if (conversations == null) return;
     _publishConversations([
       for (final c in conversations)
-        c.peer.id == userId
-            ? c.copyWith(peer: _withPresence(c.peer, isOnline: isOnline))
-            : c,
+        c.peer.id == userId ? c.copyWith(peer: _withPresence(c.peer, isOnline: isOnline)) : c,
     ]);
   }
 
-  static PublicProfile _withPresence(
-    PublicProfile p, {
-    required bool isOnline,
-  }) => PublicProfile(
+  static PublicProfile _withPresence(PublicProfile p, {required bool isOnline}) => PublicProfile(
     id: p.id,
     name: p.name,
     memberSince: p.memberSince,
@@ -250,24 +214,19 @@ class RemoteChatRepository implements ChatRepository {
 
   void _publishConversations(List<Conversation> next) {
     _conversations = next;
-    if (!_conversationsController.isClosed)
-      _conversationsController.add(List.unmodifiable(next));
+    if (!_conversationsController.isClosed) _conversationsController.add(List.unmodifiable(next));
   }
 
   /// Keeps messages oldest → newest, deduplicated by id and client id.
   void _upsertMessage(ChatMessage message) {
     final list = [...?_messages[message.conversationId]];
     final index = list.indexWhere(
-      (m) =>
-          m.id == message.id ||
-          (message.clientId != null && m.clientId == message.clientId),
+      (m) => m.id == message.id || (message.clientId != null && m.clientId == message.clientId),
     );
     if (index >= 0) {
       final existing = list[index];
       // Never downgrade a receipt that already arrived.
-      list[index] =
-          existing.delivery.index > message.delivery.index &&
-              existing.delivery != DeliveryState.failed
+      list[index] = existing.delivery.index > message.delivery.index && existing.delivery != DeliveryState.failed
           ? message.copyWith(delivery: existing.delivery)
           : message;
     } else {
@@ -279,11 +238,7 @@ class RemoteChatRepository implements ChatRepository {
   }
 
   Future<void> _refreshConversations() async {
-    final page = await _api.getPage(
-      '/conversations',
-      Conversation.fromJson,
-      query: {'limit': 50},
-    );
+    final page = await _api.getPage('/conversations', Conversation.fromJson, query: {'limit': 50});
     _publishConversations(page.items);
   }
 
@@ -295,20 +250,15 @@ class RemoteChatRepository implements ChatRepository {
     );
     final pending = [
       for (final m in _messages[conversationId] ?? const <ChatMessage>[])
-        if (m.delivery == DeliveryState.sending ||
-            m.delivery == DeliveryState.failed)
-          m,
+        if (m.delivery == DeliveryState.sending || m.delivery == DeliveryState.failed) m,
     ];
     final known = _messages[conversationId];
-    if (known == null || known.length <= page.items.length)
-      _olderCursor[conversationId] = page.nextCursor;
+    if (known == null || known.length <= page.items.length) _olderCursor[conversationId] = page.nextCursor;
     for (final message in page.items.reversed) {
       _upsertMessage(message);
     }
     for (final message in pending) {
-      if (!(_messages[conversationId] ?? const []).any(
-        (m) => m.clientId == message.clientId && m.id != message.id,
-      )) {
+      if (!(_messages[conversationId] ?? const []).any((m) => m.clientId == message.clientId && m.id != message.id)) {
         _upsertMessage(message);
       }
     }
@@ -334,8 +284,7 @@ class RemoteChatRepository implements ChatRepository {
     }
     yield List.unmodifiable(_messages[conversationId]!);
     await for (final changed in _messagesChanged.stream) {
-      if (changed == conversationId)
-        yield List.unmodifiable(_messages[conversationId]!);
+      if (changed == conversationId) yield List.unmodifiable(_messages[conversationId]!);
     }
   }
 
@@ -349,48 +298,29 @@ class RemoteChatRepository implements ChatRepository {
 
   @override
   Future<Conversation> getConversation(String conversationId) async =>
-      Conversation.fromJson(
-        await _api.get<JsonMap>('/conversations/$conversationId'),
-      );
+      Conversation.fromJson(await _api.get<JsonMap>('/conversations/$conversationId'));
 
   @override
-  Future<Conversation> openConversation({
-    required PublicProfile peer,
-    ConversationContext? context,
-  }) async {
+  Future<Conversation> openConversation({required PublicProfile peer, ConversationContext? context}) async {
     if (context == null) {
-      throw const ValidationFailure(
-        'Chat e’lon, vakansiya yoki usta sahifasidan boshlanadi',
-      );
+      throw const ValidationFailure('Chat e’lon, vakansiya yoki usta sahifasidan boshlanadi');
     }
     final contextType = switch (context.subject) {
       ConversationSubject.listing => 'listing',
       ConversationSubject.job => 'job',
       ConversationSubject.service => 'service',
       ConversationSubject.candidate => 'candidate',
-      ConversationSubject.direct => throw const ValidationFailure(
-        'Noma’lum chat turi',
-      ),
+      ConversationSubject.direct => throw const ValidationFailure('Noma’lum chat turi'),
     };
     final conversation = Conversation.fromJson(
-      await _api.post<JsonMap>(
-        '/conversations',
-        body: {'contextType': contextType, 'contextId': context.refId},
-      ),
+      await _api.post<JsonMap>('/conversations', body: {'contextType': contextType, 'contextId': context.refId}),
     );
     final existing = _conversations;
-    if (existing != null)
-      _publishConversations([
-        conversation,
-        ...existing.where((c) => c.id != conversation.id),
-      ]);
+    if (existing != null) _publishConversations([conversation, ...existing.where((c) => c.id != conversation.id)]);
     return conversation;
   }
 
-  String _newClientId() => List.generate(
-    16,
-    (_) => _random.nextInt(256).toRadixString(16).padLeft(2, '0'),
-  ).join();
+  String _newClientId() => List.generate(16, (_) => _random.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
 
   @override
   Future<void> sendText(String conversationId, String text) async {
@@ -442,10 +372,7 @@ class RemoteChatRepository implements ChatRepository {
   }
 
   /// Socket when connected (ack), REST otherwise; same client id either way.
-  Future<void> _deliver(
-    ChatMessage pending,
-    Map<String, Object?> payload,
-  ) async {
+  Future<void> _deliver(ChatMessage pending, Map<String, Object?> payload) async {
     final body = {...payload, 'clientId': pending.clientId};
     try {
       final JsonMap sent;
@@ -456,23 +383,17 @@ class RemoteChatRepository implements ChatRepository {
           'message:send',
           {...body, 'conversationId': pending.conversationId},
           ack: (Object? response) {
-            final map = response is Map
-                ? Map<String, dynamic>.from(response)
-                : const <String, dynamic>{};
+            final map = response is Map ? Map<String, dynamic>.from(response) : const <String, dynamic>{};
             if (map['ok'] == true) {
               completer.complete(Map<String, dynamic>.from(map['data'] as Map));
             } else {
-              final error = map['error'] is Map
-                  ? map['error'] as Map
-                  : const {};
+              final error = map['error'] is Map ? map['error'] as Map : const {};
               completer.completeError(
                 error['code'] == 'BLOCKED'
                     ? const BlockedFailure()
                     : error['code'] == 'RATE_LIMITED'
                     ? const RateLimitFailure()
-                    : ValidationFailure(
-                        error['message'] as String? ?? 'Xabar yuborilmadi',
-                      ),
+                    : ValidationFailure(error['message'] as String? ?? 'Xabar yuborilmadi'),
               );
             }
           },
@@ -482,27 +403,16 @@ class RemoteChatRepository implements ChatRepository {
           onTimeout: () => throw const TimeoutFailure(),
         );
       } else {
-        sent = await _api.post<JsonMap>(
-          '/conversations/${pending.conversationId}/messages',
-          body: body,
-        );
+        sent = await _api.post<JsonMap>('/conversations/${pending.conversationId}/messages', body: body);
       }
       final message = ChatMessage.fromJson(sent);
       _upsertMessage(message);
       final conversations = _conversations;
       if (conversations != null) {
-        final index = conversations.indexWhere(
-          (c) => c.id == pending.conversationId,
-        );
+        final index = conversations.indexWhere((c) => c.id == pending.conversationId);
         if (index >= 0) {
-          final updated = conversations[index].copyWith(
-            updatedAt: message.sentAt,
-            lastMessagePreview: message.preview,
-          );
-          _publishConversations([
-            updated,
-            ...conversations.where((c) => c.id != pending.conversationId),
-          ]);
+          final updated = conversations[index].copyWith(updatedAt: message.sentAt, lastMessagePreview: message.preview);
+          _publishConversations([updated, ...conversations.where((c) => c.id != pending.conversationId)]);
         }
       }
     } on Object {
@@ -521,26 +431,17 @@ class RemoteChatRepository implements ChatRepository {
     }
     final conversations = _conversations;
     if (conversations != null) {
-      _publishConversations([
-        for (final c in conversations)
-          c.id == conversationId ? c.copyWith(unreadCount: 0) : c,
-      ]);
+      _publishConversations([for (final c in conversations) c.id == conversationId ? c.copyWith(unreadCount: 0) : c]);
     }
   }
 
   /// Blocking itself goes through the trust & safety repository
   /// (`PUT /blocks/:userId`); this only reflects it in the thread.
   @override
-  Future<void> setBlocked(
-    String conversationId, {
-    required bool blocked,
-  }) async {
+  Future<void> setBlocked(String conversationId, {required bool blocked}) async {
     final conversations = _conversations;
     if (conversations == null) return;
-    _publishConversations([
-      for (final c in conversations)
-        c.id == conversationId ? c.copyWith(isBlocked: blocked) : c,
-    ]);
+    _publishConversations([for (final c in conversations) c.id == conversationId ? c.copyWith(isBlocked: blocked) : c]);
   }
 
   @override
@@ -564,10 +465,7 @@ class RemoteChatRepository implements ChatRepository {
   void sendTyping(String conversationId, {required bool isTyping}) {
     final socket = _socket;
     if (socket != null && socket.connected)
-      socket.emit('typing', {
-        'conversationId': conversationId,
-        'isTyping': isTyping,
-      });
+      socket.emit('typing', {'conversationId': conversationId, 'isTyping': isTyping});
   }
 
   void dispose() {

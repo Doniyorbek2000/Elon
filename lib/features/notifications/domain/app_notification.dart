@@ -2,13 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/domain/paged.dart';
 
-enum NotificationKind {
-  message,
-  priceDrop,
-  application,
-  listingApproved,
-  system,
-}
+enum NotificationKind { message, priceDrop, application, listingApproved, system }
 
 @immutable
 class AppNotification {
@@ -32,22 +26,20 @@ class AppNotification {
   /// In-app route to open when tapped (same format as push payloads).
   final String? deepLink;
 
-  factory AppNotification.fromJson(Map<String, dynamic> json) =>
-      AppNotification(
-        id: json['id'] as String,
-        kind: switch (json['type']) {
-          'message' => NotificationKind.message,
-          'listingStatus' => NotificationKind.listingApproved,
-          'applicationReceived' ||
-          'applicationStatus' => NotificationKind.application,
-          _ => NotificationKind.system,
-        },
-        title: json['title'] as String,
-        body: json['body'] as String? ?? '',
-        createdAt: DateTime.parse(json['createdAt'] as String),
-        isRead: json['isRead'] as bool? ?? false,
-        deepLink: json['deepLink'] as String?,
-      );
+  factory AppNotification.fromJson(Map<String, dynamic> json) => AppNotification(
+    id: json['id'] as String,
+    kind: switch (json['type']) {
+      'message' => NotificationKind.message,
+      'listingStatus' => NotificationKind.listingApproved,
+      'applicationReceived' || 'applicationStatus' => NotificationKind.application,
+      _ => NotificationKind.system,
+    },
+    title: json['title'] as String,
+    body: json['body'] as String? ?? '',
+    createdAt: DateTime.parse(json['createdAt'] as String),
+    isRead: json['isRead'] as bool? ?? false,
+    deepLink: json['deepLink'] as String?,
+  );
 
   AppNotification markRead() => AppNotification(
     id: id,

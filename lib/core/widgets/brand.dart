@@ -13,10 +13,7 @@ class BrandMark extends StatelessWidget {
   Widget build(BuildContext context) => Semantics(
     label: 'Bozor.uz logotipi',
     image: true,
-    child: CustomPaint(
-      size: Size.square(size),
-      painter: _BagPainter(context.palette),
-    ),
+    child: CustomPaint(size: Size.square(size), painter: _BagPainter(context.palette)),
   );
 }
 
@@ -34,18 +31,9 @@ class _BagPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = w * 0.085
       ..strokeCap = StrokeCap.round;
-    canvas.drawArc(
-      Rect.fromLTWH(w * 0.3, h * 0.04, w * 0.4, h * 0.42),
-      3.3,
-      2.82,
-      false,
-      handle,
-    );
+    canvas.drawArc(Rect.fromLTWH(w * 0.3, h * 0.04, w * 0.4, h * 0.42), 3.3, 2.82, false, handle);
 
-    final body = RRect.fromRectAndRadius(
-      Rect.fromLTWH(w * 0.1, h * 0.26, w * 0.8, h * 0.7),
-      Radius.circular(w * 0.16),
-    );
+    final body = RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.1, h * 0.26, w * 0.8, h * 0.7), Radius.circular(w * 0.16));
     canvas.drawRRect(
       body.shift(Offset(0, h * 0.03)),
       Paint()
@@ -67,24 +55,11 @@ class _BagPainter extends CustomPainter {
       ..moveTo(body.left + w * 0.02, body.bottom - h * 0.12)
       ..lineTo(body.right - w * 0.02, body.top + h * 0.1)
       ..lineTo(body.right, body.bottom - body.brRadiusY)
-      ..quadraticBezierTo(
-        body.right,
-        body.bottom,
-        body.right - body.brRadiusX,
-        body.bottom,
-      )
+      ..quadraticBezierTo(body.right, body.bottom, body.right - body.brRadiusX, body.bottom)
       ..lineTo(body.left + body.blRadiusX, body.bottom)
-      ..quadraticBezierTo(
-        body.left,
-        body.bottom,
-        body.left,
-        body.bottom - body.blRadiusY,
-      )
+      ..quadraticBezierTo(body.left, body.bottom, body.left, body.bottom - body.blRadiusY)
       ..close();
-    canvas.drawPath(
-      fold,
-      Paint()..color = const Color(0xFF1D4ED8).withValues(alpha: 0.35),
-    );
+    canvas.drawPath(fold, Paint()..color = const Color(0xFF1D4ED8).withValues(alpha: 0.35));
     final dot = Paint()..color = Colors.white.withValues(alpha: 0.9);
     canvas.drawCircle(Offset(w * 0.34, h * 0.42), w * 0.04, dot);
     canvas.drawCircle(Offset(w * 0.66, h * 0.42), w * 0.04, dot);
@@ -106,9 +81,7 @@ class Wordmark extends StatelessWidget {
       fontSize: fontSize,
       fontWeight: FontWeight.w800,
       letterSpacing: -1.2,
-      color: Theme.of(context).brightness == Brightness.dark
-          ? palette.textPrimary
-          : const Color(0xFF0B1B4D),
+      color: Theme.of(context).brightness == Brightness.dark ? palette.textPrimary : const Color(0xFF0B1B4D),
     );
     return Text.rich(
       TextSpan(
@@ -133,9 +106,7 @@ class LandscapeBackdrop extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ExcludeSemantics(
     child: CustomPaint(
-      painter: _LandscapePainter(
-        dark: Theme.of(context).brightness == Brightness.dark,
-      ),
+      painter: _LandscapePainter(dark: Theme.of(context).brightness == Brightness.dark),
       child: const SizedBox.expand(),
     ),
   );
@@ -170,14 +141,8 @@ class _LandscapePainter extends CustomPainter {
       Paint()
         ..shader = RadialGradient(
           colors: dark
-              ? [
-                  const Color(0xFF5B87FF).withValues(alpha: 0.25),
-                  Colors.transparent,
-                ]
-              : [
-                  const Color(0xFFFFF4D6).withValues(alpha: 0.7),
-                  Colors.transparent,
-                ],
+              ? [const Color(0xFF5B87FF).withValues(alpha: 0.25), Colors.transparent]
+              : [const Color(0xFFFFF4D6).withValues(alpha: 0.7), Colors.transparent],
         ).createShader(Rect.fromCircle(center: sunCenter, radius: w * 0.28)),
     );
 
@@ -193,12 +158,7 @@ class _LandscapePainter extends CustomPainter {
         } else {
           final prevX = step * (i - 1);
           final prevY = h * peaks[i - 1];
-          path.quadraticBezierTo(
-            (prevX + x) / 2,
-            (prevY < y ? prevY : y) - h * 0.015,
-            x,
-            y,
-          );
+          path.quadraticBezierTo((prevX + x) / 2, (prevY < y ? prevY : y) - h * 0.015, x, y);
         }
       }
       path
@@ -208,42 +168,12 @@ class _LandscapePainter extends CustomPainter {
     }
 
     if (dark) {
-      ridge(0.42, [
-        0.40,
-        0.30,
-        0.36,
-        0.24,
-        0.33,
-        0.28,
-        0.38,
-      ], const Color(0xFF1C2A55));
-      ridge(0.48, [
-        0.47,
-        0.40,
-        0.44,
-        0.37,
-        0.42,
-        0.46,
-      ], const Color(0xFF16224A));
+      ridge(0.42, [0.40, 0.30, 0.36, 0.24, 0.33, 0.28, 0.38], const Color(0xFF1C2A55));
+      ridge(0.48, [0.47, 0.40, 0.44, 0.37, 0.42, 0.46], const Color(0xFF16224A));
       ridge(0.56, [0.55, 0.51, 0.54, 0.50, 0.53], const Color(0xFF111A36));
     } else {
-      ridge(0.42, [
-        0.40,
-        0.30,
-        0.36,
-        0.24,
-        0.33,
-        0.28,
-        0.38,
-      ], const Color(0xFFB9C8EE));
-      ridge(0.48, [
-        0.47,
-        0.40,
-        0.44,
-        0.37,
-        0.42,
-        0.46,
-      ], const Color(0xFF9DB3E3));
+      ridge(0.42, [0.40, 0.30, 0.36, 0.24, 0.33, 0.28, 0.38], const Color(0xFFB9C8EE));
+      ridge(0.48, [0.47, 0.40, 0.44, 0.37, 0.42, 0.46], const Color(0xFF9DB3E3));
       ridge(0.56, [0.55, 0.51, 0.54, 0.50, 0.53], const Color(0xFF8FC3A1));
     }
     final ground = Rect.fromLTWH(0, h * 0.58, w, h * 0.42);
@@ -253,9 +183,7 @@ class _LandscapePainter extends CustomPainter {
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: dark
-              ? const [Color(0xFF111A36), Color(0xFF0A1020)]
-              : const [Color(0xFF9ED0AE), Color(0xFFF4F6FB)],
+          colors: dark ? const [Color(0xFF111A36), Color(0xFF0A1020)] : const [Color(0xFF9ED0AE), Color(0xFFF4F6FB)],
           stops: const [0, 0.55],
         ).createShader(ground),
     );

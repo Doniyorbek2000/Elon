@@ -6,13 +6,7 @@ import '../design/app_tokens.dart';
 
 /// "Yaqin atrofdagi e’lonlar ........ Barchasini ko‘rish"
 class SectionHeader extends StatelessWidget {
-  const SectionHeader({
-    super.key,
-    required this.title,
-    this.actionLabel,
-    this.onAction,
-    this.padding,
-  });
+  const SectionHeader({super.key, required this.title, this.actionLabel, this.onAction, this.padding});
 
   final String title;
   final String? actionLabel;
@@ -28,27 +22,15 @@ class SectionHeader extends StatelessWidget {
           Expanded(
             child: Semantics(
               header: true,
-              child: Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w700),
-              ),
+              child: Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
             ),
           ),
           if (actionLabel != null)
             Flexible(
               child: TextButton(
                 onPressed: onAction,
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                  ),
-                ),
-                child: Text(
-                  actionLabel!,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm)),
+                child: Text(actionLabel!, maxLines: 1, overflow: TextOverflow.ellipsis),
               ),
             ),
         ],
@@ -59,13 +41,7 @@ class SectionHeader extends StatelessWidget {
 
 /// Icon inside a tinted rounded square — category tiles, menu rows, jobs.
 class ToneIcon extends StatelessWidget {
-  const ToneIcon({
-    super.key,
-    required this.icon,
-    required this.tone,
-    this.size = 44,
-    this.radius = AppRadii.md,
-  });
+  const ToneIcon({super.key, required this.icon, required this.tone, this.size = 44, this.radius = AppRadii.md});
 
   final IconData icon;
   final AccentTone tone;
@@ -78,10 +54,7 @@ class ToneIcon extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        color: pair.background,
-        borderRadius: BorderRadius.circular(radius),
-      ),
+      decoration: BoxDecoration(color: pair.background, borderRadius: BorderRadius.circular(radius)),
       child: Icon(icon, size: size * 0.5, color: pair.foreground),
     );
   }
@@ -114,11 +87,7 @@ class SurfaceCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(radius),
-      side: BorderSide(
-        color:
-            borderColor ??
-            (elevated && !isDark ? Colors.transparent : palette.border),
-      ),
+      side: BorderSide(color: borderColor ?? (elevated && !isDark ? Colors.transparent : palette.border)),
     );
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -142,13 +111,7 @@ class SurfaceCard extends StatelessWidget {
 
 /// Subtle press-down scale for tappable cards (disabled with reduced motion).
 class Pressable extends StatefulWidget {
-  const Pressable({
-    super.key,
-    required this.child,
-    required this.onTap,
-    this.semanticLabel,
-    this.onLongPress,
-  });
+  const Pressable({super.key, required this.child, required this.onTap, this.semanticLabel, this.onLongPress});
 
   final Widget child;
   final VoidCallback? onTap;
@@ -163,8 +126,7 @@ class _PressableState extends State<Pressable> {
   bool _pressed = false;
 
   void _set(bool value) {
-    if (_pressed != value && !AppMotion.reduced(context))
-      setState(() => _pressed = value);
+    if (_pressed != value && !AppMotion.reduced(context)) setState(() => _pressed = value);
   }
 
   @override
@@ -227,11 +189,7 @@ class ChoiceChipsRow<T> extends StatelessWidget {
               button: true,
               child: Material(
                 color: isSelected ? palette.primary : palette.surface,
-                shape: StadiumBorder(
-                  side: BorderSide(
-                    color: isSelected ? palette.primary : palette.border,
-                  ),
-                ),
+                shape: StadiumBorder(side: BorderSide(color: isSelected ? palette.primary : palette.border)),
                 child: InkWell(
                   customBorder: const StadiumBorder(),
                   onTap: () {
@@ -239,17 +197,10 @@ class ChoiceChipsRow<T> extends StatelessWidget {
                     onSelected(item);
                   },
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.lg,
-                      vertical: AppSpacing.sm,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
                     child: Text(
                       labelOf(item),
-                      style: text.labelMedium?.copyWith(
-                        color: isSelected
-                            ? palette.onPrimary
-                            : palette.textPrimary,
-                      ),
+                      style: text.labelMedium?.copyWith(color: isSelected ? palette.onPrimary : palette.textPrimary),
                     ),
                   ),
                 ),
@@ -279,19 +230,9 @@ class InfoTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            label,
-            style: text.bodySmall,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+          Text(label, style: text.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
           const SizedBox(height: AppSpacing.xxs),
-          Text(
-            value,
-            style: text.titleSmall,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
+          Text(value, style: text.titleSmall, maxLines: 2, overflow: TextOverflow.ellipsis),
         ],
       ),
     );
@@ -300,13 +241,7 @@ class InfoTile extends StatelessWidget {
 
 /// Icon + text meta row: "📍 Chust, Namangan · 1 soat oldin".
 class MetaLine extends StatelessWidget {
-  const MetaLine({
-    super.key,
-    required this.icon,
-    required this.text,
-    this.color,
-    this.maxLines = 1,
-  });
+  const MetaLine({super.key, required this.icon, required this.text, this.color, this.maxLines = 1});
 
   final IconData icon;
   final String text;
@@ -319,19 +254,10 @@ class MetaLine extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          icon,
-          size: AppIconSize.xs,
-          color: color ?? context.palette.textTertiary,
-        ),
+        Icon(icon, size: AppIconSize.xs, color: color ?? context.palette.textTertiary),
         const SizedBox(width: AppSpacing.xs),
         Flexible(
-          child: Text(
-            text,
-            style: style,
-            maxLines: maxLines,
-            overflow: TextOverflow.ellipsis,
-          ),
+          child: Text(text, style: style, maxLines: maxLines, overflow: TextOverflow.ellipsis),
         ),
       ],
     );
@@ -339,12 +265,7 @@ class MetaLine extends StatelessWidget {
 }
 
 class RatingLabel extends StatelessWidget {
-  const RatingLabel({
-    super.key,
-    required this.rating,
-    this.count,
-    this.compact = false,
-  });
+  const RatingLabel({super.key, required this.rating, this.count, this.compact = false});
 
   final double rating;
   final int? count;
@@ -354,31 +275,18 @@ class RatingLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     return Semantics(
-      label:
-          'Reyting ${rating.toStringAsFixed(1)}${count == null ? '' : ', $count ta sharh'}',
+      label: 'Reyting ${rating.toStringAsFixed(1)}${count == null ? '' : ', $count ta sharh'}',
       excludeSemantics: true,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.star_rounded,
-            size: AppIconSize.sm,
-            color: Color(0xFFF5B400),
-          ),
+          const Icon(Icons.star_rounded, size: AppIconSize.sm, color: Color(0xFFF5B400)),
           const SizedBox(width: 2),
-          Text(
-            rating.toStringAsFixed(1),
-            style: compact ? text.labelSmall : text.labelMedium,
-          ),
+          Text(rating.toStringAsFixed(1), style: compact ? text.labelSmall : text.labelMedium),
           if (count != null) ...[
             const SizedBox(width: 3),
             Flexible(
-              child: Text(
-                '($count)',
-                style: text.bodySmall,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+              child: Text('($count)', style: text.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
             ),
           ],
         ],
@@ -389,11 +297,7 @@ class RatingLabel extends StatelessWidget {
 
 /// Constrains content width on tablets while keeping phones edge-to-edge.
 class ContentWidth extends StatelessWidget {
-  const ContentWidth({
-    super.key,
-    required this.child,
-    this.maxWidth = AppBreakpoints.contentMaxWidth,
-  });
+  const ContentWidth({super.key, required this.child, this.maxWidth = AppBreakpoints.contentMaxWidth});
 
   final Widget child;
   final double maxWidth;
@@ -408,12 +312,7 @@ class ContentWidth extends StatelessWidget {
   );
 }
 
-void showAppSnack(
-  BuildContext context,
-  String message, {
-  IconData? icon,
-  SnackBarAction? action,
-}) {
+void showAppSnack(BuildContext context, String message, {IconData? icon, SnackBarAction? action}) {
   final messenger = ScaffoldMessenger.maybeOf(context);
   if (messenger == null) return;
   final onColor = Theme.of(context).colorScheme.onInverseSurface;
@@ -449,15 +348,10 @@ Future<bool> confirmDialog(
       title: Text(title),
       content: Text(message),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Bekor qilish'),
-        ),
+        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Bekor qilish')),
         TextButton(
           onPressed: () => Navigator.pop(context, true),
-          style: destructive
-              ? TextButton.styleFrom(foregroundColor: palette.danger)
-              : null,
+          style: destructive ? TextButton.styleFrom(foregroundColor: palette.danger) : null,
           child: Text(confirmLabel),
         ),
       ],

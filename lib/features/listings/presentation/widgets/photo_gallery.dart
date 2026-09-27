@@ -52,8 +52,7 @@ class _PhotoGalleryState extends State<PhotoGallery> {
             if (_controller.hasClients) _controller.jumpToPage(index);
           },
         ),
-        transitionsBuilder: (_, animation, _, child) =>
-            FadeTransition(opacity: animation, child: child),
+        transitionsBuilder: (_, animation, _, child) => FadeTransition(opacity: animation, child: child),
       ),
     );
   }
@@ -63,8 +62,7 @@ class _PhotoGalleryState extends State<PhotoGallery> {
     final images = widget.images;
     final count = images.length;
     return Semantics(
-      label:
-          '${widget.semanticTitle} rasmlari, ${count == 0 ? 0 : _index + 1} / $count. Kattalashtirish uchun bosing',
+      label: '${widget.semanticTitle} rasmlari, ${count == 0 ? 0 : _index + 1} / $count. Kattalashtirish uchun bosing',
       button: count > 0,
       child: GestureDetector(
         onTap: _openViewer,
@@ -72,11 +70,7 @@ class _PhotoGalleryState extends State<PhotoGallery> {
           fit: StackFit.expand,
           children: [
             if (count == 0)
-              AppImage(
-                image: null,
-                placeholderIcon: widget.placeholderIcon,
-                tone: widget.tone,
-              )
+              AppImage(image: null, placeholderIcon: widget.placeholderIcon, tone: widget.tone)
             else
               PageView.builder(
                 controller: _controller,
@@ -92,9 +86,7 @@ class _PhotoGalleryState extends State<PhotoGallery> {
                     placeholderIcon: widget.placeholderIcon,
                     tone: widget.tone,
                   );
-                  return index == 0
-                      ? Hero(tag: widget.heroTag, child: image)
-                      : image;
+                  return index == 0 ? Hero(tag: widget.heroTag, child: image) : image;
                 },
               ),
             if (count > 1)
@@ -103,10 +95,7 @@ class _PhotoGalleryState extends State<PhotoGallery> {
                 bottom: AppSpacing.md,
                 child: ExcludeSemantics(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm + 2,
-                      vertical: AppSpacing.xs,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm + 2, vertical: AppSpacing.xs),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.55),
                       borderRadius: AppRadii.pillAll,
@@ -114,16 +103,11 @@ class _PhotoGalleryState extends State<PhotoGallery> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
-                          Icons.photo_camera_outlined,
-                          size: 14,
-                          color: Colors.white,
-                        ),
+                        const Icon(Icons.photo_camera_outlined, size: 14, color: Colors.white),
                         const SizedBox(width: AppSpacing.xs),
                         Text(
                           '${_index + 1}/$count',
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(color: Colors.white),
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white),
                         ),
                       ],
                     ),
@@ -146,9 +130,7 @@ class _PhotoGalleryState extends State<PhotoGallery> {
                           width: i == _index ? 16 : 6,
                           height: 6,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(
-                              alpha: i == _index ? 1 : 0.6,
-                            ),
+                            color: Colors.white.withValues(alpha: i == _index ? 1 : 0.6),
                             borderRadius: AppRadii.pillAll,
                           ),
                         ),
@@ -165,12 +147,7 @@ class _PhotoGalleryState extends State<PhotoGallery> {
 
 /// Full-screen, pinch-to-zoom viewer on black.
 class PhotoViewer extends StatefulWidget {
-  const PhotoViewer({
-    super.key,
-    required this.images,
-    required this.initialIndex,
-    this.onPageChanged,
-  });
+  const PhotoViewer({super.key, required this.images, required this.initialIndex, this.onPageChanged});
 
   final List<MediaImage> images;
   final int initialIndex;
@@ -209,11 +186,7 @@ class _PhotoViewerState extends State<PhotoViewer> {
                 minScale: 1,
                 maxScale: 4,
                 child: Center(
-                  child: AppImage(
-                    image: widget.images[index],
-                    fit: BoxFit.contain,
-                    variant: ImageVariant.original,
-                  ),
+                  child: AppImage(image: widget.images[index], fit: BoxFit.contain, variant: ImageVariant.original),
                 ),
               ),
             ),
@@ -231,8 +204,7 @@ class _PhotoViewerState extends State<PhotoViewer> {
                     const Spacer(),
                     Text(
                       '${_index + 1} / ${widget.images.length}',
-                      style: Theme.of(context).textTheme.labelLarge
-                          ?.copyWith(color: Colors.white),
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.white),
                     ),
                     const SizedBox(width: AppSpacing.lg),
                   ],

@@ -45,12 +45,7 @@ class _ContactSheetState extends ConsumerState<_ContactSheet> {
     return SheetScaffold(
       title: 'Bog‘lanish',
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.xl,
-          0,
-          AppSpacing.xl,
-          AppSpacing.lg,
-        ),
+        padding: const EdgeInsets.fromLTRB(AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.lg),
         child: FutureBuilder<String>(
           future: _phone,
           builder: (context, snapshot) {
@@ -96,17 +91,11 @@ class _ContactSheetState extends ConsumerState<_ContactSheet> {
                           AnimatedSwitcher(
                             duration: AppMotion.of(context, AppMotion.fast),
                             child: Text(
-                              phone == null
-                                  ? 'Raqam yuklanmoqda…'
-                                  : Formatters.phone(phone),
+                              phone == null ? 'Raqam yuklanmoqda…' : Formatters.phone(phone),
                               key: ValueKey(phone),
                               style: text.titleMedium?.copyWith(
-                                fontFeatures: const [
-                                  FontFeature.tabularFigures(),
-                                ],
-                                color: phone == null
-                                    ? palette.textTertiary
-                                    : palette.textPrimary,
+                                fontFeatures: const [FontFeature.tabularFigures()],
+                                color: phone == null ? palette.textTertiary : palette.textPrimary,
                               ),
                             ),
                           ),
@@ -117,15 +106,11 @@ class _ContactSheetState extends ConsumerState<_ContactSheet> {
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: palette.success,
-                  ),
+                  style: FilledButton.styleFrom(backgroundColor: palette.success),
                   onPressed: phone == null
                       ? null
                       : () async {
-                          final ok = await ref
-                              .read(externalActionsProvider)
-                              .call(phone);
+                          final ok = await ref.read(externalActionsProvider).call(phone);
                           if (!context.mounted) return;
                           if (ok) {
                             Navigator.pop(context);

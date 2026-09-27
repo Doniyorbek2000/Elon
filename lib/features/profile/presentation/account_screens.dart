@@ -41,10 +41,7 @@ class MyApplicationsScreen extends ConsumerWidget {
           .watch(myApplicationsProvider)
           .when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, _) => FailureView(
-              error: error,
-              onRetry: () => ref.invalidate(myApplicationsProvider),
-            ),
+            error: (error, _) => FailureView(error: error, onRetry: () => ref.invalidate(myApplicationsProvider)),
             data: (applications) => applications.isEmpty
                 ? EmptyState(
                     icon: Icons.assignment_outlined,
@@ -57,27 +54,19 @@ class MyApplicationsScreen extends ConsumerWidget {
                     child: ListView.separated(
                       padding: const EdgeInsets.all(AppSpacing.lg),
                       itemCount: applications.length,
-                      separatorBuilder: (_, _) =>
-                          const SizedBox(height: AppSpacing.md),
+                      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
                       itemBuilder: (_, index) {
                         final application = applications[index];
                         return SurfaceCard(
-                          onTap: () =>
-                              context.push(AppRoutes.job(application.job.id)),
+                          onTap: () => context.push(AppRoutes.job(application.job.id)),
                           child: Row(
                             children: [
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      application.job.title,
-                                      style: text.titleSmall,
-                                    ),
-                                    Text(
-                                      application.job.company.name,
-                                      style: text.bodySmall,
-                                    ),
+                                    Text(application.job.title, style: text.titleSmall),
+                                    Text(application.job.company.name, style: text.bodySmall),
                                     const SizedBox(height: AppSpacing.xs),
                                     Text(
                                       'Yuborilgan: ${Formatters.relativeTime(application.appliedAt, now)}',
@@ -89,15 +78,10 @@ class MyApplicationsScreen extends ConsumerWidget {
                               StatusPill(
                                 label: application.status.label,
                                 style: switch (application.status) {
-                                  ApplicationStatus.submitted ||
-                                  ApplicationStatus.withdrawn =>
-                                    PillStyle.neutral,
+                                  ApplicationStatus.submitted || ApplicationStatus.withdrawn => PillStyle.neutral,
                                   ApplicationStatus.viewed => PillStyle.primary,
-                                  ApplicationStatus.shortlisted ||
-                                  ApplicationStatus.accepted =>
-                                    PillStyle.success,
-                                  ApplicationStatus.rejected =>
-                                    PillStyle.danger,
+                                  ApplicationStatus.shortlisted || ApplicationStatus.accepted => PillStyle.success,
+                                  ApplicationStatus.rejected => PillStyle.danger,
                                 },
                               ),
                             ],
@@ -141,20 +125,11 @@ class SettingsScreen extends ConsumerWidget {
                     icon: Icon(Icons.brightness_auto_rounded),
                     label: Text('Tizim'),
                   ),
-                  ButtonSegment(
-                    value: ThemeMode.light,
-                    icon: Icon(Icons.light_mode_rounded),
-                    label: Text('Yorug‘'),
-                  ),
-                  ButtonSegment(
-                    value: ThemeMode.dark,
-                    icon: Icon(Icons.dark_mode_rounded),
-                    label: Text('Qorong‘i'),
-                  ),
+                  ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode_rounded), label: Text('Yorug‘')),
+                  ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode_rounded), label: Text('Qorong‘i')),
                 ],
                 selected: {themeMode},
-                onSelectionChanged: (value) =>
-                    ref.read(themeModeProvider.notifier).set(value.first),
+                onSelectionChanged: (value) => ref.read(themeModeProvider.notifier).set(value.first),
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
@@ -165,13 +140,9 @@ class SettingsScreen extends ConsumerWidget {
                   SwitchListTile.adaptive(
                     secondary: const Icon(Icons.notifications_active_outlined),
                     title: const Text('Bildirishnomalar'),
-                    subtitle: const Text(
-                      'Yangi xabarlar, narx tushishi, arizalar',
-                    ),
+                    subtitle: const Text('Yangi xabarlar, narx tushishi, arizalar'),
                     value: notifications,
-                    onChanged: (value) => ref
-                        .read(notificationsPreferenceProvider.notifier)
-                        .set(enabled: value),
+                    onChanged: (value) => ref.read(notificationsPreferenceProvider.notifier).set(enabled: value),
                   ),
                   const ListTile(
                     leading: Icon(Icons.language_rounded),
@@ -189,11 +160,7 @@ class SettingsScreen extends ConsumerWidget {
                     title: const Text('Qidiruv tarixini tozalash'),
                     onTap: () {
                       ref.read(recentSearchesProvider.notifier).clear();
-                      showAppSnack(
-                        context,
-                        'Qidiruv tarixi tozalandi',
-                        icon: Icons.check_rounded,
-                      );
+                      showAppSnack(context, 'Qidiruv tarixi tozalandi', icon: Icons.check_rounded);
                     },
                   ),
                 ],
@@ -207,32 +174,19 @@ class SettingsScreen extends ConsumerWidget {
                   ListTile(
                     leading: const Icon(Icons.privacy_tip_outlined),
                     title: const Text('Maxfiylik siyosati'),
-                    trailing: const Icon(
-                      Icons.open_in_new_rounded,
-                      size: AppIconSize.sm,
-                    ),
-                    onTap: () => ref
-                        .read(externalActionsProvider)
-                        .openUrl(Uri.parse('${config.webBaseUrl}/privacy')),
+                    trailing: const Icon(Icons.open_in_new_rounded, size: AppIconSize.sm),
+                    onTap: () => ref.read(externalActionsProvider).openUrl(Uri.parse('${config.webBaseUrl}/privacy')),
                   ),
                   ListTile(
                     leading: const Icon(Icons.gavel_rounded),
                     title: const Text('Foydalanish shartlari'),
-                    trailing: const Icon(
-                      Icons.open_in_new_rounded,
-                      size: AppIconSize.sm,
-                    ),
-                    onTap: () => ref
-                        .read(externalActionsProvider)
-                        .openUrl(Uri.parse('${config.webBaseUrl}/terms')),
+                    trailing: const Icon(Icons.open_in_new_rounded, size: AppIconSize.sm),
+                    onTap: () => ref.read(externalActionsProvider).openUrl(Uri.parse('${config.webBaseUrl}/terms')),
                   ),
                   ListTile(
                     leading: const Icon(Icons.info_outline_rounded),
                     title: const Text('Ilova versiyasi'),
-                    trailing: Text(
-                      config.useDemoData ? '0.1.0 · demo' : '0.1.0',
-                      style: text.bodySmall,
-                    ),
+                    trailing: Text(config.useDemoData ? '0.1.0 · demo' : '0.1.0', style: text.bodySmall),
                   ),
                 ],
               ),
@@ -257,28 +211,18 @@ class BlockedUsersScreen extends ConsumerWidget {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, _) => FailureView(error: error),
             data: (ids) => ids.isEmpty
-                ? const EmptyState(
-                    icon: Icons.block_rounded,
-                    title: 'Bloklangan foydalanuvchilar yo‘q',
-                  )
+                ? const EmptyState(icon: Icons.block_rounded, title: 'Bloklangan foydalanuvchilar yo‘q')
                 : ListView(
                     children: [
                       for (final id in ids)
                         Consumer(
                           builder: (context, ref, _) {
-                            final profile = ref
-                                .watch(publicProfileProvider(id))
-                                .value;
+                            final profile = ref.watch(publicProfileProvider(id)).value;
                             return ListTile(
-                              leading: AppAvatar(
-                                name: profile?.name ?? '?',
-                                image: profile?.avatar,
-                              ),
+                              leading: AppAvatar(name: profile?.name ?? '?', image: profile?.avatar),
                               title: Text(profile?.name ?? '…'),
                               trailing: TextButton(
-                                onPressed: () => ref
-                                    .read(blockedUsersProvider.notifier)
-                                    .unblock(id),
+                                onPressed: () => ref.read(blockedUsersProvider.notifier).unblock(id),
                                 child: const Text('Blokdan chiqarish'),
                               ),
                             );
@@ -297,10 +241,7 @@ class HelpScreen extends ConsumerWidget {
   const HelpScreen({super.key});
 
   static const _faq = [
-    (
-      'E’lon joylash pullikmi?',
-      'Yo‘q. Hozir barcha e’lonlar, vakansiyalar va xizmatlar bepul joylanadi.',
-    ),
+    ('E’lon joylash pullikmi?', 'Yo‘q. Hozir barcha e’lonlar, vakansiyalar va xizmatlar bepul joylanadi.'),
     (
       'E’lonim nega «Tekshiruvda»?',
       'Matnda telefon raqami, havola yoki oldindan to‘lov so‘rovi bo‘lsa, moderator tekshiradi. Odatda 15 daqiqa.',
@@ -313,10 +254,7 @@ class HelpScreen extends ConsumerWidget {
       'Firibgarni qanday aniqlash mumkin?',
       'Oldindan to‘lov so‘rash, karta raqami yoki SMS kodni talab qilish — firibgarlik belgilari. Shikoyat qiling.',
     ),
-    (
-      'E’lonni qanday o‘chiraman?',
-      'Profil → Mening e’lonlarim → e’lon yonidagi ⋮ tugmasi → O‘chirish.',
-    ),
+    ('E’lonni qanday o‘chiraman?', 'Profil → Mening e’lonlarim → e’lon yonidagi ⋮ tugmasi → O‘chirish.'),
   ];
 
   @override
@@ -339,12 +277,7 @@ class HelpScreen extends ConsumerWidget {
                     ExpansionTile(
                       shape: const Border(),
                       title: Text(question, style: text.titleSmall),
-                      childrenPadding: const EdgeInsets.fromLTRB(
-                        AppSpacing.lg,
-                        0,
-                        AppSpacing.lg,
-                        AppSpacing.lg,
-                      ),
+                      childrenPadding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
                       expandedAlignment: Alignment.centerLeft,
                       children: [Text(answer, style: text.bodyMedium)],
                     ),
@@ -355,12 +288,8 @@ class HelpScreen extends ConsumerWidget {
             const SafetyTipsCard(),
             const SizedBox(height: AppSpacing.xl),
             FilledButton.icon(
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF229ED9),
-              ),
-              onPressed: () => ref
-                  .read(externalActionsProvider)
-                  .openUrl(Uri.parse(config.supportTelegramUrl)),
+              style: FilledButton.styleFrom(backgroundColor: const Color(0xFF229ED9)),
+              onPressed: () => ref.read(externalActionsProvider).openUrl(Uri.parse(config.supportTelegramUrl)),
               icon: const Icon(Icons.support_agent_rounded),
               label: const Text('Qo‘llab-quvvatlash (Telegram)'),
             ),
@@ -394,17 +323,9 @@ class PlansScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(AppSpacing.xl),
               child: Column(
                 children: [
-                  Icon(
-                    Icons.celebration_rounded,
-                    size: 40,
-                    color: palette.success,
-                  ),
+                  Icon(Icons.celebration_rounded, size: 40, color: palette.success),
                   const SizedBox(height: AppSpacing.md),
-                  Text(
-                    'Hozircha hammasi bepul',
-                    style: text.titleLarge,
-                    textAlign: TextAlign.center,
-                  ),
+                  Text('Hozircha hammasi bepul', style: text.titleLarge, textAlign: TextAlign.center),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
                     'E’lonlar, vakansiyalar, xizmatlar va chat — cheklovsiz va to‘lovsiz.',
@@ -417,11 +338,7 @@ class PlansScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xl),
             Text('To‘lovlar tarixi', style: text.titleSmall),
             const SizedBox(height: AppSpacing.sm),
-            const EmptyState(
-              icon: Icons.receipt_long_outlined,
-              title: 'To‘lovlar yo‘q',
-              compact: true,
-            ),
+            const EmptyState(icon: Icons.receipt_long_outlined, title: 'To‘lovlar yo‘q', compact: true),
             if (flags.monetizationEnabled && plans.isNotEmpty) ...[
               Text('Biznes tariflar', style: text.titleSmall),
               const SizedBox(height: AppSpacing.sm),
@@ -435,22 +352,13 @@ class PlansScreen extends ConsumerWidget {
                       children: [
                         Row(
                           children: [
-                            Expanded(
-                              child: Text(plan.title, style: text.titleMedium),
-                            ),
-                            Text(
-                              '${Formatters.money(plan.monthlyPrice)}/oy',
-                              style: text.titleSmall,
-                            ),
+                            Expanded(child: Text(plan.title, style: text.titleMedium)),
+                            Text('${Formatters.money(plan.monthlyPrice)}/oy', style: text.titleSmall),
                           ],
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         for (final benefit in plan.benefits)
-                          MetaLine(
-                            icon: Icons.check_rounded,
-                            text: benefit,
-                            color: palette.textSecondary,
-                          ),
+                          MetaLine(icon: Icons.check_rounded, text: benefit, color: palette.textSecondary),
                       ],
                     ),
                   ),
@@ -473,9 +381,7 @@ class EditProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
-  late final _name = TextEditingController(
-    text: ref.read(sessionProvider)?.name ?? '',
-  );
+  late final _name = TextEditingController(text: ref.read(sessionProvider)?.name ?? '');
   MediaImage? _avatar;
   bool _saving = false;
   String? _error;
@@ -488,11 +394,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   Future<void> _pickAvatar() async {
     try {
-      final paths = await ref
-          .read(photoPickerProvider)
-          .pickFromGallery(limit: 1);
-      if (paths.isNotEmpty)
-        setState(() => _avatar = MediaImage.local('avatar', paths.first));
+      final paths = await ref.read(photoPickerProvider).pickFromGallery(limit: 1);
+      if (paths.isNotEmpty) setState(() => _avatar = MediaImage.local('avatar', paths.first));
     } on Object {
       if (mounted) showAppSnack(context, 'Rasm tanlab bo‘lmadi');
     }
@@ -509,9 +412,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       _error = null;
     });
     try {
-      await ref
-          .read(sessionProvider.notifier)
-          .updateProfile(name: name, avatar: _avatar);
+      await ref.read(sessionProvider.notifier).updateProfile(name: name, avatar: _avatar);
       if (!mounted) return;
       context.pop();
       showAppSnack(context, 'Profil yangilandi', icon: Icons.check_rounded);
@@ -536,25 +437,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             Center(
               child: Stack(
                 children: [
-                  AppAvatar(
-                    name: _name.text,
-                    image: _avatar ?? user?.avatar,
-                    size: 104,
-                  ),
+                  AppAvatar(name: _name.text, image: _avatar ?? user?.avatar, size: 104),
                   PositionedDirectional(
                     end: 0,
                     bottom: 0,
                     child: IconButton.filled(
                       tooltip: 'Rasmni o‘zgartirish',
-                      style: IconButton.styleFrom(
-                        backgroundColor: palette.primary,
-                      ),
+                      style: IconButton.styleFrom(backgroundColor: palette.primary),
                       onPressed: _pickAvatar,
-                      icon: const Icon(
-                        Icons.photo_camera_rounded,
-                        color: Colors.white,
-                        size: AppIconSize.sm,
-                      ),
+                      icon: const Icon(Icons.photo_camera_rounded, color: Colors.white, size: AppIconSize.sm),
                     ),
                   ),
                 ],
@@ -582,10 +473,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               child: _saving
                   ? const SizedBox.square(
                       dimension: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.4,
-                        color: Colors.white,
-                      ),
+                      child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
                     )
                   : const Text('Saqlash'),
             ),

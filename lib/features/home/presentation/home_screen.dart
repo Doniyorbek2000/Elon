@@ -42,32 +42,20 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       body: InfiniteScrollTrigger(
-        onLoadMore: () =>
-            ref.read(listingFeedProvider(query).notifier).loadMore(),
+        onLoadMore: () => ref.read(listingFeedProvider(query).notifier).loadMore(),
         child: RefreshIndicator.adaptive(
-          onRefresh: () =>
-              ref.read(listingFeedProvider(query).notifier).refresh(),
+          onRefresh: () => ref.read(listingFeedProvider(query).notifier).refresh(),
           child: CustomScrollView(
             slivers: [
               SliverSafeArea(
                 bottom: false,
                 sliver: SliverPadding(
-                  padding: EdgeInsets.fromLTRB(
-                    gutter,
-                    AppSpacing.sm,
-                    gutter,
-                    0,
-                  ),
+                  padding: EdgeInsets.fromLTRB(gutter, AppSpacing.sm, gutter, 0),
                   sliver: const SliverToBoxAdapter(child: _HomeHeader()),
                 ),
               ),
               SliverPadding(
-                padding: EdgeInsets.fromLTRB(
-                  gutter,
-                  AppSpacing.md,
-                  gutter,
-                  AppSpacing.lg,
-                ),
+                padding: EdgeInsets.fromLTRB(gutter, AppSpacing.md, gutter, AppSpacing.lg),
                 sliver: SliverToBoxAdapter(
                   child: AppSearchField(
                     readOnly: true,
@@ -81,28 +69,16 @@ class HomeScreen extends ConsumerWidget {
                 sliver: const SliverToBoxAdapter(child: _VerticalTiles()),
               ),
               SliverPadding(
-                padding: EdgeInsets.fromLTRB(
-                  gutter,
-                  AppSpacing.xl,
-                  gutter,
-                  AppSpacing.sm,
-                ),
+                padding: EdgeInsets.fromLTRB(gutter, AppSpacing.xl, gutter, AppSpacing.sm),
                 sliver: const SliverToBoxAdapter(child: _CategoryGrid()),
               ),
               SliverPadding(
-                padding: EdgeInsets.fromLTRB(
-                  gutter,
-                  AppSpacing.sm,
-                  gutter - AppSpacing.sm,
-                  AppSpacing.sm,
-                ),
+                padding: EdgeInsets.fromLTRB(gutter, AppSpacing.sm, gutter - AppSpacing.sm, AppSpacing.sm),
                 sliver: SliverToBoxAdapter(
                   child: SectionHeader(
                     title: 'Yaqin atrofdagi e’lonlar',
                     actionLabel: 'Barchasini ko‘rish',
-                    onAction: () => context.push(
-                      AppRoutes.listingsFor(sort: ListingSort.nearest.name),
-                    ),
+                    onAction: () => context.push(AppRoutes.listingsFor(sort: ListingSort.nearest.name)),
                   ),
                 ),
               ),
@@ -148,31 +124,21 @@ class _HomeHeader extends ConsumerWidget {
                 borderRadius: AppRadii.mdAll,
                 onTap: () => context.push(AppRoutes.location),
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    minHeight: AppTouch.minTarget,
-                  ),
+                  constraints: const BoxConstraints(minHeight: AppTouch.minTarget),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.location_on_rounded,
-                        color: palette.primary,
-                        size: AppIconSize.md,
-                      ),
+                      Icon(Icons.location_on_rounded, color: palette.primary, size: AppIconSize.md),
                       const SizedBox(width: AppSpacing.xs),
                       Flexible(
                         child: Text(
                           location.label,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                         ),
                       ),
-                      Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        color: palette.textSecondary,
-                      ),
+                      Icon(Icons.keyboard_arrow_down_rounded, color: palette.textSecondary),
                     ],
                   ),
                 ),
@@ -183,10 +149,7 @@ class _HomeHeader extends ConsumerWidget {
         IconButton(
           tooltip: 'Bildirishnomalar',
           onPressed: () => context.push(AppRoutes.notifications),
-          icon: CountBadge(
-            count: unread,
-            child: const Icon(Icons.notifications_none_rounded),
-          ),
+          icon: CountBadge(count: unread, child: const Icon(Icons.notifications_none_rounded)),
         ),
       ],
     );
@@ -268,29 +231,16 @@ class _VerticalTile extends StatelessWidget {
       semanticLabel: label,
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: AppSpacing.md + 2,
-          horizontal: AppSpacing.sm,
-        ),
-        decoration: BoxDecoration(
-          color: background,
-          borderRadius: AppRadii.lgAll,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md + 2, horizontal: AppSpacing.sm),
+        decoration: BoxDecoration(color: background, borderRadius: AppRadii.lgAll),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               width: 40,
               height: 40,
-              decoration: BoxDecoration(
-                color: iconBackground,
-                borderRadius: BorderRadius.circular(AppRadii.sm),
-              ),
-              child: Icon(
-                icon,
-                color: iconColor ?? foreground,
-                size: AppIconSize.md,
-              ),
+              decoration: BoxDecoration(color: iconBackground, borderRadius: BorderRadius.circular(AppRadii.sm)),
+              child: Icon(icon, color: iconColor ?? foreground, size: AppIconSize.md),
             ),
             const SizedBox(height: AppSpacing.sm),
             FittedBox(
@@ -298,8 +248,7 @@ class _VerticalTile extends StatelessWidget {
               child: Text(
                 label,
                 maxLines: 1,
-                style: Theme.of(context).textTheme.labelLarge
-                    ?.copyWith(color: foreground, fontWeight: FontWeight.w700),
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(color: foreground, fontWeight: FontWeight.w700),
               ),
             ),
           ],
@@ -333,11 +282,8 @@ class _CategoryGrid extends ConsumerWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final largeText = MediaQuery.textScalerOf(context).scale(10) > 14;
-        final columns = constraints.maxWidth >= AppBreakpoints.medium
-            ? 6
-            : (largeText ? 3 : 4);
-        final tileWidth =
-            (constraints.maxWidth - AppSpacing.sm * (columns - 1)) / columns;
+        final columns = constraints.maxWidth >= AppBreakpoints.medium ? 6 : (largeText ? 3 : 4);
+        final tileWidth = (constraints.maxWidth - AppSpacing.sm * (columns - 1)) / columns;
         return Wrap(
           spacing: AppSpacing.sm,
           runSpacing: AppSpacing.md,
@@ -369,12 +315,7 @@ class _CategoryGrid extends ConsumerWidget {
 }
 
 class _CategoryTile extends StatelessWidget {
-  const _CategoryTile({
-    required this.label,
-    required this.icon,
-    required this.tone,
-    required this.onTap,
-  });
+  const _CategoryTile({required this.label, required this.icon, required this.tone, required this.onTap});
 
   final String label;
   final IconData icon;
@@ -395,8 +336,7 @@ class _CategoryTile extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.labelSmall
-                ?.copyWith(fontWeight: FontWeight.w500, fontSize: 11.5),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w500, fontSize: 11.5),
           ),
         ],
       ),

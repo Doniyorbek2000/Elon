@@ -11,10 +11,7 @@ import 'share_service.dart';
 /// Share sheet with a preview of what recipients (e.g. in Telegram) will see:
 /// image, title, price/salary, location and the deep link.
 Future<void> showShareSheet(BuildContext context, SharePayload payload) {
-  return showAppSheet<void>(
-    context,
-    builder: (_) => _ShareSheet(payload: payload),
-  );
+  return showAppSheet<void>(context, builder: (_) => _ShareSheet(payload: payload));
 }
 
 class _ShareSheet extends ConsumerWidget {
@@ -22,11 +19,7 @@ class _ShareSheet extends ConsumerWidget {
 
   final SharePayload payload;
 
-  Future<void> _run(
-    BuildContext context,
-    Future<void> Function() action, {
-    String? done,
-  }) async {
+  Future<void> _run(BuildContext context, Future<void> Function() action, {String? done}) async {
     final messenger = ScaffoldMessenger.maybeOf(context);
     Navigator.pop(context);
     try {
@@ -35,11 +28,7 @@ class _ShareSheet extends ConsumerWidget {
         messenger?.showSnackBar(SnackBar(content: Text(done)));
       }
     } on Object {
-      messenger?.showSnackBar(
-        const SnackBar(
-          content: Text('Ulashib bo‘lmadi. Qayta urinib ko‘ring.'),
-        ),
-      );
+      messenger?.showSnackBar(const SnackBar(content: Text('Ulashib bo‘lmadi. Qayta urinib ko‘ring.')));
     }
   }
 
@@ -49,21 +38,13 @@ class _ShareSheet extends ConsumerWidget {
     final palette = context.palette;
     final text = Theme.of(context).textTheme;
     final origin = context.findRenderObject() is RenderBox
-        ? (context.findRenderObject()! as RenderBox).localToGlobal(
-                Offset.zero,
-              ) &
-              const Size(1, 1)
+        ? (context.findRenderObject()! as RenderBox).localToGlobal(Offset.zero) & const Size(1, 1)
         : null;
 
     return SheetScaffold(
       title: 'Ulashish',
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.xl,
-          0,
-          AppSpacing.xl,
-          AppSpacing.xl,
-        ),
+        padding: const EdgeInsets.fromLTRB(AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.xl),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -73,50 +54,28 @@ class _ShareSheet extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: palette.surfaceMuted,
                   borderRadius: AppRadii.lgAll,
-                  border: Border(
-                    left: BorderSide(color: palette.primary, width: 3),
-                  ),
+                  border: Border(left: BorderSide(color: palette.primary, width: 3)),
                 ),
                 clipBehavior: Clip.antiAlias,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (payload.image != null)
-                      AspectRatio(
-                        aspectRatio: 1.91,
-                        child: AppImage(image: payload.image),
-                      ),
+                    if (payload.image != null) AspectRatio(aspectRatio: 1.91, child: AppImage(image: payload.image)),
                     Padding(
                       padding: const EdgeInsets.all(AppSpacing.md),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            payload.url.host,
-                            style: text.labelSmall?.copyWith(
-                              color: palette.primary,
-                            ),
-                          ),
+                          Text(payload.url.host, style: text.labelSmall?.copyWith(color: palette.primary)),
                           const SizedBox(height: AppSpacing.xxs),
-                          Text(
-                            payload.title,
-                            style: text.titleSmall,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          Text(payload.title, style: text.titleSmall, maxLines: 2, overflow: TextOverflow.ellipsis),
                           if (payload.subtitle != null)
                             Text(
                               payload.subtitle!,
-                              style: text.titleSmall?.copyWith(
-                                color: palette.price,
-                                fontWeight: FontWeight.w800,
-                              ),
+                              style: text.titleSmall?.copyWith(color: palette.price, fontWeight: FontWeight.w800),
                             ),
                           if (payload.location != null)
-                            MetaLine(
-                              icon: Icons.location_on_outlined,
-                              text: payload.location!,
-                            ),
+                            MetaLine(icon: Icons.location_on_outlined, text: payload.location!),
                         ],
                       ),
                     ),
@@ -126,12 +85,8 @@ class _ShareSheet extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.xl),
             FilledButton.icon(
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF229ED9),
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () =>
-                  _run(context, () => share.shareToTelegram(payload)),
+              style: FilledButton.styleFrom(backgroundColor: const Color(0xFF229ED9), foregroundColor: Colors.white),
+              onPressed: () => _run(context, () => share.shareToTelegram(payload)),
               icon: const Icon(Icons.send_rounded),
               label: const Text('Telegram’da ulashish'),
             ),
@@ -140,11 +95,7 @@ class _ShareSheet extends ConsumerWidget {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () => _run(
-                      context,
-                      () => share.copyLink(payload),
-                      done: 'Havola nusxalandi',
-                    ),
+                    onPressed: () => _run(context, () => share.copyLink(payload), done: 'Havola nusxalandi'),
                     icon: const Icon(Icons.link_rounded),
                     label: const Text('Nusxalash'),
                   ),
@@ -152,10 +103,7 @@ class _ShareSheet extends ConsumerWidget {
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () => _run(
-                      context,
-                      () => share.shareSystem(payload, origin: origin),
-                    ),
+                    onPressed: () => _run(context, () => share.shareSystem(payload, origin: origin)),
                     icon: const Icon(Icons.ios_share_rounded),
                     label: const Text('Boshqa'),
                   ),

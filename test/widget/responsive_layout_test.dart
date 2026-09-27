@@ -46,27 +46,14 @@ void main() {
     '/verify-phone',
   ];
 
-  for (final MapEntry(key: name, value: (size, textScale, theme))
-      in viewports.entries) {
+  for (final MapEntry(key: name, value: (size, textScale, theme)) in viewports.entries) {
     testWidgets('$name: onboarding lays out without overflow', (tester) async {
-      await pumpBozorApp(
-        tester,
-        onboarded: false,
-        size: size,
-        textScale: textScale,
-        themeMode: theme,
-      );
+      await pumpBozorApp(tester, onboarded: false, size: size, textScale: textScale, themeMode: theme);
     });
 
     for (final location in screens) {
       testWidgets('$name: $location lays out without overflow', (tester) async {
-        await pumpBozorApp(
-          tester,
-          location: location,
-          size: size,
-          textScale: textScale,
-          themeMode: theme,
-        );
+        await pumpBozorApp(tester, location: location, size: size, textScale: textScale, themeMode: theme);
         expect(find.byType(ErrorWidget), findsNothing);
       });
     }

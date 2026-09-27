@@ -24,10 +24,7 @@ class FeatureFlags {
     advertisingEnabled: bool.fromEnvironment('FF_ADVERTISING'),
     subscriptionsEnabled: bool.fromEnvironment('FF_SUBSCRIPTIONS'),
     aiListingAssistEnabled: bool.fromEnvironment('FF_AI_LISTING_ASSIST'),
-    showPromotionBadges: bool.fromEnvironment(
-      'FF_PROMOTION_BADGES',
-      defaultValue: true,
-    ),
+    showPromotionBadges: bool.fromEnvironment('FF_PROMOTION_BADGES', defaultValue: true),
     realtimeChatEnabled: bool.fromEnvironment('FF_REALTIME_CHAT'),
   );
 
@@ -53,6 +50,4 @@ class FeatureFlags {
   bool get canSellPromotions => monetizationEnabled && paidPromotionsEnabled;
 }
 
-final featureFlagsProvider = Provider<FeatureFlags>(
-  (ref) => FeatureFlags.fromEnvironment(),
-);
+final featureFlagsProvider = Provider<FeatureFlags>((ref) => FeatureFlags.fromEnvironment());

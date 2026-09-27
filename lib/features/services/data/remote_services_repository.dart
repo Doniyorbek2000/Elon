@@ -10,31 +10,28 @@ class RemoteServicesRepository implements ServicesRepository {
 
   @override
   Future<List<ServiceCategory>> categories() async => [
-    for (final item in await _api.get<List<dynamic>>('/service-categories'))
-      ServiceCategory.fromJson(item as JsonMap),
+    for (final item in await _api.get<List<dynamic>>('/service-categories')) ServiceCategory.fromJson(item as JsonMap),
   ];
 
   @override
-  Future<List<ServiceProvider>> recommended({String? regionId}) async =>
-      (await _api.getPage(
-        '/providers',
-        ServiceProvider.fromJson,
-        query: {'region': regionId, 'sort': 'rating', 'limit': 20},
-      )).items;
+  Future<List<ServiceProvider>> recommended({String? regionId}) async => (await _api.getPage(
+    '/providers',
+    ServiceProvider.fromJson,
+    query: {'region': regionId, 'sort': 'rating', 'limit': 20},
+  )).items;
 
   @override
-  Future<List<ServiceProvider>> search(ProviderQuery query) async =>
-      (await _api.getPage(
-        '/providers',
-        ServiceProvider.fromJson,
-        query: {
-          'q': query.text.trim(),
-          'category': query.categoryId,
-          'region': query.regionId,
-          'filter': query.filter.name,
-          'limit': 50,
-        },
-      )).items;
+  Future<List<ServiceProvider>> search(ProviderQuery query) async => (await _api.getPage(
+    '/providers',
+    ServiceProvider.fromJson,
+    query: {
+      'q': query.text.trim(),
+      'category': query.categoryId,
+      'region': query.regionId,
+      'filter': query.filter.name,
+      'limit': 50,
+    },
+  )).items;
 
   @override
   Future<ServiceProvider> getProvider(String id) async =>
@@ -42,8 +39,7 @@ class RemoteServicesRepository implements ServicesRepository {
 
   @override
   Future<String> revealPhone(String providerId) async =>
-      (await _api.post<JsonMap>('/providers/$providerId/contact'))['phone']
-          as String;
+      (await _api.post<JsonMap>('/providers/$providerId/contact'))['phone'] as String;
 
   @override
   Future<ServiceProvider?> myProvider() async {
@@ -57,9 +53,7 @@ class RemoteServicesRepository implements ServicesRepository {
 
   @override
   Future<ServiceProvider> saveProvider(ProviderDraft draft) async =>
-      ServiceProvider.fromJson(
-        await _api.put<JsonMap>('/me/provider', body: draft.toJson()),
-      );
+      ServiceProvider.fromJson(await _api.put<JsonMap>('/me/provider', body: draft.toJson()));
 
   @override
   Future<void> addOffering(OfferingDraft draft) async {
@@ -67,21 +61,13 @@ class RemoteServicesRepository implements ServicesRepository {
   }
 
   @override
-  Future<void> deleteOffering(String offeringId) =>
-      _api.delete('/me/provider/offerings/$offeringId');
+  Future<void> deleteOffering(String offeringId) => _api.delete('/me/provider/offerings/$offeringId');
 
   @override
-  Future<void> submitReview(
-    String providerId, {
-    required int rating,
-    String? text,
-  }) async {
+  Future<void> submitReview(String providerId, {required int rating, String? text}) async {
     await _api.put<Object?>(
       '/providers/$providerId/reviews/mine',
-      body: {
-        'rating': rating,
-        if (text != null && text.trim().isNotEmpty) 'text': text.trim(),
-      },
+      body: {'rating': rating, if (text != null && text.trim().isNotEmpty) 'text': text.trim()},
     );
   }
 }

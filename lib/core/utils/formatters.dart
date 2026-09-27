@@ -45,8 +45,7 @@ abstract final class Formatters {
     if (min == null && max == null) return 'Suhbat asosida';
     final suffix = currency == Currency.uzs ? '${_nbsp}so‘m' : '';
     final prefix = currency == Currency.usd ? '\$' : '';
-    if (min != null && max != null)
-      return '$prefix${groupDigits(min)} – $prefix${groupDigits(max)}$suffix';
+    if (min != null && max != null) return '$prefix${groupDigits(min)} – $prefix${groupDigits(max)}$suffix';
     if (min != null) return '$prefix${groupDigits(min)}$suffix dan';
     return '$prefix${groupDigits(max!)}$suffix gacha';
   }
@@ -81,8 +80,7 @@ abstract final class Formatters {
     return time.year == now.year ? base : '$base ${time.year}';
   }
 
-  static String monthYear(DateTime time) =>
-      '${_months[time.month - 1]} ${time.year}';
+  static String monthYear(DateTime time) => '${_months[time.month - 1]} ${time.year}';
 
   /// "10:24"
   static String clock(DateTime time) =>
@@ -109,11 +107,7 @@ abstract final class Formatters {
   }
 
   /// "Onlayn" / "5 daqiqa oldin faol edi".
-  static String presence({
-    required bool isOnline,
-    DateTime? lastActiveAt,
-    required DateTime now,
-  }) {
+  static String presence({required bool isOnline, DateTime? lastActiveAt, required DateTime now}) {
     if (isOnline) return 'Onlayn';
     if (lastActiveAt == null) return 'Yaqinda faol edi';
     return '${relativeTime(lastActiveAt, now)} faol edi';
@@ -133,7 +127,6 @@ abstract final class Formatters {
     return '+998 ${d.substring(3, 5)} *** ** ${d.substring(10)}';
   }
 
-  static String distance(double km) => km < 1
-      ? '${(km * 1000).round()} m'
-      : '${km < 10 ? km.toStringAsFixed(1) : km.round()} km';
+  static String distance(double km) =>
+      km < 1 ? '${(km * 1000).round()} m' : '${km < 10 ? km.toStringAsFixed(1) : km.round()} km';
 }

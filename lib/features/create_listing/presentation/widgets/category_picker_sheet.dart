@@ -11,18 +11,13 @@ import '../../../catalog/domain/category.dart';
 
 /// Two-level category chooser; returns the chosen category id.
 Future<String?> showCategoryPicker(BuildContext context) =>
-    showAppSheet<String>(
-      context,
-      expand: true,
-      builder: (_) => const _CategoryPickerSheet(),
-    );
+    showAppSheet<String>(context, expand: true, builder: (_) => const _CategoryPickerSheet());
 
 class _CategoryPickerSheet extends ConsumerStatefulWidget {
   const _CategoryPickerSheet();
 
   @override
-  ConsumerState<_CategoryPickerSheet> createState() =>
-      _CategoryPickerSheetState();
+  ConsumerState<_CategoryPickerSheet> createState() => _CategoryPickerSheetState();
 }
 
 class _CategoryPickerSheetState extends ConsumerState<_CategoryPickerSheet> {
@@ -48,32 +43,16 @@ class _CategoryPickerSheetState extends ConsumerState<_CategoryPickerSheet> {
         duration: AppMotion.of(context, AppMotion.fast),
         child: ListView.builder(
           key: ValueKey(parent?.id),
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.md,
-            0,
-            AppSpacing.md,
-            AppSpacing.xl,
-          ),
+          padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.xl),
           itemCount: items.length,
           itemBuilder: (context, index) {
             final category = items[index];
             return ListTile(
               shape: const RoundedRectangleBorder(borderRadius: AppRadii.mdAll),
-              leading: ToneIcon(
-                icon: AppIcons.forKey(category.iconKey),
-                tone: category.tone,
-                size: 40,
-              ),
+              leading: ToneIcon(icon: AppIcons.forKey(category.iconKey), tone: category.tone, size: 40),
               title: Text(category.name),
-              subtitle: category.subtitle == null
-                  ? null
-                  : Text(category.subtitle!, maxLines: 1),
-              trailing: category.hasChildren
-                  ? Icon(
-                      Icons.chevron_right_rounded,
-                      color: palette.textTertiary,
-                    )
-                  : null,
+              subtitle: category.subtitle == null ? null : Text(category.subtitle!, maxLines: 1),
+              trailing: category.hasChildren ? Icon(Icons.chevron_right_rounded, color: palette.textTertiary) : null,
               onTap: () {
                 if (category.hasChildren) {
                   setState(() => _parent = category);

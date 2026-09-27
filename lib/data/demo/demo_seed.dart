@@ -24,21 +24,11 @@ class DemoSeed {
       now.subtract(Duration(minutes: minutes, hours: hours, days: days));
 
   static MediaImage photo(String unsplashId, {double aspectRatio = 4 / 3}) =>
-      MediaImage.resizable(
-        unsplashId,
-        'https://images.unsplash.com/$unsplashId',
-        aspectRatio: aspectRatio,
-      );
+      MediaImage.resizable(unsplashId, 'https://images.unsplash.com/$unsplashId', aspectRatio: aspectRatio);
 
-  static List<MediaImage> photos(List<String> ids) => [
-    for (final id in ids) photo(id),
-  ];
+  static List<MediaImage> photos(List<String> ids) => [for (final id in ids) photo(id)];
 
-  static Place place(
-    String regionId, [
-    String? districtId,
-    String? localityName,
-  ]) {
+  static Place place(String regionId, [String? districtId, String? localityName]) {
     const tree = UzbekistanLocations.tree;
     final region = tree.region(regionId)!;
     final district = tree.district(regionId, districtId);
@@ -238,11 +228,7 @@ class DemoSeed {
   }) => [
     ListingAttribute(key: 'brand', label: 'Marka', value: brand),
     ListingAttribute(key: 'year', label: 'Yili', value: '$year'),
-    ListingAttribute(
-      key: 'mileage',
-      label: 'Probeg',
-      value: '${_group(mileage)} km',
-    ),
+    ListingAttribute(key: 'mileage', label: 'Probeg', value: '${_group(mileage)} km'),
     ListingAttribute(key: 'fuel', label: 'Yoqilg‘i', value: fuel),
     ListingAttribute(key: 'transmission', label: 'Uzatma', value: transmission),
     ListingAttribute(key: 'color', label: 'Rang', value: color),
@@ -431,7 +417,8 @@ class DemoSeed {
       attributes: _phone('128 GB', 'Midnight'),
       views: 880,
       favorites: 19,
-      description: 'iPhone 14 128GB, LL/A. Face ID ishlaydi, hech qanday almashtirilgan qismi yo‘q. 1 oy kafolat beramiz.',
+      description:
+          'iPhone 14 128GB, LL/A. Face ID ishlaydi, hech qanday almashtirilgan qismi yo‘q. 1 oy kafolat beramiz.',
     ),
     Listing(
       id: 'l_iphone14promax',
@@ -477,8 +464,7 @@ class DemoSeed {
       attributes: _phone('256 GB', 'Starlight'),
       views: 520,
       favorites: 8,
-      description:
-          'Ideal holatda, doim chexolda ishlatilgan. Zaryadlagich sovg‘a.',
+      description: 'Ideal holatda, doim chexolda ishlatilgan. Zaryadlagich sovg‘a.',
     ),
     Listing(
       id: 'l_s23ultra',
@@ -507,10 +493,7 @@ class DemoSeed {
       place: namangan,
       publishedAt: ago(days: 1, hours: 5),
       seller: dilnoza,
-      images: photos(const [
-        'photo-1517336714731-489689fd1ca8',
-        'photo-1496181133206-80ce9b88a853',
-      ]),
+      images: photos(const ['photo-1517336714731-489689fd1ca8', 'photo-1496181133206-80ce9b88a853']),
       condition: ItemCondition.used,
       views: 690,
       favorites: 22,
@@ -533,11 +516,7 @@ class DemoSeed {
         ListingAttribute(key: 'rooms', label: 'Xonalar', value: '3'),
         ListingAttribute(key: 'area', label: 'Maydon', value: '78 m²'),
         ListingAttribute(key: 'floor', label: 'Qavat', value: '4 / 9'),
-        ListingAttribute(
-          key: 'renovation',
-          label: 'Ta’mir',
-          value: 'Yevro ta’mir',
-        ),
+        ListingAttribute(key: 'renovation', label: 'Ta’mir', value: 'Yevro ta’mir'),
       ],
       views: 3100,
       favorites: 88,
@@ -554,10 +533,7 @@ class DemoSeed {
       place: chust,
       publishedAt: ago(days: 1),
       seller: azizbek,
-      images: photos(const [
-        'photo-1568605114967-8130f3a36994',
-        'photo-1570129477492-45c003edd2be',
-      ]),
+      images: photos(const ['photo-1568605114967-8130f3a36994', 'photo-1570129477492-45c003edd2be']),
       attributes: const [
         ListingAttribute(key: 'rooms', label: 'Xonalar', value: '5'),
         ListingAttribute(key: 'land', label: 'Yer maydoni', value: '6 sotix'),
@@ -576,10 +552,7 @@ class DemoSeed {
       place: namangan,
       publishedAt: ago(hours: 12),
       seller: dilnoza,
-      images: photos(const [
-        'photo-1522708323590-d24dbb6b0267',
-        'photo-1560448204-e02f11c3d0e2',
-      ]),
+      images: photos(const ['photo-1522708323590-d24dbb6b0267', 'photo-1560448204-e02f11c3d0e2']),
       attributes: const [
         ListingAttribute(key: 'rooms', label: 'Xonalar', value: '2'),
         ListingAttribute(key: 'area', label: 'Maydon', value: '54 m²'),
@@ -618,8 +591,7 @@ class DemoSeed {
       condition: ItemCondition.newItem,
       views: 310,
       favorites: 5,
-      description:
-          'Yangi, zavod kafolati 3 yil. Chust bo‘yicha yetkazib berish bepul.',
+      description: 'Yangi, zavod kafolati 3 yil. Chust bo‘yicha yetkazib berish bepul.',
     ),
     Listing(
       id: 'l_ac_12',
@@ -633,8 +605,7 @@ class DemoSeed {
       condition: ItemCondition.newItem,
       views: 280,
       favorites: 7,
-      description:
-          'Inverter, isitish va sovutish. O‘rnatib berish narxga kiritilgan.',
+      description: 'Inverter, isitish va sovutish. O‘rnatib berish narxga kiritilgan.',
     ),
     Listing(
       id: 'l_washer',
@@ -658,10 +629,7 @@ class DemoSeed {
       place: chust,
       publishedAt: ago(hours: 14),
       seller: malika,
-      images: photos(const [
-        'photo-1555041469-a586c61ea9bc',
-        'photo-1493663284031-b7e3aefcae8e',
-      ]),
+      images: photos(const ['photo-1555041469-a586c61ea9bc', 'photo-1493663284031-b7e3aefcae8e']),
       condition: ItemCondition.newItem,
       views: 420,
       favorites: 16,
@@ -703,15 +671,11 @@ class DemoSeed {
       place: chust,
       publishedAt: ago(days: 3),
       seller: otabek,
-      images: photos(const [
-        'photo-1572981779307-38b8cabb2407',
-        'photo-1581094794329-c8112a89af12',
-      ]),
+      images: photos(const ['photo-1572981779307-38b8cabb2407', 'photo-1581094794329-c8112a89af12']),
       condition: ItemCondition.used,
       views: 150,
       favorites: 2,
-      description:
-          'Perforator, drel, bolgarka. Hammasi ishlaydi, qutisi bilan.',
+      description: 'Perforator, drel, bolgarka. Hammasi ishlaydi, qutisi bilan.',
     ),
     Listing(
       id: 'l_cow',
@@ -728,8 +692,7 @@ class DemoSeed {
       ],
       views: 470,
       favorites: 10,
-      description:
-          'Kuniga 16–18 litr sut beradi. Sog‘lom, veterinar ko‘rigidan o‘tgan.',
+      description: 'Kuniga 16–18 litr sut beradi. Sog‘lom, veterinar ko‘rigidan o‘tgan.',
     ),
     Listing(
       id: 'l_sheep',
@@ -787,16 +750,11 @@ class DemoSeed {
       images: photos(const ['photo-1500382017468-9049fed747ef']),
       attributes: const [
         ListingAttribute(key: 'land', label: 'Maydon', value: '8 sotix'),
-        ListingAttribute(
-          key: 'purpose',
-          label: 'Maqsadi',
-          value: 'Uy-joy qurilishi',
-        ),
+        ListingAttribute(key: 'purpose', label: 'Maqsadi', value: 'Uy-joy qurilishi'),
       ],
       views: 980,
       favorites: 29,
-      description:
-          'Asfalt yo‘l bo‘yida, gaz va svet yaqin. Kadastr hujjatlari tayyor.',
+      description: 'Asfalt yo‘l bo‘yida, gaz va svet yaqin. Kadastr hujjatlari tayyor.',
     ),
     Listing(
       id: 'l_tv_55',
@@ -810,8 +768,7 @@ class DemoSeed {
       condition: ItemCondition.newItem,
       views: 350,
       favorites: 12,
-      description:
-          '4K UHD, Android TV. Rasmiy kafolat. Devorga o‘rnatib beramiz.',
+      description: '4K UHD, Android TV. Rasmiy kafolat. Devorga o‘rnatib beramiz.',
     ),
     Listing(
       id: 'l_kids_bike',
@@ -831,12 +788,7 @@ class DemoSeed {
 
   // ------------------------------------------------------------------ jobs
 
-  static const _savdo = Company(
-    id: 'c_savdo',
-    name: 'Namangan Savdo',
-    iconKey: 'store',
-    tone: AccentTone.orange,
-  );
+  static const _savdo = Company(id: 'c_savdo', name: 'Namangan Savdo', iconKey: 'store', tone: AccentTone.orange);
   static const _logistika = Company(
     id: 'c_logistika',
     name: 'Logistika MChJ',
@@ -844,12 +796,7 @@ class DemoSeed {
     tone: AccentTone.blue,
     verification: VerificationLevel.business,
   );
-  static const _kafe = Company(
-    id: 'c_kafe',
-    name: 'Kafe & Restoran',
-    iconKey: 'restaurant',
-    tone: AccentTone.amber,
-  );
+  static const _kafe = Company(id: 'c_kafe', name: 'Kafe & Restoran', iconKey: 'restaurant', tone: AccentTone.amber);
   static const _itCompany = Company(
     id: 'c_it',
     name: 'IT Company',
@@ -858,24 +805,9 @@ class DemoSeed {
     verification: VerificationLevel.business,
     about: '40 nafar dasturchidan iborat mahsulot kompaniyasi. Namangan va masofaviy jamoalar.',
   );
-  static const _atelye = Company(
-    id: 'c_atelye',
-    name: 'Atelye',
-    iconKey: 'dress',
-    tone: AccentTone.red,
-  );
-  static const _market = Company(
-    id: 'c_market',
-    name: 'Chust Market',
-    iconKey: 'store',
-    tone: AccentTone.green,
-  );
-  static const _maktab = Company(
-    id: 'c_maktab',
-    name: 'Bilim o‘quv markazi',
-    iconKey: 'school',
-    tone: AccentTone.teal,
-  );
+  static const _atelye = Company(id: 'c_atelye', name: 'Atelye', iconKey: 'dress', tone: AccentTone.red);
+  static const _market = Company(id: 'c_market', name: 'Chust Market', iconKey: 'store', tone: AccentTone.green);
+  static const _maktab = Company(id: 'c_maktab', name: 'Bilim o‘quv markazi', iconKey: 'school', tone: AccentTone.teal);
   static const _qurilishCo = Company(
     id: 'c_qurilish',
     name: 'Chust Qurilish',
@@ -897,16 +829,8 @@ class DemoSeed {
       workingHours: '09:00–19:00, haftada 6 kun',
       employer: sardor,
       description: 'Kiyim do‘koniga xushmuomala sotuvchi kerak. Tajribasizlar o‘qitiladi.',
-      requirements: const [
-        '18–35 yosh',
-        'Xushmuomalalik',
-        'Kompyuterda ishlashni bilish afzallik',
-      ],
-      responsibilities: const [
-        'Mijozlarga maslahat berish',
-        'Kassa bilan ishlash',
-        'Vitrinani tartibga keltirish',
-      ],
+      requirements: const ['18–35 yosh', 'Xushmuomalalik', 'Kompyuterda ishlashni bilish afzallik'],
+      responsibilities: const ['Mijozlarga maslahat berish', 'Kassa bilan ishlash', 'Vitrinani tartibga keltirish'],
       views: 540,
     ),
     Job(
@@ -922,15 +846,8 @@ class DemoSeed {
       workingHours: '08:00–18:00',
       employer: bekzodMotors,
       description: 'Chust–Namangan yo‘nalishida yuk tashish uchun C toifali haydovchi kerak.',
-      requirements: const [
-        'C toifali guvohnoma',
-        'Kamida 2 yil tajriba',
-        'Mas’uliyatlilik',
-      ],
-      responsibilities: const [
-        'Yuklarni o‘z vaqtida yetkazish',
-        'Avtomobil holatini nazorat qilish',
-      ],
+      requirements: const ['C toifali guvohnoma', 'Kamida 2 yil tajriba', 'Mas’uliyatlilik'],
+      responsibilities: const ['Yuklarni o‘z vaqtida yetkazish', 'Avtomobil holatini nazorat qilish'],
       views: 880,
     ),
     Job(
@@ -947,11 +864,7 @@ class DemoSeed {
       employer: malika,
       promotion: const Promotion(PromotionType.vip),
       description: 'Milliy taomlar bo‘yicha tajribali oshpaz kerak. Tushlik va transport bepul.',
-      requirements: const [
-        'Milliy taomlarni tayyorlash',
-        'Tozalik',
-        'Jamoada ishlash',
-      ],
+      requirements: const ['Milliy taomlarni tayyorlash', 'Tozalik', 'Jamoada ishlash'],
       views: 1210,
     ),
     Job(
@@ -967,16 +880,8 @@ class DemoSeed {
       workingHours: 'Moslashuvchan, 40 soat/hafta',
       employer: sardor,
       description: 'React/TypeScript bo‘yicha frontend dasturchi. Masofaviy yoki Namangan ofisida.',
-      requirements: const [
-        'React, TypeScript',
-        'REST API bilan ishlash',
-        'Git',
-        'Ingliz tili — texnik daraja',
-      ],
-      responsibilities: const [
-        'Yangi funksiyalar yaratish',
-        'Kod sharhlarida qatnashish',
-      ],
+      requirements: const ['React, TypeScript', 'REST API bilan ishlash', 'Git', 'Ingliz tili — texnik daraja'],
+      responsibilities: const ['Yangi funksiyalar yaratish', 'Kod sharhlarida qatnashish'],
       views: 2030,
     ),
     Job(
@@ -991,8 +896,7 @@ class DemoSeed {
       salaryMax: 4000000,
       workingHours: '09:00–14:00',
       employer: dilnoza,
-      description:
-          'Ayollar kiyimi tikish bo‘yicha tikuvchi. Ishbay haq ham mumkin.',
+      description: 'Ayollar kiyimi tikish bo‘yicha tikuvchi. Ishbay haq ham mumkin.',
       requirements: const ['Tikuv mashinasida ishlash', 'Aniqlik'],
       views: 410,
     ),
@@ -1007,8 +911,7 @@ class DemoSeed {
       salaryMin: 3500000,
       workingHours: '08:00–20:00, 2/2 grafik',
       employer: otabek,
-      description:
-          'Supermarketga kassir kerak. Rasmiy ishga qabul, ijtimoiy paket.',
+      description: 'Supermarketga kassir kerak. Rasmiy ishga qabul, ijtimoiy paket.',
       requirements: const ['Diqqatlilik', 'Hisob-kitobni bilish'],
       views: 360,
     ),
@@ -1024,8 +927,7 @@ class DemoSeed {
       salaryMax: 8000000,
       workingHours: '14:00–19:00',
       employer: malika,
-      description:
-          'IELTS 7.0+ sertifikatli o‘qituvchi. Guruhlar va individual darslar.',
+      description: 'IELTS 7.0+ sertifikatli o‘qituvchi. Guruhlar va individual darslar.',
       requirements: const ['IELTS 7.0+', 'Dars berish tajribasi'],
       views: 690,
     ),
@@ -1041,8 +943,7 @@ class DemoSeed {
       salaryMax: 5000000,
       workingHours: 'Masofaviy',
       employer: sardor,
-      description:
-          'Instagram va Telegram sahifalarini yuritish, kontent-reja tuzish.',
+      description: 'Instagram va Telegram sahifalarini yuritish, kontent-reja tuzish.',
       requirements: const ['Canva/Figma', 'Kopiraytingdan xabardorlik'],
       views: 520,
     ),
@@ -1080,10 +981,7 @@ class DemoSeed {
       skills: const ['B, C toifa', 'Yuk tashish', 'Shahar bo‘ylab'],
       about: '6 yillik tajriba. Avariyasiz haydash. Shaxsiy avtomobil bor.',
       updatedAt: ago(hours: 3),
-      employmentTypes: const {
-        EmploymentType.fullTime,
-        EmploymentType.temporary,
-      },
+      employmentTypes: const {EmploymentType.fullTime, EmploymentType.temporary},
       expectedSalary: const Money.uzs(6000000),
     ),
     CandidateProfile(
@@ -1100,8 +998,7 @@ class DemoSeed {
       experienceYears: 4,
       place: namangan,
       skills: const ['1C', 'Soliq hisobotlari', 'Excel'],
-      about:
-          'Kichik va o‘rta biznes uchun buxgalteriya. Yarim stavka ham mumkin.',
+      about: 'Kichik va o‘rta biznes uchun buxgalteriya. Yarim stavka ham mumkin.',
       updatedAt: ago(days: 1),
       employmentTypes: const {EmploymentType.fullTime, EmploymentType.partTime},
       expectedSalary: const Money.uzs(5000000),
@@ -1158,8 +1055,7 @@ class DemoSeed {
       id: '${seed}_r1',
       authorName: 'Shohruh',
       rating: 5,
-      text:
-          'Vaqtida keldi, ishni toza bajardi. Narxi ham kelishilgandek bo‘ldi.',
+      text: 'Vaqtida keldi, ishni toza bajardi. Narxi ham kelishilgandek bo‘ldi.',
       createdAt: ago(days: 3),
     ),
     Review(
@@ -1397,8 +1293,7 @@ class DemoSeed {
       priceFrom: const Money.uzs(40000),
       priceUnit: 'xizmat',
       reviews: _reviews('p_umid'),
-      description:
-          'Zamonaviy soch turmaklari, soqol dizayni. Oldindan yozilish.',
+      description: 'Zamonaviy soch turmaklari, soqol dizayni. Oldindan yozilish.',
     ),
     ServiceProvider(
       id: 'p_malika_beauty',
@@ -1484,68 +1379,20 @@ class DemoSeed {
 
   late final Map<String, List<ChatMessage>> messages = {
     'c_cobalt': [
-      _msg(
-        'c_cobalt',
-        'm1',
-        'u_me',
-        'Assalomu alaykum, mashina hali bormi?',
-        ago(minutes: 36),
-      ),
-      _msg(
-        'c_cobalt',
-        'm2',
-        'u_azizbek',
-        'Va alaykum assalom, ha, bor',
-        ago(minutes: 34),
-      ),
-      _msg(
-        'c_cobalt',
-        'm3',
-        'u_me',
-        'Yaxshi, qayerda ko‘rish mumkin?',
-        ago(minutes: 32),
-      ),
-      _msg(
-        'c_cobalt',
-        'm4',
-        'u_azizbek',
-        'Chustda. Bugun kelib ko‘rishingiz mumkin.',
-        ago(minutes: 30),
-      ),
+      _msg('c_cobalt', 'm1', 'u_me', 'Assalomu alaykum, mashina hali bormi?', ago(minutes: 36)),
+      _msg('c_cobalt', 'm2', 'u_azizbek', 'Va alaykum assalom, ha, bor', ago(minutes: 34)),
+      _msg('c_cobalt', 'm3', 'u_me', 'Yaxshi, qayerda ko‘rish mumkin?', ago(minutes: 32)),
+      _msg('c_cobalt', 'm4', 'u_azizbek', 'Chustda. Bugun kelib ko‘rishingiz mumkin.', ago(minutes: 30)),
       _msg('c_cobalt', 'm5', 'u_me', 'Narxi oxirgimi?', ago(minutes: 24)),
-      _msg(
-        'c_cobalt',
-        'm6',
-        'u_azizbek',
-        'Kelib ko‘rib, kelishamiz.',
-        ago(minutes: 20),
-      ),
+      _msg('c_cobalt', 'm6', 'u_azizbek', 'Kelib ko‘rib, kelishamiz.', ago(minutes: 20)),
     ],
     'c_iphone': [
-      _msg(
-        'c_iphone',
-        'i1',
-        'u_me',
-        'Salom! Qutisi bormi?',
-        ago(hours: 5, minutes: 10),
-      ),
+      _msg('c_iphone', 'i1', 'u_me', 'Salom! Qutisi bormi?', ago(hours: 5, minutes: 10)),
       _msg('c_iphone', 'i2', 'u_dilnoza', 'Qutisi ham bor, ha.', ago(hours: 5)),
     ],
     'c_rustam': [
-      _msg(
-        'c_rustam',
-        'r1',
-        'u_me',
-        'Oshxonadagi kran oqyapti, qachon kela olasiz?',
-        ago(days: 1, hours: 3),
-      ),
-      _msg(
-        'c_rustam',
-        'r2',
-        'u_rustam',
-        'Ertaga soat 10 da boraman.',
-        ago(days: 1, hours: 2),
-      ),
+      _msg('c_rustam', 'r1', 'u_me', 'Oshxonadagi kran oqyapti, qachon kela olasiz?', ago(days: 1, hours: 3)),
+      _msg('c_rustam', 'r2', 'u_rustam', 'Ertaga soat 10 da boraman.', ago(days: 1, hours: 2)),
     ],
   };
 

@@ -23,18 +23,13 @@ import '../domain/location.dart';
 /// (continues to home, skippable) and [pickOnly] (returns a selection
 /// without changing the app-wide location — used by the create flow).
 class LocationPickerScreen extends ConsumerStatefulWidget {
-  const LocationPickerScreen({
-    super.key,
-    this.onboarding = false,
-    this.pickOnly = false,
-  });
+  const LocationPickerScreen({super.key, this.onboarding = false, this.pickOnly = false});
 
   final bool onboarding;
   final bool pickOnly;
 
   @override
-  ConsumerState<LocationPickerScreen> createState() =>
-      _LocationPickerScreenState();
+  ConsumerState<LocationPickerScreen> createState() => _LocationPickerScreenState();
 }
 
 enum _GpsState { idle, locating, failed }
@@ -65,9 +60,7 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
 
   Future<void> _finish(LocationSelection selection) async {
     unawaited(HapticFeedback.selectionClick());
-    final withRadius = widget.pickOnly
-        ? selection
-        : selection.withRadius(_radius);
+    final withRadius = widget.pickOnly ? selection : selection.withRadius(_radius);
     if (widget.pickOnly) {
       context.pop(withRadius);
       return;
@@ -89,9 +82,7 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
     try {
       final controller = ref.read(locationProvider.notifier);
       if (widget.pickOnly) {
-        final point = await ref
-            .read(deviceLocationServiceProvider)
-            .currentPosition();
+        final point = await ref.read(deviceLocationServiceProvider).currentPosition();
         final nearest = ref.read(locationTreeProvider).nearestDistrict(point);
         if (nearest == null) throw const PermissionFailure('Hudud aniqlanmadi');
         await _finish(
@@ -109,11 +100,7 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
       final selection = await controller.useDeviceLocation();
       if (_radius != selection.radiusKm) await controller.setRadius(_radius);
       if (!mounted) return;
-      showAppSnack(
-        context,
-        'Joylashuv: ${selection.label}',
-        icon: Icons.my_location_rounded,
-      );
+      showAppSnack(context, 'Joylashuv: ${selection.label}', icon: Icons.my_location_rounded);
       if (widget.onboarding) {
         context.go(AppRoutes.home);
       } else {
@@ -123,18 +110,12 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
       if (!mounted) return;
       setState(() {
         _gps = _GpsState.failed;
-        _gpsError = error is AppFailure
-            ? error
-            : const PermissionFailure('Joylashuvni aniqlab bo‘lmadi');
+        _gpsError = error is AppFailure ? error : const PermissionFailure('Joylashuvni aniqlab bo‘lmadi');
       });
     }
   }
 
-  LocationSelection _selection(
-    Region region, [
-    District? district,
-    Locality? locality,
-  ]) => LocationSelection(
+  LocationSelection _selection(Region region, [District? district, Locality? locality]) => LocationSelection(
     regionId: region.id,
     regionName: region.name,
     districtId: district?.id,
@@ -158,27 +139,17 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: !widget.onboarding,
-          title: Text(
-            widget.onboarding ? 'Hududingizni tanlang' : 'Manzil tanlash',
-          ),
+          title: Text(widget.onboarding ? 'Hududingizni tanlang' : 'Manzil tanlash'),
           actions: [
             if (widget.onboarding)
-              TextButton(
-                onPressed: () => context.go(AppRoutes.home),
-                child: const Text('O‘tkazib yuborish'),
-              ),
+              TextButton(onPressed: () => context.go(AppRoutes.home), child: const Text('O‘tkazib yuborish')),
           ],
         ),
         body: ContentWidth(
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  AppSpacing.sm,
-                  AppSpacing.lg,
-                  0,
-                ),
+                padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0),
                 child: AppSearchField(
                   controller: _search,
                   hint: 'Viloyat, tuman yoki mahalla...',
@@ -187,11 +158,7 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
               ),
               Expanded(
                 child: _query.trim().isNotEmpty
-                    ? _SearchResults(
-                        query: _query,
-                        tree: tree,
-                        onSelect: _finish,
-                      )
+                    ? _SearchResults(query: _query, tree: tree, onSelect: _finish)
                     : ListView(
                         padding: const EdgeInsets.fromLTRB(
                           AppSpacing.lg,
@@ -205,9 +172,7 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
                             error: _gpsError,
                             onTap: _useGps,
                             onOpenSettings: () {
-                              ref
-                                  .read(deviceLocationServiceProvider)
-                                  .openSettings();
+                              ref.read(deviceLocationServiceProvider).openSettings();
                             },
                           ),
                           if (!widget.pickOnly) ...[
@@ -218,22 +183,14 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
                               spacing: AppSpacing.sm,
                               runSpacing: AppSpacing.sm,
                               children: [
-                                for (final km in <int?>[
-                                  null,
-                                  ...listingRadiusOptionsKm,
-                                ])
+                                for (final km in <int?>[null, ...listingRadiusOptionsKm])
                                   ChoiceChip(
-                                    label: Text(
-                                      km == null ? 'Butun hudud' : '$km km',
-                                    ),
+                                    label: Text(km == null ? 'Butun hudud' : '$km km'),
                                     selected: _radius == km,
                                     labelStyle: text.labelMedium?.copyWith(
-                                      color: _radius == km
-                                          ? palette.onPrimary
-                                          : palette.textPrimary,
+                                      color: _radius == km ? palette.onPrimary : palette.textPrimary,
                                     ),
-                                    onSelected: (_) =>
-                                        setState(() => _radius = km),
+                                    onSelected: (_) => setState(() => _radius = km),
                                   ),
                               ],
                             ),
@@ -280,8 +237,7 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
     if (district == null) {
       return [
         _LevelTile(
-          title:
-              'Butun ${region.name.toLowerCase().replaceAll(' viloyati', ' viloyati bo‘ylab')}',
+          title: 'Butun ${region.name.toLowerCase().replaceAll(' viloyati', ' viloyati bo‘ylab')}',
           icon: Icons.select_all_rounded,
           selected: current.regionId == region.id && current.districtId == null,
           onTap: () => _finish(_selection(region)),
@@ -291,9 +247,7 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
             title: d.name,
             selected: current.districtId == d.id && current.localityId == null,
             hasChildren: d.localities.isNotEmpty,
-            onTap: d.localities.isEmpty
-                ? () => _finish(_selection(region, d))
-                : () => setState(() => _district = d),
+            onTap: d.localities.isEmpty ? () => _finish(_selection(region, d)) : () => setState(() => _district = d),
           ),
       ];
     }
@@ -301,8 +255,7 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
       _LevelTile(
         title: 'Butun ${district.name}',
         icon: Icons.select_all_rounded,
-        selected:
-            current.districtId == district.id && current.localityId == null,
+        selected: current.districtId == district.id && current.localityId == null,
         onTap: () => _finish(_selection(region, district)),
       ),
       for (final l in district.localities)
@@ -316,12 +269,7 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
 }
 
 class _GpsCard extends StatelessWidget {
-  const _GpsCard({
-    required this.state,
-    required this.error,
-    required this.onTap,
-    required this.onOpenSettings,
-  });
+  const _GpsCard({required this.state, required this.error, required this.onTap, required this.onOpenSettings});
 
   final _GpsState state;
   final AppFailure? error;
@@ -332,9 +280,7 @@ class _GpsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = context.palette;
     final text = Theme.of(context).textTheme;
-    final permanentlyDenied =
-        error is PermissionFailure &&
-        (error! as PermissionFailure).permanentlyDenied;
+    final permanentlyDenied = error is PermissionFailure && (error! as PermissionFailure).permanentlyDenied;
     return SurfaceCard(
       color: palette.primarySoft,
       borderColor: Colors.transparent,
@@ -347,22 +293,13 @@ class _GpsCard extends StatelessWidget {
               Container(
                 width: 44,
                 height: 44,
-                decoration: BoxDecoration(
-                  color: palette.primary,
-                  shape: BoxShape.circle,
-                ),
+                decoration: BoxDecoration(color: palette.primary, shape: BoxShape.circle),
                 child: state == _GpsState.locating
                     ? const Padding(
                         padding: EdgeInsets.all(12),
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.4,
-                          color: Colors.white,
-                        ),
+                        child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
                       )
-                    : const Icon(
-                        Icons.my_location_rounded,
-                        color: Colors.white,
-                      ),
+                    : const Icon(Icons.my_location_rounded, color: Colors.white),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -370,16 +307,11 @@ class _GpsCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      state == _GpsState.locating
-                          ? 'Aniqlanmoqda…'
-                          : 'Joriy joylashuvni aniqlash',
+                      state == _GpsState.locating ? 'Aniqlanmoqda…' : 'Joriy joylashuvni aniqlash',
                       style: text.titleSmall?.copyWith(color: palette.primary),
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      'Aniq manzil saqlanmaydi — faqat tuman aniqlanadi',
-                      style: text.bodySmall,
-                    ),
+                    Text('Aniq manzil saqlanmaydi — faqat tuman aniqlanadi', style: text.bodySmall),
                   ],
                 ),
               ),
@@ -387,20 +319,11 @@ class _GpsCard extends StatelessWidget {
           ),
           if (error != null) ...[
             const SizedBox(height: AppSpacing.md),
-            Text(
-              error!.message,
-              style: text.bodySmall?.copyWith(color: palette.danger),
-            ),
+            Text(error!.message, style: text.bodySmall?.copyWith(color: palette.danger)),
             if (permanentlyDenied)
-              TextButton(
-                onPressed: onOpenSettings,
-                child: const Text('Sozlamalarni ochish'),
-              )
+              TextButton(onPressed: onOpenSettings, child: const Text('Sozlamalarni ochish'))
             else
-              Text(
-                'Yoki quyidagi ro‘yxatdan qo‘lda tanlang.',
-                style: text.bodySmall,
-              ),
+              Text('Yoki quyidagi ro‘yxatdan qo‘lda tanlang.', style: text.bodySmall),
           ],
         ],
       ),
@@ -409,12 +332,7 @@ class _GpsCard extends StatelessWidget {
 }
 
 class _Breadcrumbs extends StatelessWidget {
-  const _Breadcrumbs({
-    required this.region,
-    required this.district,
-    required this.onRoot,
-    required this.onRegion,
-  });
+  const _Breadcrumbs({required this.region, required this.district, required this.onRoot, required this.onRegion});
 
   final Region? region;
   final District? district;
@@ -425,48 +343,24 @@ class _Breadcrumbs extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = context.palette;
     final text = Theme.of(context).textTheme;
-    Widget crumb(String label, VoidCallback? onTap, {bool active = false}) =>
-        InkWell(
-          borderRadius: AppRadii.smAll,
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: AppSpacing.sm,
-              horizontal: AppSpacing.xs,
-            ),
-            child: Text(
-              label,
-              style: text.labelMedium?.copyWith(
-                color: active ? palette.textPrimary : palette.primary,
-              ),
-            ),
-          ),
-        );
-    final separator = Icon(
-      Icons.chevron_right_rounded,
-      size: AppIconSize.sm,
-      color: palette.textTertiary,
+    Widget crumb(String label, VoidCallback? onTap, {bool active = false}) => InkWell(
+      borderRadius: AppRadii.smAll,
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.xs),
+        child: Text(label, style: text.labelMedium?.copyWith(color: active ? palette.textPrimary : palette.primary)),
+      ),
     );
+    final separator = Icon(Icons.chevron_right_rounded, size: AppIconSize.sm, color: palette.textTertiary);
     return Wrap(
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        crumb(
-          'O‘zbekiston',
-          region == null ? null : onRoot,
-          active: region == null,
-        ),
+        crumb('O‘zbekiston', region == null ? null : onRoot, active: region == null),
         if (region != null) ...[
           separator,
-          crumb(
-            region!.name,
-            district == null ? null : onRegion,
-            active: district == null,
-          ),
+          crumb(region!.name, district == null ? null : onRegion, active: district == null),
         ],
-        if (district != null) ...[
-          separator,
-          crumb(district!.name, null, active: true),
-        ],
+        if (district != null) ...[separator, crumb(district!.name, null, active: true)],
       ],
     );
   }
@@ -497,9 +391,7 @@ class _LevelTile extends StatelessWidget {
         leading: icon != null
             ? Icon(icon, color: palette.primary)
             : Icon(
-                selected
-                    ? Icons.radio_button_checked_rounded
-                    : Icons.radio_button_off_rounded,
+                selected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
                 color: selected ? palette.primary : palette.borderStrong,
               ),
         title: Text(
@@ -511,20 +403,14 @@ class _LevelTile extends StatelessWidget {
         ),
         trailing: hasChildren
             ? Icon(Icons.chevron_right_rounded, color: palette.textTertiary)
-            : (selected
-                  ? Icon(Icons.check_circle_rounded, color: palette.primary)
-                  : null),
+            : (selected ? Icon(Icons.check_circle_rounded, color: palette.primary) : null),
       ),
     );
   }
 }
 
 class _SearchResults extends StatelessWidget {
-  const _SearchResults({
-    required this.query,
-    required this.tree,
-    required this.onSelect,
-  });
+  const _SearchResults({required this.query, required this.tree, required this.onSelect});
 
   final String query;
   final LocationTree tree;
@@ -535,12 +421,8 @@ class _SearchResults extends StatelessWidget {
     final tokens = SearchNormalizer.tokens(query);
     final results = <(String, String, LocationSelection)>[];
     for (final region in tree.regions) {
-      final regionSelection = LocationSelection(
-        regionId: region.id,
-        regionName: region.name,
-      );
-      if (SearchNormalizer.matches(tokens, region.name))
-        results.add((region.name, 'O‘zbekiston', regionSelection));
+      final regionSelection = LocationSelection(regionId: region.id, regionName: region.name);
+      if (SearchNormalizer.matches(tokens, region.name)) results.add((region.name, 'O‘zbekiston', regionSelection));
       for (final district in region.districts) {
         final districtSelection = LocationSelection(
           regionId: region.id,

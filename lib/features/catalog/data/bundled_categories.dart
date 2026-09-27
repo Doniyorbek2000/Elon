@@ -11,33 +11,10 @@ abstract final class BundledCategories {
       label: 'Marka',
       type: AttributeInputType.select,
       required: true,
-      options: [
-        'Chevrolet',
-        'Kia',
-        'Hyundai',
-        'BYD',
-        'Toyota',
-        'Lada',
-        'Daewoo',
-        'Boshqa',
-      ],
+      options: ['Chevrolet', 'Kia', 'Hyundai', 'BYD', 'Toyota', 'Lada', 'Daewoo', 'Boshqa'],
     ),
-    AttributeField(
-      key: 'year',
-      label: 'Yili',
-      type: AttributeInputType.number,
-      required: true,
-      min: 1970,
-      max: 2027,
-    ),
-    AttributeField(
-      key: 'mileage',
-      label: 'Probeg',
-      type: AttributeInputType.number,
-      unit: 'km',
-      min: 0,
-      max: 2000000,
-    ),
+    AttributeField(key: 'year', label: 'Yili', type: AttributeInputType.number, required: true, min: 1970, max: 2027),
+    AttributeField(key: 'mileage', label: 'Probeg', type: AttributeInputType.number, unit: 'km', min: 0, max: 2000000),
     AttributeField(
       key: 'transmission',
       label: 'Uzatma',
@@ -58,10 +35,7 @@ abstract final class BundledCategories {
     ),
   ];
 
-  static const _carSchema = CategoryFormSchema(
-    fields: _carFields,
-    allowUsd: true,
-  );
+  static const _carSchema = CategoryFormSchema(fields: _carFields, allowUsd: true);
 
   static const _phoneSchema = CategoryFormSchema(
     fields: [
@@ -70,15 +44,7 @@ abstract final class BundledCategories {
         label: 'Brend',
         type: AttributeInputType.select,
         required: true,
-        options: [
-          'Apple',
-          'Samsung',
-          'Xiaomi',
-          'Redmi',
-          'Honor',
-          'Vivo',
-          'Boshqa',
-        ],
+        options: ['Apple', 'Samsung', 'Xiaomi', 'Redmi', 'Honor', 'Vivo', 'Boshqa'],
       ),
       AttributeField(
         key: 'memory',
@@ -86,26 +52,14 @@ abstract final class BundledCategories {
         type: AttributeInputType.select,
         options: ['64 GB', '128 GB', '256 GB', '512 GB', '1 TB'],
       ),
-      AttributeField(
-        key: 'color',
-        label: 'Rang',
-        type: AttributeInputType.text,
-        hint: 'Masalan: Deep Purple',
-      ),
+      AttributeField(key: 'color', label: 'Rang', type: AttributeInputType.text, hint: 'Masalan: Deep Purple'),
     ],
     titleHint: 'Masalan: iPhone 14 Pro 256GB',
   );
 
   static const _apartmentSchema = CategoryFormSchema(
     fields: [
-      AttributeField(
-        key: 'rooms',
-        label: 'Xonalar',
-        type: AttributeInputType.number,
-        required: true,
-        min: 1,
-        max: 20,
-      ),
+      AttributeField(key: 'rooms', label: 'Xonalar', type: AttributeInputType.number, required: true, min: 1, max: 20),
       AttributeField(
         key: 'area',
         label: 'Maydon',
@@ -115,20 +69,8 @@ abstract final class BundledCategories {
         min: 5,
         max: 2000,
       ),
-      AttributeField(
-        key: 'floor',
-        label: 'Qavat',
-        type: AttributeInputType.number,
-        min: 1,
-        max: 60,
-      ),
-      AttributeField(
-        key: 'floors',
-        label: 'Qavatlar soni',
-        type: AttributeInputType.number,
-        min: 1,
-        max: 60,
-      ),
+      AttributeField(key: 'floor', label: 'Qavat', type: AttributeInputType.number, min: 1, max: 60),
+      AttributeField(key: 'floors', label: 'Qavatlar soni', type: AttributeInputType.number, min: 1, max: 60),
       AttributeField(
         key: 'renovation',
         label: 'Ta’mir',
@@ -143,14 +85,7 @@ abstract final class BundledCategories {
 
   static const _houseSchema = CategoryFormSchema(
     fields: [
-      AttributeField(
-        key: 'rooms',
-        label: 'Xonalar',
-        type: AttributeInputType.number,
-        required: true,
-        min: 1,
-        max: 40,
-      ),
+      AttributeField(key: 'rooms', label: 'Xonalar', type: AttributeInputType.number, required: true, min: 1, max: 40),
       AttributeField(
         key: 'land',
         label: 'Yer maydoni',
@@ -159,20 +94,8 @@ abstract final class BundledCategories {
         min: 1,
         max: 1000,
       ),
-      AttributeField(
-        key: 'area',
-        label: 'Uy maydoni',
-        type: AttributeInputType.number,
-        unit: 'm²',
-        min: 10,
-        max: 5000,
-      ),
-      AttributeField(
-        key: 'gas',
-        label: 'Gaz',
-        type: AttributeInputType.select,
-        options: ['Bor', 'Yo‘q'],
-      ),
+      AttributeField(key: 'area', label: 'Uy maydoni', type: AttributeInputType.number, unit: 'm²', min: 10, max: 5000),
+      AttributeField(key: 'gas', label: 'Gaz', type: AttributeInputType.select, options: ['Bor', 'Yo‘q']),
     ],
     supportsCondition: false,
     allowUsd: true,
@@ -204,19 +127,8 @@ abstract final class BundledCategories {
 
   static const _animalSchema = CategoryFormSchema(
     fields: [
-      AttributeField(
-        key: 'age',
-        label: 'Yoshi',
-        type: AttributeInputType.text,
-        hint: 'Masalan: 2 yosh',
-      ),
-      AttributeField(
-        key: 'count',
-        label: 'Soni',
-        type: AttributeInputType.number,
-        min: 1,
-        max: 10000,
-      ),
+      AttributeField(key: 'age', label: 'Yoshi', type: AttributeInputType.text, hint: 'Masalan: 2 yosh'),
+      AttributeField(key: 'count', label: 'Soni', type: AttributeInputType.number, min: 1, max: 10000),
     ],
     supportsCondition: false,
     titleHint: 'Masalan: Sog‘in sigir',
@@ -224,12 +136,7 @@ abstract final class BundledCategories {
 
   static const _jobSchema = CategoryFormSchema(
     fields: [
-      AttributeField(
-        key: 'company',
-        label: 'Kompaniya',
-        type: AttributeInputType.text,
-        required: true,
-      ),
+      AttributeField(key: 'company', label: 'Kompaniya', type: AttributeInputType.text, required: true),
       AttributeField(
         key: 'employment',
         label: 'Bandlik turi',
@@ -243,12 +150,7 @@ abstract final class BundledCategories {
         type: AttributeInputType.select,
         options: ['Tajribasiz', '1 yilgacha', '1–3 yil', '3 yildan ortiq'],
       ),
-      AttributeField(
-        key: 'hours',
-        label: 'Ish vaqti',
-        type: AttributeInputType.text,
-        hint: 'Masalan: 09:00–18:00',
-      ),
+      AttributeField(key: 'hours', label: 'Ish vaqti', type: AttributeInputType.text, hint: 'Masalan: 09:00–18:00'),
     ],
     priceMode: PriceMode.salary,
     supportsCondition: false,
@@ -258,19 +160,8 @@ abstract final class BundledCategories {
 
   static const _serviceSchema = CategoryFormSchema(
     fields: [
-      AttributeField(
-        key: 'experience',
-        label: 'Tajriba (yil)',
-        type: AttributeInputType.number,
-        min: 0,
-        max: 70,
-      ),
-      AttributeField(
-        key: 'area',
-        label: 'Xizmat hududi',
-        type: AttributeInputType.text,
-        hint: 'Masalan: Chust tumani',
-      ),
+      AttributeField(key: 'experience', label: 'Tajriba (yil)', type: AttributeInputType.number, min: 0, max: 70),
+      AttributeField(key: 'area', label: 'Xizmat hududi', type: AttributeInputType.text, hint: 'Masalan: Chust tumani'),
     ],
     priceMode: PriceMode.optional,
     supportsCondition: false,
@@ -285,14 +176,7 @@ abstract final class BundledCategories {
     required String icon,
     required AccentTone tone,
     CategoryFormSchema schema = CategoryFormSchema.generic,
-  }) => Category(
-    id: id,
-    name: name,
-    iconKey: icon,
-    tone: tone,
-    parentId: parent,
-    schema: schema,
-  );
+  }) => Category(id: id, name: name, iconKey: icon, tone: tone, parentId: parent, schema: schema);
 
   static final List<Category> roots = [
     Category(
@@ -311,13 +195,7 @@ abstract final class BundledCategories {
           tone: AccentTone.red,
           schema: _carSchema,
         ),
-        _node(
-          'car_parts',
-          'Ehtiyot qismlar',
-          parent: 'transport',
-          icon: 'parts',
-          tone: AccentTone.red,
-        ),
+        _node('car_parts', 'Ehtiyot qismlar', parent: 'transport', icon: 'parts', tone: AccentTone.red),
         _node(
           'trucks',
           'Yuk mashinalari',
@@ -326,13 +204,7 @@ abstract final class BundledCategories {
           tone: AccentTone.red,
           schema: _carSchema,
         ),
-        _node(
-          'moto',
-          'Mototexnika',
-          parent: 'transport',
-          icon: 'moto',
-          tone: AccentTone.red,
-        ),
+        _node('moto', 'Mototexnika', parent: 'transport', icon: 'moto', tone: AccentTone.red),
       ],
     ),
     Category(
@@ -359,14 +231,7 @@ abstract final class BundledCategories {
           tone: AccentTone.teal,
           schema: _houseSchema,
         ),
-        _node(
-          'rent',
-          'Ijara',
-          parent: 'real_estate',
-          icon: 'key',
-          tone: AccentTone.teal,
-          schema: _apartmentSchema,
-        ),
+        _node('rent', 'Ijara', parent: 'real_estate', icon: 'key', tone: AccentTone.teal, schema: _apartmentSchema),
         _node(
           'commercial',
           'Tijorat binolari',
@@ -392,27 +257,9 @@ abstract final class BundledCategories {
           tone: AccentTone.blue,
           schema: _phoneSchema,
         ),
-        _node(
-          'laptops',
-          'Noutbuklar',
-          parent: 'electronics',
-          icon: 'laptop',
-          tone: AccentTone.blue,
-        ),
-        _node(
-          'tv',
-          'Televizorlar',
-          parent: 'electronics',
-          icon: 'tv',
-          tone: AccentTone.blue,
-        ),
-        _node(
-          'accessories',
-          'Aksessuarlar',
-          parent: 'electronics',
-          icon: 'headphones',
-          tone: AccentTone.blue,
-        ),
+        _node('laptops', 'Noutbuklar', parent: 'electronics', icon: 'laptop', tone: AccentTone.blue),
+        _node('tv', 'Televizorlar', parent: 'electronics', icon: 'tv', tone: AccentTone.blue),
+        _node('accessories', 'Aksessuarlar', parent: 'electronics', icon: 'headphones', tone: AccentTone.blue),
       ],
     ),
     Category(
@@ -422,34 +269,10 @@ abstract final class BundledCategories {
       iconKey: 'appliance',
       tone: AccentTone.slate,
       children: [
-        _node(
-          'fridges',
-          'Sovutgichlar',
-          parent: 'appliances',
-          icon: 'fridge',
-          tone: AccentTone.slate,
-        ),
-        _node(
-          'washers',
-          'Kir yuvish mashinalari',
-          parent: 'appliances',
-          icon: 'appliance',
-          tone: AccentTone.slate,
-        ),
-        _node(
-          'climate',
-          'Konditsionerlar',
-          parent: 'appliances',
-          icon: 'climate',
-          tone: AccentTone.slate,
-        ),
-        _node(
-          'kitchen',
-          'Oshxona texnikasi',
-          parent: 'appliances',
-          icon: 'kitchen',
-          tone: AccentTone.slate,
-        ),
+        _node('fridges', 'Sovutgichlar', parent: 'appliances', icon: 'fridge', tone: AccentTone.slate),
+        _node('washers', 'Kir yuvish mashinalari', parent: 'appliances', icon: 'appliance', tone: AccentTone.slate),
+        _node('climate', 'Konditsionerlar', parent: 'appliances', icon: 'climate', tone: AccentTone.slate),
+        _node('kitchen', 'Oshxona texnikasi', parent: 'appliances', icon: 'kitchen', tone: AccentTone.slate),
       ],
     ),
     Category(
@@ -459,34 +282,10 @@ abstract final class BundledCategories {
       iconKey: 'clothes',
       tone: AccentTone.purple,
       children: [
-        _node(
-          'men',
-          'Erkaklar kiyimi',
-          parent: 'clothing',
-          icon: 'clothes',
-          tone: AccentTone.purple,
-        ),
-        _node(
-          'women',
-          'Ayollar kiyimi',
-          parent: 'clothing',
-          icon: 'dress',
-          tone: AccentTone.purple,
-        ),
-        _node(
-          'kids',
-          'Bolalar kiyimi',
-          parent: 'clothing',
-          icon: 'child',
-          tone: AccentTone.purple,
-        ),
-        _node(
-          'shoes',
-          'Poyabzal',
-          parent: 'clothing',
-          icon: 'shoe',
-          tone: AccentTone.purple,
-        ),
+        _node('men', 'Erkaklar kiyimi', parent: 'clothing', icon: 'clothes', tone: AccentTone.purple),
+        _node('women', 'Ayollar kiyimi', parent: 'clothing', icon: 'dress', tone: AccentTone.purple),
+        _node('kids', 'Bolalar kiyimi', parent: 'clothing', icon: 'child', tone: AccentTone.purple),
+        _node('shoes', 'Poyabzal', parent: 'clothing', icon: 'shoe', tone: AccentTone.purple),
       ],
     ),
     Category(
@@ -496,34 +295,10 @@ abstract final class BundledCategories {
       iconKey: 'sofa',
       tone: AccentTone.orange,
       children: [
-        _node(
-          'furniture',
-          'Mebel',
-          parent: 'home_goods',
-          icon: 'sofa',
-          tone: AccentTone.orange,
-        ),
-        _node(
-          'dishes',
-          'Idish-tovoq',
-          parent: 'home_goods',
-          icon: 'kitchen',
-          tone: AccentTone.orange,
-        ),
-        _node(
-          'decor',
-          'Dekor va gilamlar',
-          parent: 'home_goods',
-          icon: 'decor',
-          tone: AccentTone.orange,
-        ),
-        _node(
-          'garden',
-          'Bog‘ uchun',
-          parent: 'home_goods',
-          icon: 'garden',
-          tone: AccentTone.orange,
-        ),
+        _node('furniture', 'Mebel', parent: 'home_goods', icon: 'sofa', tone: AccentTone.orange),
+        _node('dishes', 'Idish-tovoq', parent: 'home_goods', icon: 'kitchen', tone: AccentTone.orange),
+        _node('decor', 'Dekor va gilamlar', parent: 'home_goods', icon: 'decor', tone: AccentTone.orange),
+        _node('garden', 'Bog‘ uchun', parent: 'home_goods', icon: 'garden', tone: AccentTone.orange),
       ],
     ),
     Category(
@@ -533,34 +308,10 @@ abstract final class BundledCategories {
       iconKey: 'construction',
       tone: AccentTone.amber,
       children: [
-        _node(
-          'cement',
-          'Sement va aralashmalar',
-          parent: 'construction',
-          icon: 'construction',
-          tone: AccentTone.amber,
-        ),
-        _node(
-          'bricks',
-          'G‘isht va blok',
-          parent: 'construction',
-          icon: 'brick',
-          tone: AccentTone.amber,
-        ),
-        _node(
-          'wood',
-          'Taxta va yog‘och',
-          parent: 'construction',
-          icon: 'wood',
-          tone: AccentTone.amber,
-        ),
-        _node(
-          'tools',
-          'Asbob-uskunalar',
-          parent: 'construction',
-          icon: 'tools',
-          tone: AccentTone.amber,
-        ),
+        _node('cement', 'Sement va aralashmalar', parent: 'construction', icon: 'construction', tone: AccentTone.amber),
+        _node('bricks', 'G‘isht va blok', parent: 'construction', icon: 'brick', tone: AccentTone.amber),
+        _node('wood', 'Taxta va yog‘och', parent: 'construction', icon: 'wood', tone: AccentTone.amber),
+        _node('tools', 'Asbob-uskunalar', parent: 'construction', icon: 'tools', tone: AccentTone.amber),
       ],
     ),
     Category(
@@ -571,37 +322,10 @@ abstract final class BundledCategories {
       tone: AccentTone.pink,
       schema: _animalSchema,
       children: [
-        _node(
-          'livestock',
-          'Chorva',
-          parent: 'animals',
-          icon: 'cow',
-          tone: AccentTone.pink,
-          schema: _animalSchema,
-        ),
-        _node(
-          'poultry',
-          'Parrandalar',
-          parent: 'animals',
-          icon: 'bird',
-          tone: AccentTone.pink,
-          schema: _animalSchema,
-        ),
-        _node(
-          'pets',
-          'Uy hayvonlari',
-          parent: 'animals',
-          icon: 'pets',
-          tone: AccentTone.pink,
-          schema: _animalSchema,
-        ),
-        _node(
-          'feed',
-          'Yem-xashak',
-          parent: 'animals',
-          icon: 'grass',
-          tone: AccentTone.pink,
-        ),
+        _node('livestock', 'Chorva', parent: 'animals', icon: 'cow', tone: AccentTone.pink, schema: _animalSchema),
+        _node('poultry', 'Parrandalar', parent: 'animals', icon: 'bird', tone: AccentTone.pink, schema: _animalSchema),
+        _node('pets', 'Uy hayvonlari', parent: 'animals', icon: 'pets', tone: AccentTone.pink, schema: _animalSchema),
+        _node('feed', 'Yem-xashak', parent: 'animals', icon: 'grass', tone: AccentTone.pink),
       ],
     ),
     Category(
@@ -612,22 +336,8 @@ abstract final class BundledCategories {
       tone: AccentTone.green,
       schema: _landSchema,
       children: [
-        _node(
-          'plots',
-          'Yer uchastkalari',
-          parent: 'land',
-          icon: 'land',
-          tone: AccentTone.green,
-          schema: _landSchema,
-        ),
-        _node(
-          'buildings',
-          'Imoratlar',
-          parent: 'land',
-          icon: 'building',
-          tone: AccentTone.green,
-          schema: _houseSchema,
-        ),
+        _node('plots', 'Yer uchastkalari', parent: 'land', icon: 'land', tone: AccentTone.green, schema: _landSchema),
+        _node('buildings', 'Imoratlar', parent: 'land', icon: 'building', tone: AccentTone.green, schema: _houseSchema),
       ],
     ),
     const Category(
@@ -648,13 +358,7 @@ abstract final class BundledCategories {
       kind: CategoryKind.services,
       schema: _serviceSchema,
     ),
-    const Category(
-      id: 'other',
-      name: 'Boshqalar',
-      subtitle: 'Boshqa e’lonlar',
-      iconKey: 'grid',
-      tone: AccentTone.blue,
-    ),
+    const Category(id: 'other', name: 'Boshqalar', subtitle: 'Boshqa e’lonlar', iconKey: 'grid', tone: AccentTone.blue),
   ];
 
   /// Order of shortcuts on the home grid (the last tile is "Barchasi").

@@ -22,9 +22,7 @@ class RemoteJobRepository implements JobRepository {
     name: json['name'] as String,
     iconKey: json['iconKey'] as String? ?? 'work',
     tone: _enum(AccentTone.values, json['tone'], AccentTone.blue),
-    logo: json['logo'] == null
-        ? null
-        : MediaImage.fromJson(json['logo'] as JsonMap),
+    logo: json['logo'] == null ? null : MediaImage.fromJson(json['logo'] as JsonMap),
     verification: VerificationLevel.parse(json['verification']),
     about: json['about'] as String?,
   );
@@ -35,19 +33,11 @@ class RemoteJobRepository implements JobRepository {
     company: _company(json['company'] as JsonMap),
     place: Place.fromJson(json['place'] as JsonMap),
     publishedAt: DateTime.parse(json['publishedAt'] as String),
-    employmentType: EmploymentType.fromApi(
-      json['employmentType'],
-      json['workFormat'],
-    ),
+    employmentType: EmploymentType.fromApi(json['employmentType'], json['workFormat']),
     experience: ExperienceLevel.fromApi(json['experience']),
     description: json['description'] as String? ?? '',
-    requirements: [
-      for (final r in json['requirements'] as List<dynamic>? ?? const []) '$r',
-    ],
-    responsibilities: [
-      for (final r in json['responsibilities'] as List<dynamic>? ?? const [])
-        '$r',
-    ],
+    requirements: [for (final r in json['requirements'] as List<dynamic>? ?? const []) '$r'],
+    responsibilities: [for (final r in json['responsibilities'] as List<dynamic>? ?? const []) '$r'],
     workingHours: json['workingHours'] as String? ?? '',
     employer: PublicProfile.fromJson(json['employer'] as JsonMap),
     salaryMin: (json['salaryMin'] as num?)?.toInt(),
@@ -66,8 +56,7 @@ class RemoteJobRepository implements JobRepository {
   /// Résumé places may have no preferred region yet.
   static Place _resumePlace(JsonMap? json) {
     final regionId = json?['regionId'] as String?;
-    if (regionId == null)
-      return const Place(regionId: '', regionName: 'Hudud ko‘rsatilmagan');
+    if (regionId == null) return const Place(regionId: '', regionName: 'Hudud ko‘rsatilmagan');
     return Place(
       regionId: regionId,
       regionName: json?['regionName'] as String? ?? '',
@@ -82,23 +71,14 @@ class RemoteJobRepository implements JobRepository {
     desiredPosition: json['desiredPosition'] as String,
     experienceYears: (json['experienceYears'] as num?)?.toInt() ?? 0,
     place: _resumePlace(json['place'] as JsonMap?),
-    skills: [
-      for (final s in json['skills'] as List<dynamic>? ?? const []) '$s',
-    ],
+    skills: [for (final s in json['skills'] as List<dynamic>? ?? const []) '$s'],
     about: json['about'] as String? ?? '',
     updatedAt: DateTime.parse(json['updatedAt'] as String),
     employmentTypes: {
-      for (final t in json['employmentTypes'] as List<dynamic>? ?? const [])
-        EmploymentType.fromApi(t, null),
+      for (final t in json['employmentTypes'] as List<dynamic>? ?? const []) EmploymentType.fromApi(t, null),
     },
-    expectedSalary: json['expectedSalary'] == null
-        ? null
-        : Money.fromJson(json['expectedSalary'] as JsonMap),
-    visibility: _enum(
-      ResumeVisibility.values,
-      json['visibility'],
-      ResumeVisibility.public,
-    ),
+    expectedSalary: json['expectedSalary'] == null ? null : Money.fromJson(json['expectedSalary'] as JsonMap),
+    visibility: _enum(ResumeVisibility.values, json['visibility'], ResumeVisibility.public),
   );
 
   static JobApplication applicationFromJson(JsonMap json) => JobApplication(
@@ -116,9 +96,7 @@ class RemoteJobRepository implements JobRepository {
     appliedAt: DateTime.parse(json['appliedAt'] as String),
     message: json['message'] as String?,
     phone: json['phone'] as String?,
-    resume: json['resume'] == null
-        ? null
-        : candidateFromJson(json['resume'] as JsonMap),
+    resume: json['resume'] == null ? null : candidateFromJson(json['resume'] as JsonMap),
   );
 
   Map<String, Object?> _query(JobQuery query) {
@@ -145,32 +123,17 @@ class RemoteJobRepository implements JobRepository {
       (await _api.getPage('/jobs', jobFromJson, query: _query(query))).items;
 
   @override
-  Future<Job> postVacancy(
-    NewVacancy vacancy, {
-    required PublicProfile employer,
-  }) async =>
+  Future<Job> postVacancy(NewVacancy vacancy, {required PublicProfile employer}) async =>
       jobFromJson(await _api.post<JsonMap>('/jobs', body: vacancy.toJson()));
 
   @override
-  Future<Job> getJob(String id) async =>
-      jobFromJson(await _api.get<JsonMap>('/jobs/$id'));
+  Future<Job> getJob(String id) async => jobFromJson(await _api.get<JsonMap>('/jobs/$id'));
 
   @override
   Future<List<CandidateProfile>> searchCandidates(JobQuery query) async {
     final params = _query(query)
-      ..removeWhere(
-        (key, _) => const {
-          'experience',
-          'salaryMin',
-          'sort',
-          'workFormat',
-        }.contains(key),
-      );
-    return (await _api.getPage(
-      '/candidates',
-      candidateFromJson,
-      query: params,
-    )).items;
+      ..removeWhere((key, _) => const {'experience', 'salaryMin', 'sort', 'workFormat'}.contains(key));
+    return (await _api.getPage('/candidates', candidateFromJson, query: params)).items;
   }
 
   @override
@@ -178,17 +141,10 @@ class RemoteJobRepository implements JobRepository {
       candidateFromJson(await _api.get<JsonMap>('/candidates/$id'));
 
   @override
-  Future<JobApplication> apply({
-    required String jobId,
-    required String applicantId,
-    String? message,
-  }) async {
+  Future<JobApplication> apply({required String jobId, required String applicantId, String? message}) async {
     final created = await _api.post<JsonMap>(
       '/jobs/$jobId/applications',
-      body: {
-        if (message != null && message.trim().isNotEmpty)
-          'coverLetter': message.trim(),
-      },
+      body: {if (message != null && message.trim().isNotEmpty) 'coverLetter': message.trim()},
     );
     // The apply response carries only a job summary; return the full card.
     return JobApplication(
@@ -202,11 +158,7 @@ class RemoteJobRepository implements JobRepository {
 
   @override
   Future<List<JobApplication>> myApplications(String applicantId) async =>
-      (await _api.getPage(
-        '/me/applications',
-        applicationFromJson,
-        query: {'limit': 50},
-      )).items;
+      (await _api.getPage('/me/applications', applicationFromJson, query: {'limit': 50})).items;
 
   @override
   Future<void> withdrawApplication(String applicationId) async {
@@ -214,33 +166,20 @@ class RemoteJobRepository implements JobRepository {
   }
 
   @override
-  Future<List<Job>> myJobs() async =>
-      (await _api.getPage('/me/jobs', jobFromJson, query: {'limit': 50})).items;
+  Future<List<Job>> myJobs() async => (await _api.getPage('/me/jobs', jobFromJson, query: {'limit': 50})).items;
 
   @override
   Future<void> setJobStatus(String jobId, JobStatus status) async {
-    await _api.post<Object?>(
-      '/jobs/$jobId/status',
-      body: {'status': status.name},
-    );
+    await _api.post<Object?>('/jobs/$jobId/status', body: {'status': status.name});
   }
 
   @override
-  Future<List<Applicant>> applicants(String jobId) async => (await _api.getPage(
-    '/jobs/$jobId/applications',
-    applicantFromJson,
-    query: {'limit': 50},
-  )).items;
+  Future<List<Applicant>> applicants(String jobId) async =>
+      (await _api.getPage('/jobs/$jobId/applications', applicantFromJson, query: {'limit': 50})).items;
 
   @override
-  Future<void> setApplicationStatus(
-    String applicationId,
-    ApplicationStatus status,
-  ) async {
-    await _api.patch<Object?>(
-      '/applications/$applicationId/status',
-      body: {'status': status.name},
-    );
+  Future<void> setApplicationStatus(String applicationId, ApplicationStatus status) async {
+    await _api.patch<Object?>('/applications/$applicationId/status', body: {'status': status.name});
   }
 
   @override
@@ -255,9 +194,7 @@ class RemoteJobRepository implements JobRepository {
 
   @override
   Future<CandidateProfile> saveResume(ResumeDraft draft) async =>
-      candidateFromJson(
-        await _api.put<JsonMap>('/me/resume', body: draft.toJson()),
-      );
+      candidateFromJson(await _api.put<JsonMap>('/me/resume', body: draft.toJson()));
 
   @override
   Future<String> revealJobPhone(String jobId) async =>
@@ -265,6 +202,5 @@ class RemoteJobRepository implements JobRepository {
 
   @override
   Future<String> revealCandidatePhone(String candidateId) async =>
-      (await _api.post<JsonMap>('/candidates/$candidateId/contact'))['phone']
-          as String;
+      (await _api.post<JsonMap>('/candidates/$candidateId/contact'))['phone'] as String;
 }

@@ -7,12 +7,7 @@ import '../domain/public_profile.dart';
 
 /// Rendered only for server-asserted verification — never inferred locally.
 class VerifiedBadge extends StatelessWidget {
-  const VerifiedBadge({
-    super.key,
-    required this.level,
-    this.size = 16,
-    this.showLabel = false,
-  });
+  const VerifiedBadge({super.key, required this.level, this.size = 16, this.showLabel = false});
 
   final VerificationLevel level;
   final double size;
@@ -22,13 +17,9 @@ class VerifiedBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!level.isVerified) return const SizedBox.shrink();
     final palette = context.palette;
-    final color = level == VerificationLevel.business
-        ? palette.vip
-        : palette.primary;
+    final color = level == VerificationLevel.business ? palette.vip : palette.primary;
     final icon = Icon(
-      level == VerificationLevel.business
-          ? Icons.workspace_premium_rounded
-          : Icons.verified_rounded,
+      level == VerificationLevel.business ? Icons.workspace_premium_rounded : Icons.verified_rounded,
       size: size,
       color: color,
     );
@@ -46,8 +37,7 @@ class VerifiedBadge extends StatelessWidget {
         Flexible(
           child: Text(
             level.label,
-            style: Theme.of(context).textTheme.labelSmall
-                ?.copyWith(color: color),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: color),
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -59,13 +49,7 @@ class VerifiedBadge extends StatelessWidget {
 enum PillStyle { primary, success, warning, danger, vip, neutral }
 
 class StatusPill extends StatelessWidget {
-  const StatusPill({
-    super.key,
-    required this.label,
-    this.style = PillStyle.neutral,
-    this.icon,
-    this.dense = false,
-  });
+  const StatusPill({super.key, required this.label, this.style = PillStyle.neutral, this.icon, this.dense = false});
 
   final String label;
   final PillStyle style;
@@ -84,25 +68,18 @@ class StatusPill extends StatelessWidget {
       PillStyle.neutral => (p.surfaceMuted, p.textSecondary),
     };
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: dense ? 6 : AppSpacing.sm,
-        vertical: dense ? 2 : AppSpacing.xs,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: dense ? 6 : AppSpacing.sm, vertical: dense ? 2 : AppSpacing.xs),
       decoration: BoxDecoration(color: bg, borderRadius: AppRadii.pillAll),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) ...[
-            Icon(icon, size: 12, color: fg),
-            const SizedBox(width: 3),
-          ],
+          if (icon != null) ...[Icon(icon, size: 12, color: fg), const SizedBox(width: 3)],
           Flexible(
             child: Text(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.labelSmall
-                  ?.copyWith(color: fg, fontSize: dense ? 10.5 : null),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(color: fg, fontSize: dense ? 10.5 : null),
             ),
           ),
         ],

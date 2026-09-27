@@ -18,46 +18,19 @@ void main() {
     });
 
     test('salary ranges cover min/max/negotiable', () {
-      expect(
-        Formatters.salaryRange(3000000, 5000000, Currency.uzs),
-        '3 000 000 – 5 000 000 so‘m',
-      );
-      expect(
-        Formatters.salaryRange(3500000, null, Currency.uzs),
-        '3 500 000 so‘m dan',
-      );
-      expect(
-        Formatters.salaryRange(null, null, Currency.uzs),
-        'Suhbat asosida',
-      );
+      expect(Formatters.salaryRange(3000000, 5000000, Currency.uzs), '3 000 000 – 5 000 000 so‘m');
+      expect(Formatters.salaryRange(3500000, null, Currency.uzs), '3 500 000 so‘m dan');
+      expect(Formatters.salaryRange(null, null, Currency.uzs), 'Suhbat asosida');
     });
 
     test('relative time in Uzbek', () {
       final now = DateTime(2026, 9, 26, 12);
-      expect(
-        Formatters.relativeTime(now.subtract(const Duration(seconds: 20)), now),
-        'hozirgina',
-      );
-      expect(
-        Formatters.relativeTime(now.subtract(const Duration(minutes: 5)), now),
-        '5 daqiqa oldin',
-      );
-      expect(
-        Formatters.relativeTime(now.subtract(const Duration(hours: 1)), now),
-        '1 soat oldin',
-      );
-      expect(
-        Formatters.relativeTime(now.subtract(const Duration(days: 1)), now),
-        'kecha',
-      );
-      expect(
-        Formatters.relativeTime(now.subtract(const Duration(days: 3)), now),
-        '3 kun oldin',
-      );
-      expect(
-        Formatters.relativeTime(DateTime(2025, 3, 12), now),
-        '12 mart 2025',
-      );
+      expect(Formatters.relativeTime(now.subtract(const Duration(seconds: 20)), now), 'hozirgina');
+      expect(Formatters.relativeTime(now.subtract(const Duration(minutes: 5)), now), '5 daqiqa oldin');
+      expect(Formatters.relativeTime(now.subtract(const Duration(hours: 1)), now), '1 soat oldin');
+      expect(Formatters.relativeTime(now.subtract(const Duration(days: 1)), now), 'kecha');
+      expect(Formatters.relativeTime(now.subtract(const Duration(days: 3)), now), '3 kun oldin');
+      expect(Formatters.relativeTime(DateTime(2025, 3, 12), now), '12 mart 2025');
     });
 
     test('compact counts and masked phones', () {
@@ -75,10 +48,7 @@ void main() {
     test('groups digits while typing and keeps caret at end', () {
       final result = formatter.formatEditUpdate(
         TextEditingValue.empty,
-        const TextEditingValue(
-          text: '120000000',
-          selection: TextSelection.collapsed(offset: 9),
-        ),
+        const TextEditingValue(text: '120000000', selection: TextSelection.collapsed(offset: 9)),
       );
       expect(result.text, '120 000 000');
       expect(result.selection.baseOffset, result.text.length);
@@ -88,10 +58,7 @@ void main() {
     test('strips leading zeros and non-digits', () {
       final result = formatter.formatEditUpdate(
         TextEditingValue.empty,
-        const TextEditingValue(
-          text: '00a45',
-          selection: TextSelection.collapsed(offset: 5),
-        ),
+        const TextEditingValue(text: '00a45', selection: TextSelection.collapsed(offset: 5)),
       );
       expect(result.text, '45');
     });
@@ -110,28 +77,13 @@ void main() {
     });
 
     test('tolerates one typo in longer tokens', () {
-      expect(
-        SearchNormalizer.matches(
-          SearchNormalizer.tokens('santexnk'),
-          'Santexnik xizmatlari',
-        ),
-        isTrue,
-      );
-      expect(
-        SearchNormalizer.matches(
-          SearchNormalizer.tokens('iphone'),
-          'Samsung Galaxy',
-        ),
-        isFalse,
-      );
+      expect(SearchNormalizer.matches(SearchNormalizer.tokens('santexnk'), 'Santexnik xizmatlari'), isTrue);
+      expect(SearchNormalizer.matches(SearchNormalizer.tokens('iphone'), 'Samsung Galaxy'), isFalse);
     });
 
     test('scores exact matches above prefix matches', () {
       final tokens = SearchNormalizer.tokens('cobalt');
-      expect(
-        SearchNormalizer.score(tokens, 'Cobalt 2023'),
-        greaterThan(SearchNormalizer.score(tokens, 'Cobalts')),
-      );
+      expect(SearchNormalizer.score(tokens, 'Cobalt 2023'), greaterThan(SearchNormalizer.score(tokens, 'Cobalts')));
     });
   });
 
@@ -142,14 +94,8 @@ void main() {
         description: 'Pulni 8600 1234 5678 9012 kartaga tashlang. Tel: +998 90 123 45 67',
       );
       final codes = signals.map((s) => s.code).toSet();
-      expect(
-        codes,
-        containsAll(['card_number', 'phone_in_text', 'prepayment']),
-      );
-      expect(
-        signals.firstWhere((s) => s.code == 'card_number').severity,
-        RiskSeverity.blocking,
-      );
+      expect(codes, containsAll(['card_number', 'phone_in_text', 'prepayment']));
+      expect(signals.firstWhere((s) => s.code == 'card_number').severity, RiskSeverity.blocking);
       expect(ListingRiskAssessor.requiresModeration(signals), isTrue);
     });
 
@@ -174,29 +120,15 @@ void main() {
     });
 
     test('message guard throttles bursts and warns about prepayment', () {
-      final guard = MessageGuard(
-        maxMessages: 3,
-        window: const Duration(seconds: 10),
-      );
+      final guard = MessageGuard(maxMessages: 3, window: const Duration(seconds: 10));
       final now = DateTime(2026);
       for (var i = 0; i < 3; i++) {
         expect(guard.check('salom', now).verdict, MessageVerdict.allow);
         guard.recordSent(now);
       }
       expect(guard.check('salom', now).verdict, MessageVerdict.throttle);
-      expect(
-        guard.check('salom', now.add(const Duration(seconds: 11))).verdict,
-        MessageVerdict.allow,
-      );
-      expect(
-        guard
-            .check(
-              'Oldindan to‘lov qiling',
-              now.add(const Duration(seconds: 11)),
-            )
-            .verdict,
-        MessageVerdict.warn,
-      );
+      expect(guard.check('salom', now.add(const Duration(seconds: 11))).verdict, MessageVerdict.allow);
+      expect(guard.check('Oldindan to‘lov qiling', now.add(const Duration(seconds: 11))).verdict, MessageVerdict.warn);
     });
   });
 
@@ -208,33 +140,22 @@ void main() {
       expect(tree.rootOf('phones')?.id, 'electronics');
       expect(tree.isWithin('cars', 'transport'), isTrue);
       expect(tree.isWithin('phones', 'transport'), isFalse);
-      expect(
-        tree.schemaFor('cars').fields.map((f) => f.key),
-        containsAll(['year', 'mileage', 'transmission']),
-      );
+      expect(tree.schemaFor('cars').fields.map((f) => f.key), containsAll(['year', 'mileage', 'transmission']));
       expect(tree.schemaFor('jobs').priceMode, PriceMode.salary);
     });
 
     test('attribute validation enforces ranges and options', () {
-      final year = tree
-          .schemaFor('cars')
-          .fields
-          .firstWhere((f) => f.key == 'year');
+      final year = tree.schemaFor('cars').fields.firstWhere((f) => f.key == 'year');
       expect(year.validate(''), isNotNull);
       expect(year.validate('1800'), isNotNull);
       expect(year.validate('2023'), isNull);
-      final transmission = tree
-          .schemaFor('cars')
-          .fields
-          .firstWhere((f) => f.key == 'transmission');
+      final transmission = tree.schemaFor('cars').fields.firstWhere((f) => f.key == 'transmission');
       expect(transmission.validate('Avtomat'), isNull);
       expect(transmission.validate('Nomaʼlum'), isNotNull);
     });
 
     test('reverse geocoding picks the nearest district', () {
-      final nearest = UzbekistanLocations.tree.nearestDistrict(
-        const GeoPoint(41.0, 71.24),
-      );
+      final nearest = UzbekistanLocations.tree.nearestDistrict(const GeoPoint(41.0, 71.24));
       expect(nearest?.district.id, 'chust');
       expect(nearest?.region.id, 'namangan');
     });

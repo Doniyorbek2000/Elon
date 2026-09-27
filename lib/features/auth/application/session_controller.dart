@@ -13,8 +13,7 @@ import '../data/remote_auth_repository.dart';
 import '../domain/auth.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  if (ref.watch(appConfigProvider).useDemoData)
-    return DemoAuthRepository(ref.watch(demoDatabaseProvider));
+  if (ref.watch(appConfigProvider).useDemoData) return DemoAuthRepository(ref.watch(demoDatabaseProvider));
   return RemoteAuthRepository(
     api: ref.watch(apiClientProvider),
     tokens: ref.watch(tokenStoreProvider),
@@ -35,21 +34,15 @@ class SessionController extends Notifier<CurrentUser?> {
       // Demo database starts signed-in so every screen is explorable.
       return ref.watch(demoDatabaseProvider).currentUser;
     }
-    final repository =
-        ref.watch(authRepositoryProvider) as RemoteAuthRepository;
-    final subscription = ref
-        .watch(tokenStoreProvider)
-        .sessionExpired
-        .listen((_) => state = null);
+    final repository = ref.watch(authRepositoryProvider) as RemoteAuthRepository;
+    final subscription = ref.watch(tokenStoreProvider).sessionExpired.listen((_) => state = null);
     ref.onDispose(subscription.cancel);
     unawaited(_restore(repository));
     return repository.cachedUser;
   }
 
   Future<void> _restore(AuthRepository repository) async {
-    final user = await repository.restoreSession().catchError(
-      (Object _) => state,
-    );
+    final user = await repository.restoreSession().catchError((Object _) => state);
     if (ref.mounted) state = user;
   }
 
@@ -57,10 +50,7 @@ class SessionController extends Notifier<CurrentUser?> {
 
   Future<OtpChallenge> requestCode(String phone) => _auth.requestCode(phone);
 
-  Future<CurrentUser> verify({
-    required String phone,
-    required String code,
-  }) async {
+  Future<CurrentUser> verify({required String phone, required String code}) async {
     final user = await _auth.verifyCode(phone: phone, code: code);
     state = user;
     return user;
@@ -76,6 +66,4 @@ class SessionController extends Notifier<CurrentUser?> {
   }
 }
 
-final sessionProvider = NotifierProvider<SessionController, CurrentUser?>(
-  SessionController.new,
-);
+final sessionProvider = NotifierProvider<SessionController, CurrentUser?>(SessionController.new);

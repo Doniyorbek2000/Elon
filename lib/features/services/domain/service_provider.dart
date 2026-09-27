@@ -9,28 +9,19 @@ import '../../../core/domain/public_profile.dart';
 
 @immutable
 class ServiceCategory {
-  const ServiceCategory({
-    required this.id,
-    required this.name,
-    required this.iconKey,
-    required this.tone,
-  });
+  const ServiceCategory({required this.id, required this.name, required this.iconKey, required this.tone});
 
   final String id;
   final String name;
   final String iconKey;
   final AccentTone tone;
 
-  factory ServiceCategory.fromJson(Map<String, dynamic> json) =>
-      ServiceCategory(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        iconKey: json['iconKey'] as String? ?? 'grid',
-        tone: AccentTone.values.firstWhere(
-          (t) => t.name == json['tone'],
-          orElse: () => AccentTone.blue,
-        ),
-      );
+  factory ServiceCategory.fromJson(Map<String, dynamic> json) => ServiceCategory(
+    id: json['id'] as String,
+    name: json['name'] as String,
+    iconKey: json['iconKey'] as String? ?? 'grid',
+    tone: AccentTone.values.firstWhere((t) => t.name == json['tone'], orElse: () => AccentTone.blue),
+  );
 }
 
 @immutable
@@ -95,21 +86,18 @@ class ServiceOffering {
   final Money? priceFrom;
   final String? priceUnit;
 
-  factory ServiceOffering.fromJson(Map<String, dynamic> json) =>
-      ServiceOffering(
-        id: json['id'] as String,
-        categoryId: json['categoryId'] as String,
-        title: json['title'] as String,
-        description: json['description'] as String?,
-        pricingType: PricingType.values.firstWhere(
-          (t) => t.name == json['pricingType'],
-          orElse: () => PricingType.negotiable,
-        ),
-        priceFrom: json['priceFrom'] == null
-            ? null
-            : Money.fromJson(json['priceFrom'] as Map<String, dynamic>),
-        priceUnit: json['priceUnit'] as String?,
-      );
+  factory ServiceOffering.fromJson(Map<String, dynamic> json) => ServiceOffering(
+    id: json['id'] as String,
+    categoryId: json['categoryId'] as String,
+    title: json['title'] as String,
+    description: json['description'] as String?,
+    pricingType: PricingType.values.firstWhere(
+      (t) => t.name == json['pricingType'],
+      orElse: () => PricingType.negotiable,
+    ),
+    priceFrom: json['priceFrom'] == null ? null : Money.fromJson(json['priceFrom'] as Map<String, dynamic>),
+    priceUnit: json['priceUnit'] as String?,
+  );
 }
 
 /// Input for creating/updating the signed-in user's provider profile.
@@ -171,12 +159,10 @@ class OfferingDraft {
     'categoryId': categoryId,
     'title': title,
     'pricingType': pricingType.name,
-    if (description != null && description!.trim().isNotEmpty)
-      'description': description!.trim(),
+    if (description != null && description!.trim().isNotEmpty) 'description': description!.trim(),
     'priceFrom': ?priceFrom,
     'currency': 'uzs',
-    if (priceUnit != null && priceUnit!.trim().isNotEmpty)
-      'priceUnit': priceUnit!.trim(),
+    if (priceUnit != null && priceUnit!.trim().isNotEmpty) 'priceUnit': priceUnit!.trim(),
   };
 }
 
@@ -222,9 +208,7 @@ class ServiceProvider {
 
   String get name => profile.name;
 
-  factory ServiceProvider.fromJson(
-    Map<String, dynamic> json,
-  ) => ServiceProvider(
+  factory ServiceProvider.fromJson(Map<String, dynamic> json) => ServiceProvider(
     id: json['id'] as String,
     profile: PublicProfile.fromJson(json['profile'] as Map<String, dynamic>),
     profession: json['profession'] as String,
@@ -232,10 +216,7 @@ class ServiceProvider {
     place: Place.fromJson(json['place'] as Map<String, dynamic>),
     description: json['description'] as String? ?? '',
     experienceYears: (json['experienceYears'] as num?)?.toInt() ?? 0,
-    serviceArea: [
-      for (final area in json['serviceArea'] as List<dynamic>? ?? const [])
-        '$area',
-    ],
+    serviceArea: [for (final area in json['serviceArea'] as List<dynamic>? ?? const []) '$area'],
     portfolio: [
       for (final image in json['portfolio'] as List<dynamic>? ?? const [])
         MediaImage.fromJson(image as Map<String, dynamic>),
@@ -244,9 +225,7 @@ class ServiceProvider {
       for (final review in json['reviews'] as List<dynamic>? ?? const [])
         Review.fromJson(review as Map<String, dynamic>),
     ],
-    priceFrom: json['priceFrom'] == null
-        ? null
-        : Money.fromJson(json['priceFrom'] as Map<String, dynamic>),
+    priceFrom: json['priceFrom'] == null ? null : Money.fromJson(json['priceFrom'] as Map<String, dynamic>),
     priceUnit: json['priceUnit'] as String?,
     promotion: switch (PromotionType.parse(json['promotion'])) {
       final PromotionType type => Promotion(type),
@@ -260,9 +239,7 @@ class ServiceProvider {
   );
   double get rating => profile.rating ?? 0;
   int get reviewCount => profile.reviewCount;
-  bool get isTop =>
-      promotion?.type == PromotionType.top ||
-      promotion?.type == PromotionType.featured;
+  bool get isTop => promotion?.type == PromotionType.top || promotion?.type == PromotionType.featured;
 }
 
 enum ProviderFilter {
@@ -278,12 +255,7 @@ enum ProviderFilter {
 
 @immutable
 class ProviderQuery {
-  const ProviderQuery({
-    this.text = '',
-    this.categoryId,
-    this.filter = ProviderFilter.all,
-    this.regionId,
-  });
+  const ProviderQuery({this.text = '', this.categoryId, this.filter = ProviderFilter.all, this.regionId});
 
   final String text;
   final String? categoryId;
@@ -317,9 +289,5 @@ abstract interface class ServicesRepository {
 
   /// One review per customer (editing replaces it). The server only accepts
   /// it after a real two-way conversation with the provider.
-  Future<void> submitReview(
-    String providerId, {
-    required int rating,
-    String? text,
-  });
+  Future<void> submitReview(String providerId, {required int rating, String? text});
 }

@@ -25,22 +25,15 @@ class Place {
   /// "Chust, Namangan" — the short label used on cards.
   String get shortLabel {
     final district = districtName;
-    final region = regionName
-        .replaceAll(' viloyati', '')
-        .replaceAll(' shahri', '');
+    final region = regionName.replaceAll(' viloyati', '').replaceAll(' shahri', '');
     if (district == null) return region;
-    final cleanDistrict = district
-        .replaceAll(' tumani', '')
-        .replaceAll(' shahri', '');
+    final cleanDistrict = district.replaceAll(' tumani', '').replaceAll(' shahri', '');
     return cleanDistrict == region ? cleanDistrict : '$cleanDistrict, $region';
   }
 
   /// "Chust" — tightest label for dense cards.
   String get compactLabel {
-    String clean(String v) => v
-        .replaceAll(' tumani', '')
-        .replaceAll(' shahri', '')
-        .replaceAll(' viloyati', '');
+    String clean(String v) => v.replaceAll(' tumani', '').replaceAll(' shahri', '').replaceAll(' viloyati', '');
     return clean(districtName ?? regionName);
   }
 

@@ -90,9 +90,7 @@ abstract final class SearchNormalizer {
   static bool matches(List<String> queryTokens, String haystack) {
     if (queryTokens.isEmpty) return true;
     final targetTokens = tokens(haystack);
-    return queryTokens.every(
-      (q) => targetTokens.any((t) => tokenMatches(q, t)),
-    );
+    return queryTokens.every((q) => targetTokens.any((t) => tokenMatches(q, t)));
   }
 
   /// Relevance score: exact token > prefix > fuzzy. 0 = no match.
@@ -121,9 +119,7 @@ abstract final class SearchNormalizer {
   static bool tokenMatches(String query, String target) {
     if (target.startsWith(query)) return true;
     if (query.length < 4) return false;
-    final comparable = target.length > query.length + 1
-        ? target.substring(0, query.length)
-        : target;
+    final comparable = target.length > query.length + 1 ? target.substring(0, query.length) : target;
     return editDistance(query, comparable) <= 1;
   }
 
@@ -144,11 +140,7 @@ abstract final class SearchNormalizer {
       final current = List<int>.filled(b.length + 1, 0)..[0] = i;
       for (var j = 1; j <= b.length; j++) {
         final cost = a[i - 1] == b[j - 1] ? 0 : 1;
-        current[j] = [
-          previous[j] + 1,
-          current[j - 1] + 1,
-          previous[j - 1] + cost,
-        ].reduce((x, y) => x < y ? x : y);
+        current[j] = [previous[j] + 1, current[j - 1] + 1, previous[j - 1] + cost].reduce((x, y) => x < y ? x : y);
       }
       previous = current;
     }

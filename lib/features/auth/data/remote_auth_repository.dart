@@ -8,12 +8,7 @@ import '../domain/auth.dart';
 /// Phone OTP against `/auth/*`. Tokens live in secure storage only; the
 /// non-sensitive profile is cached so the app can open offline.
 class RemoteAuthRepository implements AuthRepository {
-  RemoteAuthRepository({
-    required this._api,
-    required this._tokens,
-    required this._device,
-    required this._store,
-  });
+  RemoteAuthRepository({required this._api, required this._tokens, required this._device, required this._store});
 
   final ApiClient _api;
   final TokenStore _tokens;
@@ -56,48 +51,29 @@ class RemoteAuthRepository implements AuthRepository {
 
   @override
   Future<OtpChallenge> requestCode(String phone) async {
-    final data = await _api.post<JsonMap>(
-      '/auth/otp/request',
-      body: {'phone': phone},
-    );
+    final data = await _api.post<JsonMap>('/auth/otp/request', body: {'phone': phone});
     return OtpChallenge(
-      resendIn: Duration(
-        seconds: (data['resendInSeconds'] as num?)?.toInt() ?? 60,
-      ),
-      expiresIn: Duration(
-        seconds: (data['expiresInSeconds'] as num?)?.toInt() ?? 300,
-      ),
+      resendIn: Duration(seconds: (data['resendInSeconds'] as num?)?.toInt() ?? 60),
+      expiresIn: Duration(seconds: (data['expiresInSeconds'] as num?)?.toInt() ?? 300),
       devCode: data['devCode'] as String?,
     );
   }
 
   @override
-  Future<CurrentUser> verifyCode({
-    required String phone,
-    required String code,
-  }) async {
+  Future<CurrentUser> verifyCode({required String phone, required String code}) async {
     final data = await _api.post<JsonMap>(
       '/auth/otp/verify',
       body: {'phone': phone, 'code': code, 'device': _device.toJson()},
     );
-    await _tokens.save(
-      accessToken: data['accessToken'] as String,
-      refreshToken: data['refreshToken'] as String,
-    );
+    await _tokens.save(accessToken: data['accessToken'] as String, refreshToken: data['refreshToken'] as String);
     return _saveUser(await _api.get<JsonMap>('/me'));
   }
 
   @override
-  Future<CurrentUser> updateProfile({
-    required String name,
-    MediaImage? avatar,
-  }) async => _saveUser(
+  Future<CurrentUser> updateProfile({required String name, MediaImage? avatar}) async => _saveUser(
     await _api.patch<JsonMap>(
       '/me',
-      body: {
-        'displayName': name,
-        if (avatar != null && !avatar.isLocal) 'avatarId': avatar.id,
-      },
+      body: {'displayName': name, if (avatar != null && !avatar.isLocal) 'avatarId': avatar.id},
     ),
   );
 

@@ -33,25 +33,18 @@ import '../domain/listing.dart';
 import 'widgets/listing_cards.dart';
 import 'widgets/photo_gallery.dart';
 
-SharePayload listingSharePayload(WidgetRef ref, Listing listing) =>
-    SharePayload(
-      target: ShareTarget.listing,
-      id: listing.id,
-      title: listing.title,
-      subtitle: listing.price == null
-          ? 'Kelishiladi'
-          : Formatters.money(listing.price!).replaceAll(' ', ' '),
-      location: listing.place.shortLabel,
-      image: listing.cover,
-      url: ref.read(deepLinksProvider).web(ShareTarget.listing, listing.id),
-    );
+SharePayload listingSharePayload(WidgetRef ref, Listing listing) => SharePayload(
+  target: ShareTarget.listing,
+  id: listing.id,
+  title: listing.title,
+  subtitle: listing.price == null ? 'Kelishiladi' : Formatters.money(listing.price!).replaceAll(' ', ' '),
+  location: listing.place.shortLabel,
+  image: listing.cover,
+  url: ref.read(deepLinksProvider).web(ShareTarget.listing, listing.id),
+);
 
 class ListingDetailScreen extends ConsumerWidget {
-  const ListingDetailScreen({
-    super.key,
-    required this.listingId,
-    this.heroPrefix,
-  });
+  const ListingDetailScreen({super.key, required this.listingId, this.heroPrefix});
 
   final String listingId;
   final String? heroPrefix;
@@ -60,17 +53,11 @@ class ListingDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final detail = ref.watch(listingDetailProvider(listingId));
     return detail.when(
-      data: (listing) => _ListingDetailView(
-        listing: listing,
-        heroPrefix: heroPrefix ?? 'detail',
-      ),
+      data: (listing) => _ListingDetailView(listing: listing, heroPrefix: heroPrefix ?? 'detail'),
       loading: () => const _DetailSkeleton(),
       error: (error, _) => Scaffold(
         appBar: AppBar(),
-        body: FailureView(
-          error: error,
-          onRetry: () => ref.invalidate(listingDetailProvider(listingId)),
-        ),
+        body: FailureView(error: error, onRetry: () => ref.invalidate(listingDetailProvider(listingId))),
       ),
     );
   }
@@ -114,23 +101,16 @@ class _ListingDetailView extends ConsumerWidget {
               child: CircleIconButton(
                 icon: Icons.arrow_back_rounded,
                 tooltip: 'Orqaga',
-                onPressed: () => context.canPop()
-                    ? context.pop()
-                    : context.go(AppRoutes.home),
+                onPressed: () => context.canPop() ? context.pop() : context.go(AppRoutes.home),
               ),
             ),
             actions: [
               CircleIconButton(
                 icon: Icons.ios_share_rounded,
                 tooltip: 'Ulashish',
-                onPressed: () =>
-                    showShareSheet(context, listingSharePayload(ref, listing)),
+                onPressed: () => showShareSheet(context, listingSharePayload(ref, listing)),
               ),
-              FavoriteButton(
-                kind: SavedKind.listing,
-                id: listing.id,
-                onImage: true,
-              ),
+              FavoriteButton(kind: SavedKind.listing, id: listing.id, onImage: true),
               const SizedBox(width: AppSpacing.xs),
             ],
             flexibleSpace: FlexibleSpaceBar(
@@ -146,41 +126,25 @@ class _ListingDetailView extends ConsumerWidget {
           SliverToBoxAdapter(
             child: ContentWidth(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                  gutter,
-                  AppSpacing.xl,
-                  gutter,
-                  AppSpacing.huge,
-                ),
+                padding: EdgeInsets.fromLTRB(gutter, AppSpacing.xl, gutter, AppSpacing.huge),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (category != null)
                       Padding(
                         padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-                        child: Text(
-                          category.name,
-                          style: text.labelMedium?.copyWith(
-                            color: palette.primary,
-                          ),
-                        ),
+                        child: Text(category.name, style: text.labelMedium?.copyWith(color: palette.primary)),
                       ),
                     Text(listing.title, style: text.headlineSmall),
                     const SizedBox(height: AppSpacing.xs),
                     Row(
                       children: [
                         Flexible(
-                          child: PriceText(
-                            listing: listing,
-                            style: text.headlineSmall?.copyWith(fontSize: 24),
-                          ),
+                          child: PriceText(listing: listing, style: text.headlineSmall?.copyWith(fontSize: 24)),
                         ),
                         if (listing.negotiable) ...[
                           const SizedBox(width: AppSpacing.sm),
-                          const StatusPill(
-                            label: 'Kelishiladi',
-                            style: PillStyle.success,
-                          ),
+                          const StatusPill(label: 'Kelishiladi', style: PillStyle.success),
                         ],
                       ],
                     ),
@@ -189,26 +153,13 @@ class _ListingDetailView extends ConsumerWidget {
                       spacing: AppSpacing.lg,
                       runSpacing: AppSpacing.sm,
                       children: [
-                        MetaLine(
-                          icon: Icons.location_on_outlined,
-                          text: listing.place.shortLabel,
-                        ),
-                        MetaLine(
-                          icon: Icons.schedule_rounded,
-                          text: Formatters.relativeTime(
-                            listing.publishedAt,
-                            now,
-                          ),
-                        ),
+                        MetaLine(icon: Icons.location_on_outlined, text: listing.place.shortLabel),
+                        MetaLine(icon: Icons.schedule_rounded, text: Formatters.relativeTime(listing.publishedAt, now)),
                         MetaLine(
                           icon: Icons.visibility_outlined,
-                          text:
-                              '${Formatters.compactCount(listing.views)} ko‘rish',
+                          text: '${Formatters.compactCount(listing.views)} ko‘rish',
                         ),
-                        MetaLine(
-                          icon: Icons.favorite_border_rounded,
-                          text: '${listing.favorites} ta saqlangan',
-                        ),
+                        MetaLine(icon: Icons.favorite_border_rounded, text: '${listing.favorites} ta saqlangan'),
                       ],
                     ),
                     if (listing.status != ListingStatus.active) ...[
@@ -222,10 +173,7 @@ class _ListingDetailView extends ConsumerWidget {
                     if (attributes.isNotEmpty) ...[
                       const SizedBox(height: AppSpacing.xl),
                       SurfaceCard(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.lg,
-                          vertical: AppSpacing.md,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
                         color: palette.surfaceMuted,
                         borderColor: Colors.transparent,
                         child: _AttributeGrid(attributes: attributes),
@@ -233,10 +181,7 @@ class _ListingDetailView extends ConsumerWidget {
                     ],
                     DetailSection(
                       title: 'Tavsif',
-                      child: ExpandableText(
-                        listing.description,
-                        style: text.bodyMedium?.copyWith(height: 1.55),
-                      ),
+                      child: ExpandableText(listing.description, style: text.bodyMedium?.copyWith(height: 1.55)),
                     ),
                     DetailSection(
                       title: isMine ? 'Siz joylagan e’lon' : 'Sotuvchi',
@@ -249,23 +194,11 @@ class _ListingDetailView extends ConsumerWidget {
                       child: SurfaceCard(
                         child: Row(
                           children: [
-                            const ToneIcon(
-                              icon: Icons.map_rounded,
-                              tone: AccentTone.teal,
-                              size: 40,
-                            ),
+                            const ToneIcon(icon: Icons.map_rounded, tone: AccentTone.teal, size: 40),
                             const SizedBox(width: AppSpacing.md),
-                            Expanded(
-                              child: Text(
-                                listing.place.fullLabel,
-                                style: text.bodyMedium,
-                              ),
-                            ),
+                            Expanded(child: Text(listing.place.fullLabel, style: text.bodyMedium)),
                             if (listing.distanceKm != null)
-                              StatusPill(
-                                label: Formatters.distance(listing.distanceKm!),
-                                style: PillStyle.primary,
-                              ),
+                              StatusPill(label: Formatters.distance(listing.distanceKm!), style: PillStyle.primary),
                           ],
                         ),
                       ),
@@ -274,18 +207,9 @@ class _ListingDetailView extends ConsumerWidget {
                     const SizedBox(height: AppSpacing.xl),
                     if (!isMine)
                       TextButton.icon(
-                        style: TextButton.styleFrom(
-                          foregroundColor: palette.danger,
-                        ),
-                        onPressed: () => showReportSheet(
-                          context,
-                          type: ReportTargetType.listing,
-                          targetId: listing.id,
-                        ),
-                        icon: const Icon(
-                          Icons.flag_outlined,
-                          size: AppIconSize.sm,
-                        ),
+                        style: TextButton.styleFrom(foregroundColor: palette.danger),
+                        onPressed: () => showReportSheet(context, type: ReportTargetType.listing, targetId: listing.id),
+                        icon: const Icon(Icons.flag_outlined, size: AppIconSize.sm),
                         label: const Text('E’lon ustidan shikoyat qilish'),
                       ),
                   ],
@@ -304,10 +228,7 @@ class _ListingDetailView extends ConsumerWidget {
                   label: const Text('E’lonlarim'),
                 ),
                 FilledButton.icon(
-                  onPressed: () => showShareSheet(
-                    context,
-                    listingSharePayload(ref, listing),
-                  ),
+                  onPressed: () => showShareSheet(context, listingSharePayload(ref, listing)),
                   icon: const Icon(Icons.ios_share_rounded),
                   label: const Text('Ulashish'),
                 ),
@@ -316,15 +237,11 @@ class _ListingDetailView extends ConsumerWidget {
           : StickyActionBar(
               children: [
                 FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: palette.success,
-                  ),
+                  style: FilledButton.styleFrom(backgroundColor: palette.success),
                   onPressed: () => showContactSheet(
                     context,
                     person: listing.seller,
-                    loadPhone: () => ref
-                        .read(listingRepositoryProvider)
-                        .revealPhone(listing.id),
+                    loadPhone: () => ref.read(listingRepositoryProvider).revealPhone(listing.id),
                   ),
                   icon: const Icon(Icons.call_rounded),
                   label: const Text('Qo‘ng‘iroq'),
@@ -338,9 +255,7 @@ class _ListingDetailView extends ConsumerWidget {
                       subject: ConversationSubject.listing,
                       refId: listing.id,
                       title: listing.title,
-                      subtitle: listing.price == null
-                          ? 'Kelishiladi'
-                          : Formatters.money(listing.price!),
+                      subtitle: listing.price == null ? 'Kelishiladi' : Formatters.money(listing.price!),
                       image: listing.cover,
                     ),
                   ),
@@ -364,8 +279,7 @@ class _AttributeGrid extends StatelessWidget {
       builder: (context, constraints) {
         final largeText = MediaQuery.textScalerOf(context).scale(10) > 14;
         final columns = constraints.maxWidth > 420 ? 4 : (largeText ? 2 : 3);
-        final width =
-            (constraints.maxWidth - AppSpacing.md * (columns - 1)) / columns;
+        final width = (constraints.maxWidth - AppSpacing.md * (columns - 1)) / columns;
         return Wrap(
           spacing: AppSpacing.md,
           runSpacing: AppSpacing.md,
@@ -392,23 +306,14 @@ class _SellerCard extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final palette = context.palette;
     final now = ref.watch(clockProvider)();
-    final presence = Formatters.presence(
-      isOnline: seller.isOnline,
-      lastActiveAt: seller.lastActiveAt,
-      now: now,
-    );
+    final presence = Formatters.presence(isOnline: seller.isOnline, lastActiveAt: seller.lastActiveAt, now: now);
     return SurfaceCard(
       onTap: () => context.push(AppRoutes.seller(seller.id)),
       child: Column(
         children: [
           Row(
             children: [
-              AppAvatar(
-                name: seller.name,
-                image: seller.avatar,
-                size: 52,
-                isOnline: seller.isOnline,
-              ),
+              AppAvatar(name: seller.name, image: seller.avatar, size: 52, isOnline: seller.isOnline),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
@@ -417,36 +322,22 @@ class _SellerCard extends ConsumerWidget {
                     Row(
                       children: [
                         Flexible(
-                          child: Text(
-                            seller.name,
-                            style: text.titleSmall,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          child: Text(seller.name, style: text.titleSmall, overflow: TextOverflow.ellipsis),
                         ),
                         const SizedBox(width: AppSpacing.xs),
                         VerifiedBadge(level: seller.verification),
                       ],
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      presence,
-                      style: text.bodySmall?.copyWith(
-                        color: seller.isOnline ? palette.success : null,
-                      ),
-                    ),
-                    Text(
-                      '${Formatters.monthYear(seller.memberSince)} dan beri',
-                      style: text.bodySmall,
-                    ),
+                    Text(presence, style: text.bodySmall?.copyWith(color: seller.isOnline ? palette.success : null)),
+                    Text('${Formatters.monthYear(seller.memberSince)} dan beri', style: text.bodySmall),
                   ],
                 ),
               ),
               OutlinedButton(
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(0, 38),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                   foregroundColor: palette.primary,
                   side: BorderSide(color: palette.primary),
                 ),
@@ -465,20 +356,10 @@ class _SellerCard extends ConsumerWidget {
                 spacing: AppSpacing.xl,
                 runSpacing: AppSpacing.sm,
                 children: [
-                  if (seller.rating != null)
-                    RatingLabel(
-                      rating: seller.rating!,
-                      count: seller.reviewCount,
-                    ),
+                  if (seller.rating != null) RatingLabel(rating: seller.rating!, count: seller.reviewCount),
                   if (seller.responseTimeMinutes != null)
-                    MetaLine(
-                      icon: Icons.bolt_rounded,
-                      text: '~${seller.responseTimeMinutes} daqiqada javob',
-                    ),
-                  MetaLine(
-                    icon: Icons.inventory_2_outlined,
-                    text: '${seller.activeListings} ta e’lon',
-                  ),
+                    MetaLine(icon: Icons.bolt_rounded, text: '~${seller.responseTimeMinutes} daqiqada javob'),
+                  MetaLine(icon: Icons.inventory_2_outlined, text: '${seller.activeListings} ta e’lon'),
                 ],
               ),
             ),
@@ -506,8 +387,7 @@ class _SimilarListings extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final similar = ref.watch(similarListingsProvider(listing));
     final items = similar.value ?? const <Listing>[];
-    if (similar.hasError || (similar.hasValue && items.isEmpty))
-      return const SizedBox.shrink();
+    if (similar.hasError || (similar.hasValue && items.isEmpty)) return const SizedBox.shrink();
     const cardWidth = 172.0;
     final textScale = MediaQuery.textScalerOf(context).scale(14) / 14;
     final height = cardWidth * 3 / 4 + 20 + 76 * textScale.clamp(1.0, 2.2);
@@ -520,26 +400,18 @@ class _SimilarListings extends ConsumerWidget {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: 3,
-                  separatorBuilder: (_, _) =>
-                      const SizedBox(width: AppSpacing.md),
-                  itemBuilder: (_, _) => const SizedBox(
-                    width: cardWidth,
-                    child: ListingCardSkeleton(),
-                  ),
+                  separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.md),
+                  itemBuilder: (_, _) => const SizedBox(width: cardWidth, child: ListingCardSkeleton()),
                 ),
               )
             : ListView.separated(
                 scrollDirection: Axis.horizontal,
                 clipBehavior: Clip.none,
                 itemCount: items.length,
-                separatorBuilder: (_, _) =>
-                    const SizedBox(width: AppSpacing.md),
+                separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.md),
                 itemBuilder: (_, index) => SizedBox(
                   width: cardWidth,
-                  child: ListingCard(
-                    listing: items[index],
-                    heroPrefix: 'similar-${listing.id}',
-                  ),
+                  child: ListingCard(listing: items[index], heroPrefix: 'similar-${listing.id}'),
                 ),
               ),
       ),
@@ -561,10 +433,7 @@ class _DetailSkeleton extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           padding: EdgeInsets.zero,
           children: [
-            SizedBox(
-              height: math.min(width * 3 / 4, 460),
-              child: const SkeletonBox(radius: 0),
-            ),
+            SizedBox(height: math.min(width * 3 / 4, 460), child: const SkeletonBox(radius: 0)),
             const Padding(
               padding: EdgeInsets.all(AppSpacing.lg),
               child: Column(

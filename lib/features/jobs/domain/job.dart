@@ -25,10 +25,7 @@ enum EmploymentType {
 
   static EmploymentType fromApi(Object? employmentType, Object? workFormat) {
     if (workFormat == 'remote') return EmploymentType.remote;
-    return values.firstWhere(
-      (t) => t != remote && t.apiValue == employmentType,
-      orElse: () => fullTime,
-    );
+    return values.firstWhere((t) => t != remote && t.apiValue == employmentType, orElse: () => fullTime);
   }
 }
 
@@ -43,10 +40,8 @@ enum ExperienceLevel {
   final String label;
   final String apiValue;
 
-  static ExperienceLevel fromApi(Object? value) => values.firstWhere(
-    (level) => level.apiValue == value,
-    orElse: () => ExperienceLevel.none,
-  );
+  static ExperienceLevel fromApi(Object? value) =>
+      values.firstWhere((level) => level.apiValue == value, orElse: () => ExperienceLevel.none);
 }
 
 /// Vacancy lifecycle on the server.
@@ -63,8 +58,7 @@ enum JobStatus {
 
   final String label;
 
-  static JobStatus parse(Object? value) =>
-      values.firstWhere((s) => s.name == value, orElse: () => JobStatus.active);
+  static JobStatus parse(Object? value) => values.firstWhere((s) => s.name == value, orElse: () => JobStatus.active);
 }
 
 @immutable
@@ -190,10 +184,8 @@ enum ApplicationStatus {
 
   bool get isOpen => this == submitted || this == viewed || this == shortlisted;
 
-  static ApplicationStatus parse(Object? value) => values.firstWhere(
-    (s) => s.name == value,
-    orElse: () => ApplicationStatus.submitted,
-  );
+  static ApplicationStatus parse(Object? value) =>
+      values.firstWhere((s) => s.name == value, orElse: () => ApplicationStatus.submitted);
 }
 
 @immutable
@@ -279,8 +271,7 @@ class ResumeDraft {
     'about': about,
     'experienceYears': experienceYears,
     'skills': skills,
-    'employmentTypes': {for (final type in employmentTypes) type.apiValue}
-        .toList(),
+    'employmentTypes': {for (final type in employmentTypes) type.apiValue}.toList(),
     'preferredRegionId': regionId,
     'preferredDistrictId': districtId,
     'salaryExpectation': salaryExpectation,
@@ -309,12 +300,8 @@ class JobQuery {
   final String? districtId;
   final bool sortBySalary;
 
-  int get activeFilterCount => [
-    types.isNotEmpty,
-    experience != null,
-    minSalary != null,
-    sortBySalary,
-  ].where((a) => a).length;
+  int get activeFilterCount =>
+      [types.isNotEmpty, experience != null, minSalary != null, sortBySalary].where((a) => a).length;
 
   JobQuery copyWith({
     String? text,
@@ -346,15 +333,8 @@ class JobQuery {
       other.sortBySalary == sortBySalary;
 
   @override
-  int get hashCode => Object.hash(
-    text,
-    Object.hashAllUnordered(types),
-    experience,
-    minSalary,
-    regionId,
-    districtId,
-    sortBySalary,
-  );
+  int get hashCode =>
+      Object.hash(text, Object.hashAllUnordered(types), experience, minSalary, regionId, districtId, sortBySalary);
 }
 
 /// Vacancy posted by an employer through the create flow.
@@ -405,19 +385,12 @@ class NewVacancy {
 }
 
 abstract interface class JobRepository {
-  Future<Job> postVacancy(
-    NewVacancy vacancy, {
-    required PublicProfile employer,
-  });
+  Future<Job> postVacancy(NewVacancy vacancy, {required PublicProfile employer});
   Future<List<Job>> searchJobs(JobQuery query);
   Future<Job> getJob(String id);
   Future<List<CandidateProfile>> searchCandidates(JobQuery query);
   Future<CandidateProfile> getCandidate(String id);
-  Future<JobApplication> apply({
-    required String jobId,
-    required String applicantId,
-    String? message,
-  });
+  Future<JobApplication> apply({required String jobId, required String applicantId, String? message});
   Future<List<JobApplication>> myApplications(String applicantId);
   Future<void> withdrawApplication(String applicationId);
 
@@ -425,10 +398,7 @@ abstract interface class JobRepository {
   Future<List<Job>> myJobs();
   Future<void> setJobStatus(String jobId, JobStatus status);
   Future<List<Applicant>> applicants(String jobId);
-  Future<void> setApplicationStatus(
-    String applicationId,
-    ApplicationStatus status,
-  );
+  Future<void> setApplicationStatus(String applicationId, ApplicationStatus status);
 
   /// Signed-in user's CV; null when none was created yet.
   Future<CandidateProfile?> myResume();

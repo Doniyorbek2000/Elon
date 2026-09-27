@@ -21,8 +21,7 @@ class PlatformSecureStore implements SecureStore {
   Future<String?> read(SecureStoreKey key) => _storage.read(key: key.name);
 
   @override
-  Future<void> write(SecureStoreKey key, String value) =>
-      _storage.write(key: key.name, value: value);
+  Future<void> write(SecureStoreKey key, String value) => _storage.write(key: key.name, value: value);
 
   @override
   Future<void> delete(SecureStoreKey key) => _storage.delete(key: key.name);
@@ -43,8 +42,7 @@ class MemorySecureStore implements SecureStore {
   Future<String?> read(SecureStoreKey key) async => _values[key];
 
   @override
-  Future<void> write(SecureStoreKey key, String value) async =>
-      _values[key] = value;
+  Future<void> write(SecureStoreKey key, String value) async => _values[key] = value;
 
   @override
   Future<void> delete(SecureStoreKey key) async => _values.remove(key);
@@ -53,6 +51,4 @@ class MemorySecureStore implements SecureStore {
   Future<void> clear() async => _values.clear();
 }
 
-final secureStoreProvider = Provider<SecureStore>(
-  (ref) => const PlatformSecureStore(),
-);
+final secureStoreProvider = Provider<SecureStore>((ref) => const PlatformSecureStore());

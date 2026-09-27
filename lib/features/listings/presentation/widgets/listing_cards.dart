@@ -19,17 +19,11 @@ import '../../../saved/application/saved_items_controller.dart';
 import '../../domain/listing.dart';
 
 /// Icon/tone for a listing's category, used by image placeholders.
-({IconData icon, AccentTone tone}) listingVisual(
-  WidgetRef ref,
-  String categoryId,
-) {
+({IconData icon, AccentTone tone}) listingVisual(WidgetRef ref, String categoryId) {
   final tree = ref.watch(categoryTreeProvider);
   final category = tree.byId(categoryId);
   final root = tree.rootOf(categoryId);
-  return (
-    icon: AppIcons.forKey(category?.iconKey ?? root?.iconKey ?? 'grid'),
-    tone: root?.tone ?? AccentTone.slate,
-  );
+  return (icon: AppIcons.forKey(category?.iconKey ?? root?.iconKey ?? 'grid'), tone: root?.tone ?? AccentTone.slate);
 }
 
 class PriceText extends StatelessWidget {
@@ -60,20 +54,14 @@ String _meta(Listing listing, DateTime now, {bool compact = false}) =>
 
 String _semantics(Listing listing, DateTime now) => [
   listing.title,
-  listing.price == null
-      ? 'Narx kelishiladi'
-      : Formatters.money(listing.price!).replaceAll(' ', ' '),
+  listing.price == null ? 'Narx kelishiladi' : Formatters.money(listing.price!).replaceAll(' ', ' '),
   listing.place.shortLabel,
   Formatters.relativeTime(listing.publishedAt, now),
 ].join(', ');
 
 /// Grid card: large 4:3 photo, title, price, location · time, favorite.
 class ListingCard extends ConsumerWidget {
-  const ListingCard({
-    super.key,
-    required this.listing,
-    this.heroPrefix = 'feed',
-  });
+  const ListingCard({super.key, required this.listing, this.heroPrefix = 'feed'});
 
   final Listing listing;
   final String heroPrefix;
@@ -90,17 +78,12 @@ class ListingCard extends ConsumerWidget {
 
     return Pressable(
       semanticLabel: _semantics(listing, now),
-      onTap: () =>
-          context.push(AppRoutes.listing(listing.id), extra: heroPrefix),
+      onTap: () => context.push(AppRoutes.listing(listing.id), extra: heroPrefix),
       child: Container(
         decoration: BoxDecoration(
           color: palette.surface,
           borderRadius: AppRadii.lgAll,
-          border: Border.all(
-            color: isDark
-                ? palette.border
-                : palette.border.withValues(alpha: 0.6),
-          ),
+          border: Border.all(color: isDark ? palette.border : palette.border.withValues(alpha: 0.6)),
           boxShadow: AppShadows.card(palette, dark: isDark),
         ),
         clipBehavior: Clip.antiAlias,
@@ -114,11 +97,7 @@ class ListingCard extends ConsumerWidget {
                 children: [
                   Hero(
                     tag: '$heroPrefix-${listing.id}',
-                    child: AppImage(
-                      image: listing.cover,
-                      placeholderIcon: visual.icon,
-                      tone: visual.tone,
-                    ),
+                    child: AppImage(image: listing.cover, placeholderIcon: visual.icon, tone: visual.tone),
                   ),
                   if (showBadge && promotion != null && promotion.isActive(now))
                     PositionedDirectional(
@@ -129,38 +108,20 @@ class ListingCard extends ConsumerWidget {
                   PositionedDirectional(
                     top: 0,
                     end: 0,
-                    child: FavoriteButton(
-                      kind: SavedKind.listing,
-                      id: listing.id,
-                      onImage: true,
-                      size: AppIconSize.sm,
-                    ),
+                    child: FavoriteButton(kind: SavedKind.listing, id: listing.id, onImage: true, size: AppIconSize.sm),
                   ),
                 ],
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.sm + 2,
-                AppSpacing.md,
-                AppSpacing.md,
-              ),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm + 2, AppSpacing.md, AppSpacing.md),
               child: ExcludeSemantics(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      listing.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: text.titleSmall,
-                    ),
+                    Text(listing.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: text.titleSmall),
                     const SizedBox(height: AppSpacing.xxs),
-                    PriceText(
-                      listing: listing,
-                      style: text.titleSmall?.copyWith(fontSize: 15),
-                    ),
+                    PriceText(listing: listing, style: text.titleSmall?.copyWith(fontSize: 15)),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
                       _meta(listing, now, compact: true),
@@ -181,12 +142,7 @@ class ListingCard extends ConsumerWidget {
 
 /// Row layout (category/search results): thumbnail left, text right.
 class ListingTile extends ConsumerWidget {
-  const ListingTile({
-    super.key,
-    required this.listing,
-    this.heroPrefix = 'list',
-    this.trailing,
-  });
+  const ListingTile({super.key, required this.listing, this.heroPrefix = 'list', this.trailing});
 
   final Listing listing;
   final String heroPrefix;
@@ -202,14 +158,11 @@ class ListingTile extends ConsumerWidget {
     final visual = listingVisual(ref, listing.categoryId);
     final showBadge = ref.watch(featureFlagsProvider).showPromotionBadges;
     final promotion = listing.promotion;
-    final thumbWidth = MediaQuery.textScalerOf(context).scale(1) > 1.3
-        ? 96.0
-        : 112.0;
+    final thumbWidth = MediaQuery.textScalerOf(context).scale(1) > 1.3 ? 96.0 : 112.0;
 
     return Pressable(
       semanticLabel: _semantics(listing, now),
-      onTap: () =>
-          context.push(AppRoutes.listing(listing.id), extra: heroPrefix),
+      onTap: () => context.push(AppRoutes.listing(listing.id), extra: heroPrefix),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         child: Row(
@@ -240,9 +193,7 @@ class ListingTile extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          if (showBadge &&
-                              promotion != null &&
-                              promotion.isActive(now)) ...[
+                          if (showBadge && promotion != null && promotion.isActive(now)) ...[
                             PromotionBadge(type: promotion.type),
                             const SizedBox(width: AppSpacing.xs),
                           ],
@@ -257,18 +208,13 @@ class ListingTile extends ConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: AppSpacing.xs),
-                      PriceText(
-                        listing: listing,
-                        style: text.titleSmall?.copyWith(fontSize: 15),
-                      ),
+                      PriceText(listing: listing, style: text.titleSmall?.copyWith(fontSize: 15)),
                       const SizedBox(height: AppSpacing.xs),
                       Text(
                         _meta(listing, now),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: text.bodySmall?.copyWith(
-                          color: palette.textTertiary,
-                        ),
+                        style: text.bodySmall?.copyWith(color: palette.textTertiary),
                       ),
                       if (listing.status != ListingStatus.active) ...[
                         const SizedBox(height: AppSpacing.xs),
@@ -276,10 +222,8 @@ class ListingTile extends ConsumerWidget {
                           label: listing.status.label,
                           dense: true,
                           style: switch (listing.status) {
-                            ListingStatus.pendingReview ||
-                            ListingStatus.reserved => PillStyle.warning,
-                            ListingStatus.rejected ||
-                            ListingStatus.expired => PillStyle.danger,
+                            ListingStatus.pendingReview || ListingStatus.reserved => PillStyle.warning,
+                            ListingStatus.rejected || ListingStatus.expired => PillStyle.danger,
                             ListingStatus.sold => PillStyle.success,
                             _ => PillStyle.neutral,
                           },
@@ -290,12 +234,7 @@ class ListingTile extends ConsumerWidget {
                 ),
               ),
             ),
-            trailing ??
-                FavoriteButton(
-                  kind: SavedKind.listing,
-                  id: listing.id,
-                  size: AppIconSize.sm + 2,
-                ),
+            trailing ?? FavoriteButton(kind: SavedKind.listing, id: listing.id, size: AppIconSize.sm + 2),
           ],
         ),
       ),
@@ -312,9 +251,7 @@ class ListingCardSkeleton extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.palette.surface,
         borderRadius: AppRadii.lgAll,
-        border: Border.all(
-          color: context.palette.border.withValues(alpha: 0.6),
-        ),
+        border: Border.all(color: context.palette.border.withValues(alpha: 0.6)),
       ),
       clipBehavior: Clip.antiAlias,
       child: const Column(
@@ -349,11 +286,7 @@ class ListingTileSkeleton extends StatelessWidget {
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          width: 112,
-          height: 102,
-          child: SkeletonBox(radius: AppRadii.md),
-        ),
+        SizedBox(width: 112, height: 102, child: SkeletonBox(radius: AppRadii.md)),
         SizedBox(width: AppSpacing.md),
         Expanded(
           child: Column(

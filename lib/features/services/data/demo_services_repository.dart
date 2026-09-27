@@ -11,8 +11,7 @@ class DemoServicesRepository implements ServicesRepository {
   final DemoDatabase _db;
 
   @override
-  Future<List<ServiceCategory>> categories() async =>
-      BundledServiceCategories.all;
+  Future<List<ServiceCategory>> categories() async => BundledServiceCategories.all;
 
   @override
   Future<List<ServiceProvider>> recommended({String? regionId}) async {
@@ -20,9 +19,7 @@ class DemoServicesRepository implements ServicesRepository {
     final sorted = [..._db.providers]
       ..sort((a, b) {
         final byTop = (b.isTop ? 1 : 0).compareTo(a.isTop ? 1 : 0);
-        return byTop != 0
-            ? byTop
-            : (b.rating * b.reviewCount).compareTo(a.rating * a.reviewCount);
+        return byTop != 0 ? byTop : (b.rating * b.reviewCount).compareTo(a.rating * a.reviewCount);
       });
     return sorted
         .where((p) => regionId == null || p.place.regionId == regionId)
@@ -38,19 +35,10 @@ class DemoServicesRepository implements ServicesRepository {
     final results =
         _db.providers.where((provider) {
           if (_db.blockedUserIds.contains(provider.profile.id)) return false;
-          if (query.categoryId != null &&
-              provider.categoryId != query.categoryId)
-            return false;
-          if (query.regionId != null &&
-              provider.place.regionId != query.regionId)
-            return false;
-          final categoryName =
-              BundledServiceCategories.byId(provider.categoryId)?.name ?? '';
-          if (!SearchNormalizer.matches(
-            tokens,
-            '${provider.name} ${provider.profession} $categoryName',
-          ))
-            return false;
+          if (query.categoryId != null && provider.categoryId != query.categoryId) return false;
+          if (query.regionId != null && provider.place.regionId != query.regionId) return false;
+          final categoryName = BundledServiceCategories.byId(provider.categoryId)?.name ?? '';
+          if (!SearchNormalizer.matches(tokens, '${provider.name} ${provider.profession} $categoryName')) return false;
           return switch (query.filter) {
             ProviderFilter.all => true,
             ProviderFilter.online => provider.profile.isOnline,
@@ -67,8 +55,7 @@ class DemoServicesRepository implements ServicesRepository {
   @override
   Future<ServiceProvider> getProvider(String id) async {
     await _db.roundTrip(0.6);
-    return _db.providers.where((p) => p.id == id).firstOrNull ??
-        (throw const NotFoundFailure('Usta topilmadi'));
+    return _db.providers.where((p) => p.id == id).firstOrNull ?? (throw const NotFoundFailure('Usta topilmadi'));
   }
 
   @override
@@ -111,8 +98,7 @@ class DemoServicesRepository implements ServicesRepository {
   Future<void> addOffering(OfferingDraft draft) async {
     await _db.roundTrip(0.6);
     final mine = _mine;
-    if (mine == null)
-      throw const ValidationFailure('Avval usta profilini yarating');
+    if (mine == null) throw const ValidationFailure('Avval usta profilini yarating');
     _mine = ServiceProvider(
       id: mine.id,
       profile: mine.profile,
@@ -130,9 +116,7 @@ class DemoServicesRepository implements ServicesRepository {
           title: draft.title,
           pricingType: draft.pricingType,
           description: draft.description,
-          priceFrom: draft.priceFrom == null
-              ? null
-              : Money.uzs(draft.priceFrom!),
+          priceFrom: draft.priceFrom == null ? null : Money.uzs(draft.priceFrom!),
           priceUnit: draft.priceUnit,
         ),
       ],
@@ -160,11 +144,7 @@ class DemoServicesRepository implements ServicesRepository {
   /// Demo has no conversation history to prove eligibility, so reviews are
   /// refused rather than faked.
   @override
-  Future<void> submitReview(
-    String providerId, {
-    required int rating,
-    String? text,
-  }) async {
+  Future<void> submitReview(String providerId, {required int rating, String? text}) async {
     await _db.roundTrip(0.4);
     throw const ValidationFailure(
       'Sharh qoldirish uchun avval usta bilan yozishgan bo‘lishingiz kerak',

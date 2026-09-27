@@ -28,27 +28,11 @@ class FavoriteButton extends ConsumerStatefulWidget {
   ConsumerState<FavoriteButton> createState() => _FavoriteButtonState();
 }
 
-class _FavoriteButtonState extends ConsumerState<FavoriteButton>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _pop = AnimationController(
-    vsync: this,
-    duration: AppMotion.medium,
-  );
+class _FavoriteButtonState extends ConsumerState<FavoriteButton> with SingleTickerProviderStateMixin {
+  late final AnimationController _pop = AnimationController(vsync: this, duration: AppMotion.medium);
   late final Animation<double> _scale = TweenSequence([
-    TweenSequenceItem(
-      tween: Tween(
-        begin: 1.0,
-        end: 1.3,
-      ).chain(CurveTween(curve: Curves.easeOut)),
-      weight: 40,
-    ),
-    TweenSequenceItem(
-      tween: Tween(
-        begin: 1.3,
-        end: 1.0,
-      ).chain(CurveTween(curve: Curves.elasticOut)),
-      weight: 60,
-    ),
+    TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.3).chain(CurveTween(curve: Curves.easeOut)), weight: 40),
+    TweenSequenceItem(tween: Tween(begin: 1.3, end: 1.0).chain(CurveTween(curve: Curves.elasticOut)), weight: 60),
   ]).animate(_pop);
 
   @override
@@ -62,9 +46,7 @@ class _FavoriteButtonState extends ConsumerState<FavoriteButton>
     HapticFeedback.lightImpact();
     if (willSave && !AppMotion.reduced(context)) _pop.forward(from: 0);
     try {
-      await ref
-          .read(savedItemsProvider.notifier)
-          .toggle(widget.kind, widget.id);
+      await ref.read(savedItemsProvider.notifier).toggle(widget.kind, widget.id);
     } on Object catch (error) {
       // State was rolled back by the controller; tell the user why.
       if (!mounted) return;
@@ -82,15 +64,12 @@ class _FavoriteButtonState extends ConsumerState<FavoriteButton>
       scale: _scale,
       child: AnimatedSwitcher(
         duration: AppMotion.of(context, AppMotion.fast),
-        transitionBuilder: (child, animation) =>
-            FadeTransition(opacity: animation, child: child),
+        transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
         child: Icon(
           saved ? Icons.favorite_rounded : Icons.favorite_border_rounded,
           key: ValueKey(saved),
           size: widget.size,
-          color: saved
-              ? palette.danger
-              : (widget.onImage ? palette.textPrimary : palette.textTertiary),
+          color: saved ? palette.danger : (widget.onImage ? palette.textPrimary : palette.textTertiary),
         ),
       ),
     );

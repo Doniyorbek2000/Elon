@@ -35,9 +35,7 @@ class CategoryTreeController extends Notifier<CategoryTree> {
   }
 
   static CategoryTree _parse(List<dynamic> json) {
-    final roots = [
-      for (final node in json) Category.fromJson(node as Map<String, dynamic>),
-    ];
+    final roots = [for (final node in json) Category.fromJson(node as Map<String, dynamic>)];
     return CategoryTree(
       roots,
       inheritRootSchema: false,
@@ -50,9 +48,7 @@ class CategoryTreeController extends Notifier<CategoryTree> {
 
   Future<void> _refresh(KeyValueStore store) async {
     try {
-      final json = await ref
-          .read(apiClientProvider)
-          .get<List<dynamic>>('/categories');
+      final json = await ref.read(apiClientProvider).get<List<dynamic>>('/categories');
       if (json.isEmpty || !ref.mounted) return;
       state = _parse(json);
       await store.setString(_cacheKey, jsonEncode(json));
@@ -62,10 +58,7 @@ class CategoryTreeController extends Notifier<CategoryTree> {
   }
 }
 
-final categoryTreeProvider =
-    NotifierProvider<CategoryTreeController, CategoryTree>(
-      CategoryTreeController.new,
-    );
+final categoryTreeProvider = NotifierProvider<CategoryTreeController, CategoryTree>(CategoryTreeController.new);
 
 final homeShortcutsProvider = Provider<List<Category>>((ref) {
   final tree = ref.watch(categoryTreeProvider);
@@ -75,9 +68,7 @@ final homeShortcutsProvider = Provider<List<Category>>((ref) {
       : [
           // Keep the designed order for known ids; append new server shortcuts.
           ...BundledCategories.homeShortcutIds.where(serverIds.contains),
-          ...serverIds.where(
-            (id) => !BundledCategories.homeShortcutIds.contains(id),
-          ),
+          ...serverIds.where((id) => !BundledCategories.homeShortcutIds.contains(id)),
         ];
   return [for (final id in ids) ?tree.byId(id)];
 });
@@ -86,29 +77,22 @@ final homeShortcutsProvider = Provider<List<Category>>((ref) {
 class ServiceCategoriesController extends Notifier<List<ServiceCategory>> {
   @override
   List<ServiceCategory> build() {
-    if (ref.watch(appConfigProvider).useDemoData)
-      return BundledServiceCategories.all;
+    if (ref.watch(appConfigProvider).useDemoData) return BundledServiceCategories.all;
     unawaited(_refresh());
     return BundledServiceCategories.all;
   }
 
   Future<void> _refresh() async {
     try {
-      final json = await ref
-          .read(apiClientProvider)
-          .get<List<dynamic>>('/service-categories');
+      final json = await ref.read(apiClientProvider).get<List<dynamic>>('/service-categories');
       if (json.isEmpty || !ref.mounted) return;
-      state = [
-        for (final item in json)
-          ServiceCategory.fromJson(item as Map<String, dynamic>),
-      ];
+      state = [for (final item in json) ServiceCategory.fromJson(item as Map<String, dynamic>)];
     } on AppFailure {
       // Bundled list stays in place.
     }
   }
 }
 
-final serviceCategoriesProvider =
-    NotifierProvider<ServiceCategoriesController, List<ServiceCategory>>(
-      ServiceCategoriesController.new,
-    );
+final serviceCategoriesProvider = NotifierProvider<ServiceCategoriesController, List<ServiceCategory>>(
+  ServiceCategoriesController.new,
+);

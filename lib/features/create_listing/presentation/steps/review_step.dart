@@ -29,14 +29,10 @@ class ReviewStep extends ConsumerWidget {
       title: draft.title.trim().isEmpty ? 'Sarlavha' : draft.title.trim(),
       description: draft.description,
       categoryId: draft.categoryId ?? 'other',
-      images: [
-        for (final p in draft.photos) MediaImage.local(p.id, p.localPath),
-      ],
+      images: [for (final p in draft.photos) MediaImage.local(p.id, p.localPath)],
       place: draft.place!,
       publishedAt: now,
-      seller:
-          user?.toPublic() ??
-          PublicProfile(id: 'guest', name: 'Siz', memberSince: now),
+      seller: user?.toPublic() ?? PublicProfile(id: 'guest', name: 'Siz', memberSince: now),
       price: draft.negotiable && draft.price == null ? null : draft.money,
       negotiable: draft.negotiable,
       condition: draft.condition,
@@ -58,46 +54,24 @@ class ReviewStep extends ConsumerWidget {
     final priceLabel = switch (draft) {
       ListingDraft(price: null, negotiable: true) => 'Kelishiladi',
       ListingDraft(price: null) => '—',
-      _ when schema.priceLabel == 'Maosh' => Formatters.salaryRange(
-        draft.price,
-        draft.priceMax,
-        draft.currency,
-      ),
-      _ =>
-        '${Formatters.money(draft.money!)}${draft.negotiable ? ' · kelishiladi' : ''}',
+      _ when schema.priceLabel == 'Maosh' => Formatters.salaryRange(draft.price, draft.priceMax, draft.currency),
+      _ => '${Formatters.money(draft.money!)}${draft.negotiable ? ' · kelishiladi' : ''}',
     };
 
     final rows = <(String, String, CreateStep)>[
-      (
-        'Kategoriya',
-        [
-          ?tree.parentOf(draft.categoryId ?? '')?.name,
-          ?category?.name,
-        ].join(' › '),
-        CreateStep.details,
-      ),
+      ('Kategoriya', [?tree.parentOf(draft.categoryId ?? '')?.name, ?category?.name].join(' › '), CreateStep.details),
       ('Sarlavha', draft.title, CreateStep.details),
       (schema.priceLabel, priceLabel, CreateStep.details),
-      if (draft.condition != null)
-        ('Holati', draft.condition!.label, CreateStep.details),
+      if (draft.condition != null) ('Holati', draft.condition!.label, CreateStep.details),
       for (final field in schema.fields)
         if (draft.attributes[field.key] case final String value)
-          (
-            field.label,
-            field.unit == null ? value : '$value ${field.unit}',
-            CreateStep.details,
-          ),
+          (field.label, field.unit == null ? value : '$value ${field.unit}', CreateStep.details),
       ('Manzil', draft.place?.fullLabel ?? '—', CreateStep.details),
       ('Rasmlar', '${draft.photos.length} ta', CreateStep.photos),
     ];
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.md,
-        AppSpacing.lg,
-        AppSpacing.xxxl,
-      ),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xxxl),
       children: [
         Text('Xaridorlar e’loningizni shunday ko‘radi', style: text.titleSmall),
         const SizedBox(height: AppSpacing.md),
@@ -107,10 +81,7 @@ class ReviewStep extends ConsumerWidget {
               constraints: const BoxConstraints(maxWidth: 240),
               child: IgnorePointer(
                 child: ExcludeSemantics(
-                  child: ListingCard(
-                    listing: _preview(draft, ref),
-                    heroPrefix: 'preview',
-                  ),
+                  child: ListingCard(listing: _preview(draft, ref), heroPrefix: 'preview'),
                 ),
               ),
             ),
@@ -126,16 +97,11 @@ class ReviewStep extends ConsumerWidget {
                   title: Text(label, style: text.bodySmall),
                   subtitle: Text(
                     value.isEmpty ? '—' : value,
-                    style: text.bodyMedium?.copyWith(
-                      color: palette.textPrimary,
-                    ),
+                    style: text.bodyMedium?.copyWith(color: palette.textPrimary),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  trailing: TextButton(
-                    onPressed: () => controller.goTo(step),
-                    child: const Text('Tahrirlash'),
-                  ),
+                  trailing: TextButton(onPressed: () => controller.goTo(step), child: const Text('Tahrirlash')),
                 ),
             ],
           ),
@@ -147,12 +113,7 @@ class ReviewStep extends ConsumerWidget {
             children: [
               Text('Tavsif', style: text.bodySmall),
               const SizedBox(height: AppSpacing.xs),
-              Text(
-                draft.description,
-                style: text.bodyMedium,
-                maxLines: 6,
-                overflow: TextOverflow.ellipsis,
-              ),
+              Text(draft.description, style: text.bodyMedium, maxLines: 6, overflow: TextOverflow.ellipsis),
             ],
           ),
         ),
@@ -169,9 +130,7 @@ class ReviewStep extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(
-              moderation
-                  ? Icons.hourglass_top_rounded
-                  : Icons.verified_user_outlined,
+              moderation ? Icons.hourglass_top_rounded : Icons.verified_user_outlined,
               size: AppIconSize.sm,
               color: moderation ? palette.warning : palette.success,
             ),
@@ -200,21 +159,9 @@ class _SignalCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = context.palette;
     final (bg, fg, icon) = switch (signal.severity) {
-      RiskSeverity.blocking => (
-        palette.dangerSoft,
-        palette.danger,
-        Icons.gpp_bad_outlined,
-      ),
-      RiskSeverity.warning => (
-        palette.warningSoft,
-        palette.warning,
-        Icons.warning_amber_rounded,
-      ),
-      RiskSeverity.info => (
-        palette.primarySoft,
-        palette.primary,
-        Icons.lightbulb_outline_rounded,
-      ),
+      RiskSeverity.blocking => (palette.dangerSoft, palette.danger, Icons.gpp_bad_outlined),
+      RiskSeverity.warning => (palette.warningSoft, palette.warning, Icons.warning_amber_rounded),
+      RiskSeverity.info => (palette.primarySoft, palette.primary, Icons.lightbulb_outline_rounded),
     };
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -227,8 +174,7 @@ class _SignalCard extends StatelessWidget {
           Expanded(
             child: Text(
               signal.message,
-              style: Theme.of(context).textTheme.bodySmall
-                  ?.copyWith(color: palette.textPrimary),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: palette.textPrimary),
             ),
           ),
         ],

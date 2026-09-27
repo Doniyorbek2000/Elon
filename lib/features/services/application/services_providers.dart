@@ -8,8 +8,7 @@ import '../data/remote_services_repository.dart';
 import '../domain/service_provider.dart';
 
 final servicesRepositoryProvider = Provider<ServicesRepository>((ref) {
-  if (ref.watch(appConfigProvider).useDemoData)
-    return DemoServicesRepository(ref.watch(demoDatabaseProvider));
+  if (ref.watch(appConfigProvider).useDemoData) return DemoServicesRepository(ref.watch(demoDatabaseProvider));
   return RemoteServicesRepository(ref.watch(apiClientProvider));
 });
 
@@ -18,19 +17,14 @@ final myProviderProvider = FutureProvider.autoDispose<ServiceProvider?>((ref) {
   return ref.watch(servicesRepositoryProvider).myProvider();
 });
 
-final recommendedProvidersProvider = FutureProvider.autoDispose
-    .family<List<ServiceProvider>, String?>((ref, regionId) {
-      return ref
-          .watch(servicesRepositoryProvider)
-          .recommended(regionId: regionId);
-    });
+final recommendedProvidersProvider = FutureProvider.autoDispose.family<List<ServiceProvider>, String?>((ref, regionId) {
+  return ref.watch(servicesRepositoryProvider).recommended(regionId: regionId);
+});
 
-final providerSearchProvider = FutureProvider.autoDispose
-    .family<List<ServiceProvider>, ProviderQuery>((ref, query) {
-      return ref.watch(servicesRepositoryProvider).search(query);
-    });
+final providerSearchProvider = FutureProvider.autoDispose.family<List<ServiceProvider>, ProviderQuery>((ref, query) {
+  return ref.watch(servicesRepositoryProvider).search(query);
+});
 
-final providerDetailProvider = FutureProvider.autoDispose
-    .family<ServiceProvider, String>((ref, id) {
-      return ref.watch(servicesRepositoryProvider).getProvider(id);
-    });
+final providerDetailProvider = FutureProvider.autoDispose.family<ServiceProvider, String>((ref, id) {
+  return ref.watch(servicesRepositoryProvider).getProvider(id);
+});

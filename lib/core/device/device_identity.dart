@@ -8,21 +8,13 @@ import '../storage/key_value_store.dart';
 /// Stable per-install identifier sent at sign-in so the server can list and
 /// revoke sessions per device. Random, not derived from hardware IDs.
 class DeviceIdentity {
-  const DeviceIdentity({
-    required this.id,
-    required this.platform,
-    required this.name,
-  });
+  const DeviceIdentity({required this.id, required this.platform, required this.name});
 
   final String id;
   final String platform;
   final String name;
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'platform': platform,
-    'name': name,
-  };
+  Map<String, dynamic> toJson() => {'id': id, 'platform': platform, 'name': name};
 
   static const _key = 'device.installId.v1';
 
@@ -30,10 +22,7 @@ class DeviceIdentity {
     var id = store.getString(_key);
     if (id == null || id.length < 8) {
       final random = Random.secure();
-      id = List.generate(
-        16,
-        (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0'),
-      ).join();
+      id = List.generate(16, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
       store.setString(_key, id);
     }
     final platform = switch (defaultTargetPlatform) {
@@ -50,6 +39,4 @@ class DeviceIdentity {
   }
 }
 
-final deviceIdentityProvider = Provider<DeviceIdentity>(
-  (ref) => DeviceIdentity.load(ref.watch(keyValueStoreProvider)),
-);
+final deviceIdentityProvider = Provider<DeviceIdentity>((ref) => DeviceIdentity.load(ref.watch(keyValueStoreProvider)));

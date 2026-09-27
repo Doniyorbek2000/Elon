@@ -17,10 +17,7 @@ import '../domain/chat.dart';
 final chatRepositoryProvider = Provider<ChatRepository>((ref) {
   final config = ref.watch(appConfigProvider);
   if (config.useDemoData) {
-    final repository = DemoChatRepository(
-      ref.watch(demoDatabaseProvider),
-      clock: ref.watch(clockProvider),
-    );
+    final repository = DemoChatRepository(ref.watch(demoDatabaseProvider), clock: ref.watch(clockProvider));
     ref.onDispose(repository.dispose);
     return repository;
   }
@@ -40,8 +37,7 @@ final chatRepositoryProvider = Provider<ChatRepository>((ref) {
 
 final conversationsProvider = StreamProvider<List<Conversation>>((ref) {
   // Guests have no conversations; avoid opening a socket for them.
-  if (!ref.watch(appConfigProvider).useDemoData &&
-      ref.watch(sessionProvider) == null) {
+  if (!ref.watch(appConfigProvider).useDemoData && ref.watch(sessionProvider) == null) {
     return Stream.value(const []);
   }
   return ref.watch(chatRepositoryProvider).watchConversations();
@@ -52,29 +48,20 @@ final unreadChatsCountProvider = Provider<int>((ref) {
   return conversations.fold(0, (sum, c) => sum + (c.unreadCount > 0 ? 1 : 0));
 });
 
-final conversationProvider = Provider.autoDispose
-    .family<AsyncValue<Conversation>, String>((ref, id) {
-      final all = ref.watch(conversationsProvider);
-      return all.whenData(
-        (items) =>
-            items.where((c) => c.id == id).firstOrNull ??
-            (throw StateError('Conversation $id not found')),
-      );
-    });
+final conversationProvider = Provider.autoDispose.family<AsyncValue<Conversation>, String>((ref, id) {
+  final all = ref.watch(conversationsProvider);
+  return all.whenData(
+    (items) => items.where((c) => c.id == id).firstOrNull ?? (throw StateError('Conversation $id not found')),
+  );
+});
 
-final messagesProvider = StreamProvider.autoDispose
-    .family<List<ChatMessage>, String>((ref, conversationId) {
-      return ref.watch(chatRepositoryProvider).watchMessages(conversationId);
-    });
+final messagesProvider = StreamProvider.autoDispose.family<List<ChatMessage>, String>((ref, conversationId) {
+  return ref.watch(chatRepositoryProvider).watchMessages(conversationId);
+});
 
-final peerTypingProvider = StreamProvider.autoDispose.family<bool, String>((
-  ref,
-  conversationId,
-) {
+final peerTypingProvider = StreamProvider.autoDispose.family<bool, String>((ref, conversationId) {
   return ref.watch(chatRepositoryProvider).watchPeerTyping(conversationId);
 });
 
 /// One guard per conversation screen instance lifetime.
-final messageGuardProvider = Provider.autoDispose.family<MessageGuard, String>(
-  (ref, _) => MessageGuard(),
-);
+final messageGuardProvider = Provider.autoDispose.family<MessageGuard, String>((ref, _) => MessageGuard());

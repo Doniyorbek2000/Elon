@@ -4,18 +4,7 @@ import 'package:flutter/material.dart';
 ///
 /// Domain/config objects reference tones by name so data never carries
 /// Flutter colors directly.
-enum AccentTone {
-  blue,
-  green,
-  orange,
-  red,
-  purple,
-  pink,
-  teal,
-  amber,
-  indigo,
-  slate,
-}
+enum AccentTone { blue, green, orange, red, purple, pink, teal, amber, indigo, slate }
 
 /// Background/foreground pair for a tinted surface.
 @immutable
@@ -25,10 +14,8 @@ class TonePair {
   final Color background;
   final Color foreground;
 
-  static TonePair lerp(TonePair a, TonePair b, double t) => TonePair(
-    Color.lerp(a.background, b.background, t)!,
-    Color.lerp(a.foreground, b.foreground, t)!,
-  );
+  static TonePair lerp(TonePair a, TonePair b, double t) =>
+      TonePair(Color.lerp(a.background, b.background, t)!, Color.lerp(a.foreground, b.foreground, t)!);
 }
 
 /// Brand palette exposed as a [ThemeExtension] so every widget resolves
@@ -185,37 +172,36 @@ class AppPalette extends ThemeExtension<AppPalette> {
   );
 
   @override
-  AppPalette copyWith({Color? primary, Color? background, Color? surface}) =>
-      AppPalette(
-        background: background ?? this.background,
-        surface: surface ?? this.surface,
-        surfaceMuted: surfaceMuted,
-        surfaceElevated: surfaceElevated,
-        border: border,
-        borderStrong: borderStrong,
-        textPrimary: textPrimary,
-        textSecondary: textSecondary,
-        textTertiary: textTertiary,
-        primary: primary ?? this.primary,
-        primaryPressed: primaryPressed,
-        onPrimary: onPrimary,
-        primarySoft: primarySoft,
-        price: price,
-        success: success,
-        successSoft: successSoft,
-        warning: warning,
-        warningSoft: warningSoft,
-        danger: danger,
-        dangerSoft: dangerSoft,
-        online: online,
-        vip: vip,
-        vipSoft: vipSoft,
-        shadow: shadow,
-        skeletonBase: skeletonBase,
-        skeletonHighlight: skeletonHighlight,
-        scrim: scrim,
-        tones: tones,
-      );
+  AppPalette copyWith({Color? primary, Color? background, Color? surface}) => AppPalette(
+    background: background ?? this.background,
+    surface: surface ?? this.surface,
+    surfaceMuted: surfaceMuted,
+    surfaceElevated: surfaceElevated,
+    border: border,
+    borderStrong: borderStrong,
+    textPrimary: textPrimary,
+    textSecondary: textSecondary,
+    textTertiary: textTertiary,
+    primary: primary ?? this.primary,
+    primaryPressed: primaryPressed,
+    onPrimary: onPrimary,
+    primarySoft: primarySoft,
+    price: price,
+    success: success,
+    successSoft: successSoft,
+    warning: warning,
+    warningSoft: warningSoft,
+    danger: danger,
+    dangerSoft: dangerSoft,
+    online: online,
+    vip: vip,
+    vipSoft: vipSoft,
+    shadow: shadow,
+    skeletonBase: skeletonBase,
+    skeletonHighlight: skeletonHighlight,
+    scrim: scrim,
+    tones: tones,
+  );
 
   @override
   AppPalette lerp(ThemeExtension<AppPalette>? other, double t) {
@@ -249,10 +235,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
       skeletonBase: l(skeletonBase, other.skeletonBase),
       skeletonHighlight: l(skeletonHighlight, other.skeletonHighlight),
       scrim: l(scrim, other.scrim),
-      tones: {
-        for (final tone in AccentTone.values)
-          tone: TonePair.lerp(tones[tone]!, other.tones[tone]!, t),
-      },
+      tones: {for (final tone in AccentTone.values) tone: TonePair.lerp(tones[tone]!, other.tones[tone]!, t)},
     );
   }
 }

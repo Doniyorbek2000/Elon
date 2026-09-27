@@ -20,11 +20,7 @@ class _NavItem {
 const _items = [
   _NavItem('Bosh sahifa', Icons.home_outlined, Icons.home_rounded),
   _NavItem('Qidiruv', Icons.search_rounded, Icons.saved_search_rounded),
-  _NavItem(
-    'Chat',
-    Icons.chat_bubble_outline_rounded,
-    Icons.chat_bubble_rounded,
-  ),
+  _NavItem('Chat', Icons.chat_bubble_outline_rounded, Icons.chat_bubble_rounded),
   _NavItem('Profil', Icons.person_outline_rounded, Icons.person_rounded),
 ];
 
@@ -38,10 +34,7 @@ class AppShell extends ConsumerWidget {
 
   void _goBranch(int index) {
     HapticFeedback.selectionClick();
-    navigationShell.goBranch(
-      index,
-      initialLocation: index == navigationShell.currentIndex,
-    );
+    navigationShell.goBranch(index, initialLocation: index == navigationShell.currentIndex);
   }
 
   void _create(BuildContext context) {
@@ -79,14 +72,8 @@ class AppShell extends ConsumerWidget {
               destinations: [
                 for (final (index, item) in _items.indexed)
                   NavigationRailDestination(
-                    icon: CountBadge(
-                      count: index == 2 ? unreadChats : 0,
-                      child: Icon(item.icon),
-                    ),
-                    selectedIcon: CountBadge(
-                      count: index == 2 ? unreadChats : 0,
-                      child: Icon(item.selectedIcon),
-                    ),
+                    icon: CountBadge(count: index == 2 ? unreadChats : 0, child: Icon(item.icon)),
+                    selectedIcon: CountBadge(count: index == 2 ? unreadChats : 0, child: Icon(item.selectedIcon)),
                     label: Text(item.label),
                   ),
               ],
@@ -148,15 +135,7 @@ class _BottomBar extends StatelessWidget {
         decoration: BoxDecoration(
           color: palette.surface,
           border: Border(top: BorderSide(color: palette.border)),
-          boxShadow: isDark
-              ? null
-              : [
-                  BoxShadow(
-                    color: palette.shadow,
-                    blurRadius: 16,
-                    offset: const Offset(0, -4),
-                  ),
-                ],
+          boxShadow: isDark ? null : [BoxShadow(color: palette.shadow, blurRadius: 16, offset: const Offset(0, -4))],
         ),
         child: SafeArea(
           top: false,
@@ -188,24 +167,11 @@ class _BottomBar extends StatelessWidget {
                                 gradient: LinearGradient(
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
-                                  colors: [
-                                    Color.lerp(
-                                      palette.primary,
-                                      Colors.white,
-                                      0.12,
-                                    )!,
-                                    palette.primaryPressed,
-                                  ],
+                                  colors: [Color.lerp(palette.primary, Colors.white, 0.12)!, palette.primaryPressed],
                                 ),
-                                boxShadow: AppShadows.primaryGlow(
-                                  palette.primary,
-                                ),
+                                boxShadow: AppShadows.primaryGlow(palette.primary),
                               ),
-                              child: Icon(
-                                Icons.add_rounded,
-                                color: palette.onPrimary,
-                                size: 30,
-                              ),
+                              child: Icon(Icons.add_rounded, color: palette.onPrimary, size: 30),
                             ),
                           ),
                         ),
@@ -225,12 +191,7 @@ class _BottomBar extends StatelessWidget {
 }
 
 class _TabButton extends StatelessWidget {
-  const _TabButton({
-    required this.item,
-    required this.selected,
-    required this.badge,
-    required this.onTap,
-  });
+  const _TabButton({required this.item, required this.selected, required this.badge, required this.onTap});
 
   final _NavItem item;
   final bool selected;
@@ -258,11 +219,7 @@ class _TabButton extends StatelessWidget {
               child: CountBadge(
                 key: ValueKey(selected),
                 count: badge,
-                child: Icon(
-                  selected ? item.selectedIcon : item.icon,
-                  color: color,
-                  size: AppIconSize.md + 1,
-                ),
+                child: Icon(selected ? item.selectedIcon : item.icon, color: color, size: AppIconSize.md + 1),
               ),
             ),
             const SizedBox(height: 3),
@@ -270,11 +227,8 @@ class _TabButton extends StatelessWidget {
               item.label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: color,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                fontSize: 11,
-              ),
+              style: Theme.of(context).textTheme.labelSmall
+                  ?.copyWith(color: color, fontWeight: selected ? FontWeight.w700 : FontWeight.w500, fontSize: 11),
             ),
           ],
         ),

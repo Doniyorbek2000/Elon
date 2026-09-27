@@ -26,19 +26,14 @@ final favoritesRepositoryProvider = Provider<FavoritesRepository>(
 class SavedItemsController extends Notifier<Set<String>> {
   @override
   Set<String> build() {
-    final local = ref
-        .watch(keyValueStoreProvider)
-        .getStringList(StoreKeys.savedItems)
-        .toSet();
+    final local = ref.watch(keyValueStoreProvider).getStringList(StoreKeys.savedItems).toSet();
     final remote = !ref.watch(appConfigProvider).useDemoData;
     final signedIn = ref.watch(sessionProvider.select((user) => user?.id));
     if (remote && signedIn != null) unawaited(_sync(local));
     return local;
   }
 
-  bool get _remote =>
-      !ref.read(appConfigProvider).useDemoData &&
-      ref.read(sessionProvider) != null;
+  bool get _remote => !ref.read(appConfigProvider).useDemoData && ref.read(sessionProvider) != null;
 
   FavoritesRepository get _repository => ref.read(favoritesRepositoryProvider);
 
@@ -57,26 +52,18 @@ class SavedItemsController extends Notifier<Set<String>> {
       }
       if (ref.mounted) _persist(server);
     } on AppFailure catch (failure) {
-      ref
-          .read(appLoggerProvider)
-          .warning('Favorites sync failed: ${failure.runtimeType}');
+      ref.read(appLoggerProvider).warning('Favorites sync failed: ${failure.runtimeType}');
     }
   }
 
   (SavedKind, String) _parse(String entry) {
     final separator = entry.indexOf(':');
-    return (
-      SavedKind.values.byName(entry.substring(0, separator)),
-      entry.substring(separator + 1),
-    );
+    return (SavedKind.values.byName(entry.substring(0, separator)), entry.substring(separator + 1));
   }
 
   void _persist(Set<String> next) {
     state = next;
-    ref
-        .read(keyValueStoreProvider)
-        .setStringList(StoreKeys.savedItems, next.toList())
-        .ignore();
+    ref.read(keyValueStoreProvider).setStringList(StoreKeys.savedItems, next.toList()).ignore();
   }
 
   /// Returns the new saved state. Throws an [AppFailure] (after rolling
@@ -106,20 +93,13 @@ class SavedItemsController extends Notifier<Set<String>> {
 
   List<String> idsOf(SavedKind kind) => [
     for (final entry in state)
-      if (entry.startsWith('${kind.name}:'))
-        entry.substring(kind.name.length + 1),
+      if (entry.startsWith('${kind.name}:')) entry.substring(kind.name.length + 1),
   ];
 }
 
-final savedItemsProvider = NotifierProvider<SavedItemsController, Set<String>>(
-  SavedItemsController.new,
-);
+final savedItemsProvider = NotifierProvider<SavedItemsController, Set<String>>(SavedItemsController.new);
 
 /// Fine-grained selector so a card only rebuilds when its own state flips.
 final isSavedProvider = Provider.family<bool, (SavedKind, String)>((ref, args) {
-  return ref.watch(
-    savedItemsProvider.select(
-      (items) => items.contains(SavedItemsController.key(args.$1, args.$2)),
-    ),
-  );
+  return ref.watch(savedItemsProvider.select((items) => items.contains(SavedItemsController.key(args.$1, args.$2))));
 });

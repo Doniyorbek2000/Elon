@@ -14,8 +14,7 @@ class DemoJobRepository implements JobRepository {
 
   bool _inArea(String regionId, String? districtId, JobQuery query) {
     if (query.regionId != null && regionId != query.regionId) return false;
-    if (query.districtId != null && districtId != query.districtId)
-      return false;
+    if (query.districtId != null && districtId != query.districtId) return false;
     return true;
   }
 
@@ -25,45 +24,28 @@ class DemoJobRepository implements JobRepository {
     final tokens = SearchNormalizer.tokens(query.text);
     final now = _clock();
     final results = _db.jobs.where((job) {
-      if (query.types.isNotEmpty && !query.types.contains(job.employmentType))
-        return false;
-      if (query.experience != null && job.experience != query.experience)
-        return false;
-      if (query.minSalary != null && job.salarySortKey < query.minSalary!)
-        return false;
-      if (!_inArea(job.place.regionId, job.place.districtId, query))
-        return false;
-      return SearchNormalizer.matches(
-        tokens,
-        '${job.title} ${job.company.name} ${job.description}',
-      );
+      if (query.types.isNotEmpty && !query.types.contains(job.employmentType)) return false;
+      if (query.experience != null && job.experience != query.experience) return false;
+      if (query.minSalary != null && job.salarySortKey < query.minSalary!) return false;
+      if (!_inArea(job.place.regionId, job.place.districtId, query)) return false;
+      return SearchNormalizer.matches(tokens, '${job.title} ${job.company.name} ${job.description}');
     }).toList();
     int promoted(Job j) => j.promotion?.isActive(now) ?? false ? 1 : 0;
     results.sort((a, b) {
       if (query.sortBySalary) return b.salarySortKey.compareTo(a.salarySortKey);
       final byPromotion = promoted(b).compareTo(promoted(a));
-      return byPromotion != 0
-          ? byPromotion
-          : b.publishedAt.compareTo(a.publishedAt);
+      return byPromotion != 0 ? byPromotion : b.publishedAt.compareTo(a.publishedAt);
     });
     return results;
   }
 
   @override
-  Future<Job> postVacancy(
-    NewVacancy vacancy, {
-    required PublicProfile employer,
-  }) async {
+  Future<Job> postVacancy(NewVacancy vacancy, {required PublicProfile employer}) async {
     await _db.roundTrip(2);
     final job = Job(
       id: _db.nextId('j'),
       title: vacancy.title,
-      company: Company(
-        id: _db.nextId('c'),
-        name: vacancy.companyName,
-        iconKey: 'work',
-        tone: AccentTone.teal,
-      ),
+      company: Company(id: _db.nextId('c'), name: vacancy.companyName, iconKey: 'work', tone: AccentTone.teal),
       place: vacancy.place,
       publishedAt: _clock(),
       employmentType: vacancy.employmentType,
@@ -82,8 +64,7 @@ class DemoJobRepository implements JobRepository {
   @override
   Future<Job> getJob(String id) async {
     await _db.roundTrip(0.6);
-    return _db.jobs.where((j) => j.id == id).firstOrNull ??
-        (throw const NotFoundFailure('Vakansiya topilmadi'));
+    return _db.jobs.where((j) => j.id == id).firstOrNull ?? (throw const NotFoundFailure('Vakansiya topilmadi'));
   }
 
   @override
@@ -91,36 +72,23 @@ class DemoJobRepository implements JobRepository {
     await _db.roundTrip();
     final tokens = SearchNormalizer.tokens(query.text);
     return _db.candidates.where((candidate) {
-      if (query.types.isNotEmpty &&
-          candidate.employmentTypes.intersection(query.types).isEmpty)
-        return false;
-      if (!_inArea(candidate.place.regionId, candidate.place.districtId, query))
-        return false;
-      return SearchNormalizer.matches(
-        tokens,
-        '${candidate.desiredPosition} ${candidate.skills.join(' ')}',
-      );
+      if (query.types.isNotEmpty && candidate.employmentTypes.intersection(query.types).isEmpty) return false;
+      if (!_inArea(candidate.place.regionId, candidate.place.districtId, query)) return false;
+      return SearchNormalizer.matches(tokens, '${candidate.desiredPosition} ${candidate.skills.join(' ')}');
     }).toList()..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
   }
 
   @override
   Future<CandidateProfile> getCandidate(String id) async {
     await _db.roundTrip(0.6);
-    return _db.candidates.where((c) => c.id == id).firstOrNull ??
-        (throw const NotFoundFailure('Rezyume topilmadi'));
+    return _db.candidates.where((c) => c.id == id).firstOrNull ?? (throw const NotFoundFailure('Rezyume topilmadi'));
   }
 
   @override
-  Future<JobApplication> apply({
-    required String jobId,
-    required String applicantId,
-    String? message,
-  }) async {
+  Future<JobApplication> apply({required String jobId, required String applicantId, String? message}) async {
     await _db.roundTrip(1.5);
     if (_db.applications.any((a) => a.job.id == jobId)) {
-      throw const ValidationFailure(
-        'Siz bu vakansiyaga allaqachon ariza topshirgansiz',
-      );
+      throw const ValidationFailure('Siz bu vakansiyaga allaqachon ariza topshirgansiz');
     }
     final application = JobApplication(
       id: _db.nextId('app'),
@@ -141,13 +109,11 @@ class DemoJobRepository implements JobRepository {
 
   Future<String> _phoneOf(String userId) async {
     await _db.roundTrip(0.4);
-    return _db.seed.phoneBook[userId] ??
-        (throw const NotFoundFailure('Raqam yashirilgan. Chat orqali yozing.'));
+    return _db.seed.phoneBook[userId] ?? (throw const NotFoundFailure('Raqam yashirilgan. Chat orqali yozing.'));
   }
 
   @override
-  Future<String> revealJobPhone(String jobId) async =>
-      _phoneOf((await getJob(jobId)).employer.id);
+  Future<String> revealJobPhone(String jobId) async => _phoneOf((await getJob(jobId)).employer.id);
 
   @override
   Future<String> revealCandidatePhone(String candidateId) async =>
@@ -180,9 +146,7 @@ class DemoJobRepository implements JobRepository {
   Future<void> setJobStatus(String jobId, JobStatus status) async {
     await _db.roundTrip(0.6);
     final user = _db.currentUser;
-    final index = _db.jobs.indexWhere(
-      (j) => j.id == jobId && j.employer.id == user?.id,
-    );
+    final index = _db.jobs.indexWhere((j) => j.id == jobId && j.employer.id == user?.id);
     if (index < 0) throw const NotFoundFailure('Vakansiya topilmadi');
     final job = _db.jobs[index];
     _db.jobs[index] = Job(
@@ -215,10 +179,7 @@ class DemoJobRepository implements JobRepository {
   }
 
   @override
-  Future<void> setApplicationStatus(
-    String applicationId,
-    ApplicationStatus status,
-  ) async {
+  Future<void> setApplicationStatus(String applicationId, ApplicationStatus status) async {
     await _db.roundTrip(0.4);
     throw const NotFoundFailure('Ariza topilmadi');
   }

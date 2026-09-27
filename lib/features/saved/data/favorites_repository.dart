@@ -19,23 +19,14 @@ class FavoritesRepository {
     final data = await _api.get<JsonMap>('/favorites/ids');
     return {
       for (final kind in SavedKind.values)
-        for (final id in data[pathOf(kind)] as List<dynamic>? ?? const [])
-          SavedItemsController.key(kind, '$id'),
+        for (final id in data[pathOf(kind)] as List<dynamic>? ?? const []) SavedItemsController.key(kind, '$id'),
     };
   }
 
-  Future<void> add(SavedKind kind, String id) =>
-      _api.put<Object?>('/favorites/${pathOf(kind)}/$id');
+  Future<void> add(SavedKind kind, String id) => _api.put<Object?>('/favorites/${pathOf(kind)}/$id');
 
-  Future<void> remove(SavedKind kind, String id) =>
-      _api.delete('/favorites/${pathOf(kind)}/$id');
+  Future<void> remove(SavedKind kind, String id) => _api.delete('/favorites/${pathOf(kind)}/$id');
 
-  Future<List<T>> list<T>(
-    SavedKind kind,
-    T Function(JsonMap json) parse,
-  ) async => (await _api.getPage(
-    '/favorites/${pathOf(kind)}',
-    parse,
-    query: {'limit': 50},
-  )).items;
+  Future<List<T>> list<T>(SavedKind kind, T Function(JsonMap json) parse) async =>
+      (await _api.getPage('/favorites/${pathOf(kind)}', parse, query: {'limit': 50})).items;
 }

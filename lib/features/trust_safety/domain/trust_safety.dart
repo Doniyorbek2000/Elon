@@ -21,12 +21,7 @@ enum ReportReason {
 
 @immutable
 class ReportRequest {
-  const ReportRequest({
-    required this.targetType,
-    required this.targetId,
-    required this.reason,
-    this.comment,
-  });
+  const ReportRequest({required this.targetType, required this.targetId, required this.reason, this.comment});
 
   final ReportTargetType targetType;
   final String targetId;
@@ -56,16 +51,9 @@ class RiskSignal {
 /// content to moderation. The server re-checks everything; this is UX, not
 /// the security boundary.
 abstract final class ContentRiskRules {
-  static final _phone = RegExp(
-    r'(\+?998[\s-]?)?\(?\d{2}\)?[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2}',
-  );
-  static final _card = RegExp(
-    r'\b(?:8600|9860|5614|4\d{3}|5[1-5]\d{2})[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b',
-  );
-  static final _link = RegExp(
-    r'(https?://|www\.|t\.me/|@[a-z0-9_]{5,})',
-    caseSensitive: false,
-  );
+  static final _phone = RegExp(r'(\+?998[\s-]?)?\(?\d{2}\)?[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2}');
+  static final _card = RegExp(r'\b(?:8600|9860|5614|4\d{3}|5[1-5]\d{2})[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b');
+  static final _link = RegExp(r'(https?://|www\.|t\.me/|@[a-z0-9_]{5,})', caseSensitive: false);
   static final _prepayment = RegExp(
     r'(oldindan\s+to.?lov|avans\s+to.?la|predoplat|предоплат|kartaga\s+tashla|zakalat)',
     caseSensitive: false,
@@ -167,10 +155,7 @@ class MessageCheck {
 /// Anti-spam guard for outgoing chat messages: throttles bursts and warns
 /// about sharing card numbers or prepayment requests.
 class MessageGuard {
-  MessageGuard({
-    this.maxMessages = 6,
-    this.window = const Duration(seconds: 10),
-  });
+  MessageGuard({this.maxMessages = 6, this.window = const Duration(seconds: 10)});
 
   final int maxMessages;
   final Duration window;
@@ -179,10 +164,7 @@ class MessageGuard {
   MessageCheck check(String text, DateTime now) {
     _recent.removeWhere((sentAt) => now.difference(sentAt) > window);
     if (_recent.length >= maxMessages) {
-      return const MessageCheck(
-        MessageVerdict.throttle,
-        'Juda tez yozyapsiz. Bir necha soniya kuting.',
-      );
+      return const MessageCheck(MessageVerdict.throttle, 'Juda tez yozyapsiz. Bir necha soniya kuting.');
     }
     if (ContentRiskRules.containsCard(text)) {
       return const MessageCheck(

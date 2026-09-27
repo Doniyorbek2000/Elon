@@ -24,12 +24,10 @@ class PhoneVerificationScreen extends ConsumerStatefulWidget {
   final String? next;
 
   @override
-  ConsumerState<PhoneVerificationScreen> createState() =>
-      _PhoneVerificationScreenState();
+  ConsumerState<PhoneVerificationScreen> createState() => _PhoneVerificationScreenState();
 }
 
-class _PhoneVerificationScreenState
-    extends ConsumerState<PhoneVerificationScreen> {
+class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScreen> {
   final _phone = TextEditingController();
   final _code = TextEditingController();
   final _codeFocus = FocusNode();
@@ -74,9 +72,7 @@ class _PhoneVerificationScreenState
       _error = null;
     });
     try {
-      final challenge = await ref
-          .read(sessionProvider.notifier)
-          .requestCode(_fullPhone);
+      final challenge = await ref.read(sessionProvider.notifier).requestCode(_fullPhone);
       if (!mounted) return;
       setState(() {
         _busy = false;
@@ -93,8 +89,7 @@ class _PhoneVerificationScreenState
         _busy = false;
         _error = failure.message;
       });
-      if (failure case RateLimitFailure(:final retryAfter?))
-        _startTimer(retryAfter);
+      if (failure case RateLimitFailure(:final retryAfter?)) _startTimer(retryAfter);
     }
   }
 
@@ -108,9 +103,7 @@ class _PhoneVerificationScreenState
       _error = null;
     });
     try {
-      await ref
-          .read(sessionProvider.notifier)
-          .verify(phone: _fullPhone, code: _code.text);
+      await ref.read(sessionProvider.notifier).verify(phone: _fullPhone, code: _code.text);
       if (!mounted) return;
       unawaited(HapticFeedback.mediumImpact());
       final next = widget.next;
@@ -171,10 +164,7 @@ class _PhoneVerificationScreenState
                   onSubmitted: (_) => _requestCode(),
                   decoration: InputDecoration(
                     prefixIcon: Padding(
-                      padding: const EdgeInsets.only(
-                        left: AppSpacing.lg,
-                        right: AppSpacing.sm,
-                      ),
+                      padding: const EdgeInsets.only(left: AppSpacing.lg, right: AppSpacing.sm),
                       child: Text('+998', style: text.titleMedium),
                     ),
                     prefixIconConstraints: const BoxConstraints(),
@@ -195,11 +185,7 @@ class _PhoneVerificationScreenState
                   onChanged: (value) {
                     if (value.length == 6) _verify();
                   },
-                  decoration: InputDecoration(
-                    counterText: '',
-                    hintText: '••••••',
-                    errorText: _error,
-                  ),
+                  decoration: InputDecoration(counterText: '', hintText: '••••••', errorText: _error),
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Wrap(
@@ -216,14 +202,8 @@ class _PhoneVerificationScreenState
                       child: const Text('Raqamni o‘zgartirish'),
                     ),
                     TextButton(
-                      onPressed: _secondsLeft > 0 || _busy
-                          ? null
-                          : _requestCode,
-                      child: Text(
-                        _secondsLeft > 0
-                            ? 'Qayta yuborish ($_secondsLeft)'
-                            : 'Qayta yuborish',
-                      ),
+                      onPressed: _secondsLeft > 0 || _busy ? null : _requestCode,
+                      child: Text(_secondsLeft > 0 ? 'Qayta yuborish ($_secondsLeft)' : 'Qayta yuborish'),
                     ),
                   ],
                 ),
@@ -231,10 +211,7 @@ class _PhoneVerificationScreenState
                   Container(
                     margin: const EdgeInsets.only(top: AppSpacing.md),
                     padding: const EdgeInsets.all(AppSpacing.md),
-                    decoration: BoxDecoration(
-                      color: palette.primarySoft,
-                      borderRadius: AppRadii.mdAll,
-                    ),
+                    decoration: BoxDecoration(color: palette.primarySoft, borderRadius: AppRadii.mdAll),
                     child: Text(
                       demo
                           ? 'Demo rejim: haqiqiy SMS yuborilmaydi. Kod — ${DemoAuthRepository.demoCode}'
@@ -250,21 +227,14 @@ class _PhoneVerificationScreenState
                 child: _busy
                     ? const SizedBox.square(
                         dimension: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.4,
-                          color: Colors.white,
-                        ),
+                        child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
                       )
                     : Text(_codeSent ? 'Tasdiqlash' : 'Kod olish'),
               ),
               const SizedBox(height: AppSpacing.lg),
               Row(
                 children: [
-                  Icon(
-                    Icons.lock_outline_rounded,
-                    size: AppIconSize.sm,
-                    color: palette.textTertiary,
-                  ),
+                  Icon(Icons.lock_outline_rounded, size: AppIconSize.sm, color: palette.textTertiary),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
