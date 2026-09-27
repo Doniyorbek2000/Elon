@@ -1,12 +1,52 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
+import '../../../core/config/app_config.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/storage/key_value_store.dart';
+import '../../auth/application/session_controller.dart';
 import '../data/uzbekistan_locations.dart';
 import '../domain/location.dart';
 
-final locationTreeProvider = Provider<LocationTree>((ref) => UzbekistanLocations.tree);
+/// Location tree: the bundled copy renders instantly (offline first launch);
+/// with a backend the server tree replaces it and is cached for next start.
+class LocationTreeController extends Notifier<LocationTree> {
+  static const _cacheKey = 'locations.tree.v1';
+
+  @override
+  LocationTree build() {
+    if (ref.watch(appConfigProvider).useDemoData) return UzbekistanLocations.tree;
+    final store = ref.watch(keyValueStoreProvider);
+    unawaited(_refresh(store));
+    final cached = store.getString(_cacheKey);
+    if (cached != null) {
+      try {
+        return LocationTree.fromJson(jsonDecode(cached) as List<dynamic>);
+      } on Object {
+        store.remove(_cacheKey).ignore();
+      }
+    }
+    return UzbekistanLocations.tree;
+  }
+
+  Future<void> _refresh(KeyValueStore store) async {
+    try {
+      final json = await ref.read(apiClientProvider).get<List<dynamic>>('/locations/tree');
+      final tree = LocationTree.fromJson(json);
+      if (tree.regions.isEmpty || !ref.mounted) return;
+      state = tree;
+      await store.setString(_cacheKey, jsonEncode(json));
+    } on AppFailure {
+      // Keep the cached/bundled tree; the next launch retries.
+    }
+  }
+}
+
+final locationTreeProvider = NotifierProvider<LocationTreeController, LocationTree>(LocationTreeController.new);
 
 /// Active browsing location. Defaults to the launch district so the app is
 /// fully usable without granting GPS permission.
@@ -38,6 +78,27 @@ class LocationController extends Notifier<LocationSelection> {
   Future<void> select(LocationSelection selection) async {
     state = selection;
     await ref.read(keyValueStoreProvider).setJson(StoreKeys.location, selection.toJson());
+    unawaited(_syncPreferredArea(selection));
+  }
+
+  /// Signed-in users keep their preferred area across devices (best effort).
+  Future<void> _syncPreferredArea(LocationSelection selection) async {
+    if (ref.read(appConfigProvider).useDemoData || ref.read(sessionProvider) == null) return;
+    try {
+      await ref
+          .read(apiClientProvider)
+          .patch<Object?>(
+            '/me',
+            body: {
+              'preferredRegionId': selection.regionId,
+              'preferredDistrictId': selection.districtId,
+              'preferredLocalityId': selection.localityId,
+              'preferredRadiusKm': selection.radiusKm,
+            },
+          );
+    } on AppFailure {
+      // Local selection already applied; the server copy updates next time.
+    }
   }
 
   Future<void> setRadius(int? radiusKm) => select(state.withRadius(radiusKm));

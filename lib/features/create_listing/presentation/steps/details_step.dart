@@ -201,6 +201,32 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
               error: errors[DraftField.attribute(field.key)],
               onSelected: (value) => _controller.setAttribute(field.key, value ?? ''),
             )
+          else if (field.type == AttributeInputType.multiSelect)
+            _MultiOptionChips(
+              options: field.options,
+              selected: (draft.attributes[field.key] ?? '')
+                  .split(multiSelectSeparator)
+                  .where((v) => v.isNotEmpty)
+                  .toSet(),
+              error: errors[DraftField.attribute(field.key)],
+              onChanged: (values) => _controller.setAttribute(
+                field.key,
+                [
+                  for (final option in field.options)
+                    if (values.contains(option)) option,
+                ].join(multiSelectSeparator),
+              ),
+            )
+          else if (field.type == AttributeInputType.boolean)
+            SegmentedButton<String>(
+              emptySelectionAllowed: !field.required,
+              segments: const [
+                ButtonSegment(value: 'true', label: Text('Ha')),
+                ButtonSegment(value: 'false', label: Text('Yo‘q')),
+              ],
+              selected: {?draft.attributes[field.key]},
+              onSelectionChanged: (value) => _controller.setAttribute(field.key, value.isEmpty ? '' : value.first),
+            )
           else
             TextField(
               controller: _attributeController(field.key, draft.attributes[field.key]),
@@ -348,6 +374,43 @@ class _PickerField extends StatelessWidget {
         if (error != null)
           Padding(
             padding: const EdgeInsets.only(top: AppSpacing.xs, left: AppSpacing.md),
+            child: Text(error!, style: text.bodySmall?.copyWith(color: palette.danger)),
+          ),
+      ],
+    );
+  }
+}
+
+class _MultiOptionChips extends StatelessWidget {
+  const _MultiOptionChips({required this.options, required this.selected, required this.onChanged, this.error});
+
+  final List<String> options;
+  final Set<String> selected;
+  final ValueChanged<Set<String>> onChanged;
+  final String? error;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final text = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.sm,
+          children: [
+            for (final option in options)
+              FilterChip(
+                label: Text(option),
+                selected: selected.contains(option),
+                onSelected: (value) => onChanged(value ? {...selected, option} : ({...selected}..remove(option))),
+              ),
+          ],
+        ),
+        if (error != null)
+          Padding(
+            padding: const EdgeInsets.only(top: AppSpacing.xs, left: AppSpacing.xs),
             child: Text(error!, style: text.bodySmall?.copyWith(color: palette.danger)),
           ),
       ],

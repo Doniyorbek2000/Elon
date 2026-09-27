@@ -9,6 +9,7 @@ import '../../../app/router/routes.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/domain/media_image.dart';
+import '../../../core/errors/app_failure.dart';
 import '../../../core/utils/clock.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_image.dart';
@@ -19,6 +20,8 @@ import '../../../core/widgets/state_views.dart';
 import '../../auth/application/session_controller.dart';
 import '../../create_listing/data/media_services.dart';
 import '../../jobs/application/job_providers.dart';
+import '../../listings/application/listing_providers.dart';
+import '../../services/application/services_providers.dart';
 import '../../trust_safety/application/trust_safety_providers.dart';
 import '../../trust_safety/domain/trust_safety.dart';
 import '../../trust_safety/presentation/report_sheet.dart';
@@ -37,19 +40,61 @@ class ConversationScreen extends ConsumerStatefulWidget {
 class _ConversationScreenState extends ConsumerState<ConversationScreen> {
   final _input = TextEditingController();
   bool _safetyDismissed = false;
+  bool _loadingOlder = false;
+  bool _hasOlder = true;
+  DateTime? _typingSentAt;
 
   @override
   void initState() {
     super.initState();
+    _input.addListener(_onInputChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) ref.read(chatRepositoryProvider).markRead(widget.conversationId);
+      if (mounted) ref.read(chatRepositoryProvider).markRead(widget.conversationId).ignore();
     });
   }
 
   @override
   void dispose() {
-    _input.dispose();
+    _input
+      ..removeListener(_onInputChanged)
+      ..dispose();
     super.dispose();
+  }
+
+  /// Throttled typing signal: at most one event every 3 s while composing.
+  void _onInputChanged() {
+    final repository = ref.read(chatRepositoryProvider);
+    if (_input.text.isEmpty) {
+      if (_typingSentAt != null) repository.sendTyping(widget.conversationId, isTyping: false);
+      _typingSentAt = null;
+      return;
+    }
+    final now = DateTime.now();
+    if (_typingSentAt == null || now.difference(_typingSentAt!) > const Duration(seconds: 3)) {
+      _typingSentAt = now;
+      repository.sendTyping(widget.conversationId, isTyping: true);
+    }
+  }
+
+  Future<void> _loadOlder() async {
+    if (_loadingOlder || !_hasOlder) return;
+    setState(() => _loadingOlder = true);
+    try {
+      final more = await ref.read(chatRepositoryProvider).loadOlder(widget.conversationId);
+      if (mounted) setState(() => _hasOlder = more);
+    } on Object {
+      // Offline: the user can scroll again to retry.
+    } finally {
+      if (mounted) setState(() => _loadingOlder = false);
+    }
+  }
+
+  Future<void> _retry(ChatMessage message) async {
+    try {
+      await ref.read(chatRepositoryProvider).retry(widget.conversationId, message);
+    } on Object catch (error) {
+      if (mounted) showAppSnack(context, error.asFailure().message, icon: Icons.error_outline_rounded);
+    }
   }
 
   Future<void> _send() async {
@@ -103,10 +148,24 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
       ConversationSubject.listing => AppRoutes.listing(subject.refId),
       ConversationSubject.job =>
         subject.refId.startsWith('cv_') ? AppRoutes.candidate(subject.refId) : AppRoutes.job(subject.refId),
+      ConversationSubject.candidate => AppRoutes.candidate(subject.refId),
       ConversationSubject.service => AppRoutes.provider(subject.refId),
       ConversationSubject.direct => null,
     };
     if (route != null) context.push(route);
+  }
+
+  /// Phone numbers are released per context (the peer's own privacy setting
+  /// is enforced server-side); there is no generic "user phone" endpoint.
+  Future<String> _revealPeerPhone(Conversation conversation) {
+    final subject = conversation.context;
+    return switch (subject?.subject) {
+      ConversationSubject.listing => ref.read(listingRepositoryProvider).revealPhone(subject!.refId),
+      ConversationSubject.job => ref.read(jobRepositoryProvider).revealJobPhone(subject!.refId),
+      ConversationSubject.candidate => ref.read(jobRepositoryProvider).revealCandidatePhone(subject!.refId),
+      ConversationSubject.service => ref.read(servicesRepositoryProvider).revealPhone(subject!.refId),
+      _ => Future.error(const NotFoundFailure('Raqam yashirilgan. Chat orqali yozing.')),
+    };
   }
 
   Future<void> _toggleBlock(Conversation conversation) async {
@@ -179,11 +238,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
           IconButton(
             tooltip: 'Qo‘ng‘iroq',
             icon: Icon(Icons.call_rounded, color: palette.primary),
-            onPressed: () => showContactSheet(
-              context,
-              person: peer,
-              loadPhone: () => ref.read(jobRepositoryProvider).revealPhone(peer.id),
-            ),
+            onPressed: () => showContactSheet(context, person: peer, loadPhone: () => _revealPeerPhone(conversation)),
           ),
           PopupMenuButton<String>(
             tooltip: 'Ko‘proq',
@@ -219,6 +274,9 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                 typing: typing,
                 showSafety: !_safetyDismissed && items.length < 8,
                 onDismissSafety: () => setState(() => _safetyDismissed = true),
+                loadingOlder: _loadingOlder,
+                onLoadOlder: _loadOlder,
+                onRetry: _retry,
               ),
             ),
           ),
@@ -311,6 +369,9 @@ class _MessageList extends ConsumerWidget {
     required this.typing,
     required this.showSafety,
     required this.onDismissSafety,
+    required this.loadingOlder,
+    required this.onLoadOlder,
+    required this.onRetry,
   });
 
   final List<ChatMessage> messages;
@@ -318,6 +379,9 @@ class _MessageList extends ConsumerWidget {
   final bool typing;
   final bool showSafety;
   final VoidCallback onDismissSafety;
+  final bool loadingOlder;
+  final VoidCallback onLoadOlder;
+  final ValueChanged<ChatMessage> onRetry;
 
   List<_Row> _rows(DateTime now) {
     final rows = <_Row>[];
@@ -349,20 +413,40 @@ class _MessageList extends ConsumerWidget {
     final gutter = AppBreakpoints.pagePadding(context);
     final extra = (typing ? 1 : 0);
 
-    return ListView.builder(
-      reverse: true,
-      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      padding: EdgeInsets.fromLTRB(gutter, AppSpacing.md, gutter, AppSpacing.md),
-      itemCount: rows.length + extra + (showSafety ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (typing && index == 0) return const _TypingBubble();
-        final rowIndex = index - extra;
-        if (rowIndex == rows.length) return _SafetyBanner(onDismiss: onDismissSafety);
-        return switch (rows[rowIndex]) {
-          _DayRow(:final label) => _DaySeparator(label: label),
-          final _MessageRow row => _Bubble(message: row.message, isMine: row.isMine, grouped: row.groupedWithNext),
-        };
+    // Reverse list: the oldest message is at the far end; nearing it loads
+    // the previous page from the server.
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification.metrics.extentAfter < 400) onLoadOlder();
+        return false;
       },
+      child: ListView.builder(
+        reverse: true,
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        padding: EdgeInsets.fromLTRB(gutter, AppSpacing.md, gutter, AppSpacing.md),
+        itemCount: rows.length + extra + (showSafety ? 1 : 0) + (loadingOlder ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (typing && index == 0) return const _TypingBubble();
+          final rowIndex = index - extra;
+          if (rowIndex == rows.length) {
+            if (loadingOlder) {
+              return const Padding(
+                padding: EdgeInsets.all(AppSpacing.md),
+                child: Center(child: SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+              );
+            }
+            return _SafetyBanner(onDismiss: onDismissSafety);
+          }
+          if (rowIndex > rows.length) return _SafetyBanner(onDismiss: onDismissSafety);
+          return switch (rows[rowIndex]) {
+            _DayRow(:final label) => _DaySeparator(label: label),
+            final _MessageRow row => GestureDetector(
+              onTap: row.isMine && row.message.delivery == DeliveryState.failed ? () => onRetry(row.message) : null,
+              child: _Bubble(message: row.message, isMine: row.isMine, grouped: row.groupedWithNext),
+            ),
+          };
+        },
+      ),
     );
   }
 }

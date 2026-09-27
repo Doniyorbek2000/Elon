@@ -6,7 +6,19 @@ import '../../../core/design/app_colors.dart';
 /// experiences; marketplace categories share the listing flow.
 enum CategoryKind { marketplace, jobs, services }
 
-enum AttributeInputType { text, number, select }
+enum AttributeInputType {
+  text,
+  number,
+  select,
+  multiSelect,
+  boolean;
+
+  static AttributeInputType parse(Object? value) =>
+      values.firstWhere((type) => type.name == value, orElse: () => AttributeInputType.text);
+}
+
+/// Multi-select values are stored in drafts as a `|`-joined string.
+const multiSelectSeparator = '|';
 
 /// Server-drivable form field definition for category-specific attributes
 /// (car year, apartment rooms, phone memory, …).
@@ -34,9 +46,44 @@ class AttributeField {
   final int? max;
   final String? hint;
 
+  factory AttributeField.fromJson(Map<String, dynamic> json) => AttributeField(
+    key: json['key'] as String,
+    label: json['label'] as String,
+    type: AttributeInputType.parse(json['type']),
+    options: [for (final option in json['options'] as List<dynamic>? ?? const []) '$option'],
+    unit: json['unit'] as String?,
+    required: json['required'] as bool? ?? false,
+    min: (json['min'] as num?)?.toInt(),
+    max: (json['max'] as num?)?.toInt(),
+    hint: json['hint'] as String?,
+  );
+
+  /// Converts the draft's string value to the typed API value.
+  Object? toApiValue(String? value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) return null;
+    return switch (type) {
+      AttributeInputType.number => int.tryParse(trimmed.replaceAll(RegExp(r'\s'), '')),
+      AttributeInputType.boolean => trimmed == 'true',
+      AttributeInputType.multiSelect => trimmed.split(multiSelectSeparator).where((v) => v.isNotEmpty).toList(),
+      AttributeInputType.text || AttributeInputType.select => trimmed,
+    };
+  }
+
+  /// Human-readable value (units appended, multi-select joined).
+  String displayValue(String value) => switch (type) {
+    AttributeInputType.boolean => value == 'true' ? 'Ha' : 'Yo‘q',
+    AttributeInputType.multiSelect => value.split(multiSelectSeparator).join(', '),
+    _ => unit == null ? value : '$value $unit',
+  };
+
   String? validate(String? value) {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) return required ? '$label kiritilishi shart' : null;
+    if (type == AttributeInputType.multiSelect &&
+        trimmed.split(multiSelectSeparator).any((v) => v.isNotEmpty && !options.contains(v))) {
+      return 'Ro‘yxatdan tanlang';
+    }
     if (type == AttributeInputType.number) {
       final number = int.tryParse(trimmed.replaceAll(RegExp(r'\s'), ''));
       if (number == null) return 'Faqat raqam kiriting';
@@ -74,6 +121,18 @@ class CategoryFormSchema {
   String get priceLabel => priceMode == PriceMode.salary ? 'Maosh' : 'Narx';
 
   static const generic = CategoryFormSchema();
+
+  factory CategoryFormSchema.fromJson(Map<String, dynamic> json) => CategoryFormSchema(
+    fields: [
+      for (final field in json['fields'] as List<dynamic>? ?? const [])
+        AttributeField.fromJson(field as Map<String, dynamic>),
+    ],
+    priceMode: PriceMode.values.firstWhere((m) => m.name == json['priceMode'], orElse: () => PriceMode.required),
+    supportsCondition: json['supportsCondition'] as bool? ?? true,
+    photosRequired: json['photosRequired'] as bool? ?? true,
+    allowUsd: json['allowUsd'] as bool? ?? false,
+    titleHint: json['titleHint'] as String? ?? generic.titleHint,
+  );
 }
 
 @immutable
@@ -104,6 +163,24 @@ class Category {
 
   bool get hasChildren => children.isNotEmpty;
 
+  /// Parses a node of `GET /categories` (children included).
+  factory Category.fromJson(Map<String, dynamic> json) => Category(
+    id: json['id'] as String,
+    name: json['name'] as String,
+    subtitle: json['subtitle'] as String?,
+    iconKey: json['iconKey'] as String? ?? 'grid',
+    tone: AccentTone.values.firstWhere((t) => t.name == json['tone'], orElse: () => AccentTone.blue),
+    kind: CategoryKind.values.firstWhere((k) => k.name == json['kind'], orElse: () => CategoryKind.marketplace),
+    parentId: json['parentId'] as String?,
+    schema: json['schema'] is Map<String, dynamic>
+        ? CategoryFormSchema.fromJson(json['schema'] as Map<String, dynamic>)
+        : CategoryFormSchema.generic,
+    children: [
+      for (final child in json['children'] as List<dynamic>? ?? const [])
+        Category.fromJson(child as Map<String, dynamic>),
+    ],
+  );
+
   @override
   bool operator ==(Object other) => other is Category && other.id == id;
 
@@ -113,7 +190,9 @@ class Category {
 
 /// Flattened lookup over the category tree.
 class CategoryTree {
-  CategoryTree(this.roots) {
+  /// [inheritRootSchema]: the bundled catalog defines forms on roots; the
+  /// server defines them per category, so its tree must not inherit.
+  CategoryTree(this.roots, {this.inheritRootSchema = true, this.homeShortcutIds}) {
     void index(Category category) {
       _byId[category.id] = category;
       for (final child in category.children) {
@@ -125,6 +204,10 @@ class CategoryTree {
   }
 
   final List<Category> roots;
+  final bool inheritRootSchema;
+
+  /// Server-flagged home shortcuts (null = use the bundled order).
+  final List<String>? homeShortcutIds;
   final Map<String, Category> _byId = {};
 
   Category? byId(String? id) => id == null ? null : _byId[id];
@@ -144,7 +227,7 @@ class CategoryTree {
   CategoryFormSchema schemaFor(String id) {
     final category = byId(id);
     if (category == null) return CategoryFormSchema.generic;
-    if (!identical(category.schema, CategoryFormSchema.generic)) return category.schema;
+    if (!inheritRootSchema || !identical(category.schema, CategoryFormSchema.generic)) return category.schema;
     return rootOf(id)?.schema ?? CategoryFormSchema.generic;
   }
 

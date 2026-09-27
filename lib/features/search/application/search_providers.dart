@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/app_config.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/storage/key_value_store.dart';
 import '../../../data/demo/demo_database.dart';
 import '../../catalog/application/catalog_providers.dart';
@@ -8,9 +10,11 @@ import '../../listings/application/listing_providers.dart';
 import '../../listings/domain/listing_query.dart';
 import '../../services/application/services_providers.dart';
 import '../data/demo_search_repository.dart';
+import '../data/remote_search_repository.dart';
 import '../domain/search.dart';
 
 final searchRepositoryProvider = Provider<SearchRepository>((ref) {
+  if (!ref.watch(appConfigProvider).useDemoData) return RemoteSearchRepository(ref.watch(apiClientProvider));
   return DemoSearchRepository(
     db: ref.watch(demoDatabaseProvider),
     categories: ref.watch(categoryTreeProvider),

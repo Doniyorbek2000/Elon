@@ -274,7 +274,7 @@ class _JobDetailView extends ConsumerWidget {
                         onPressed: () => showContactSheet(
                           context,
                           person: job.employer,
-                          loadPhone: () => ref.read(jobRepositoryProvider).revealPhone(job.employer.id),
+                          loadPhone: () => ref.read(jobRepositoryProvider).revealJobPhone(job.id),
                         ),
                         icon: const Icon(Icons.call_rounded),
                         label: const Text('Qo‘ng‘iroq'),
@@ -330,7 +330,7 @@ class _ApplicationStatusBanner extends ConsumerWidget {
     final palette = context.palette;
     final now = ref.watch(clockProvider)();
     final (color, bg) = switch (application.status) {
-      ApplicationStatus.invited => (palette.success, palette.successSoft),
+      ApplicationStatus.shortlisted || ApplicationStatus.accepted => (palette.success, palette.successSoft),
       ApplicationStatus.rejected => (palette.danger, palette.dangerSoft),
       _ => (palette.primary, palette.primarySoft),
     };

@@ -116,6 +116,13 @@ class DemoListingRepository implements ListingRepository {
   }
 
   @override
+  Future<List<Listing>> mine() async {
+    final user = _db.currentUser;
+    if (user == null) throw const UnauthorizedFailure();
+    return bySeller(user.id);
+  }
+
+  @override
   Future<List<Listing>> bySeller(String sellerId) async {
     await _db.roundTrip(0.6);
     return _db.listings.where((l) => l.seller.id == sellerId).toList()

@@ -31,6 +31,28 @@ class CurrentUser {
 
   bool get isPhoneVerified => verification.isVerified;
 
+  factory CurrentUser.fromJson(Map<String, dynamic> json) => CurrentUser(
+    id: json['id'] as String,
+    displayId: json['displayId'] as String? ?? '',
+    name: json['name'] as String,
+    phone: json['phone'] as String,
+    memberSince: DateTime.parse(json['memberSince'] as String),
+    avatar: json['avatar'] == null ? null : MediaImage.fromJson(json['avatar'] as Map<String, dynamic>),
+    verification: VerificationLevel.parse(json['verification']),
+    accountType: json['accountType'] == 'business' ? AccountType.business : AccountType.personal,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'displayId': displayId,
+    'name': name,
+    'phone': phone,
+    'memberSince': memberSince.toIso8601String(),
+    'avatar': avatar?.toJson(),
+    'verification': verification.name,
+    'accountType': accountType.name,
+  };
+
   PublicProfile toPublic() => PublicProfile(
     id: id,
     name: name,
@@ -53,11 +75,23 @@ class CurrentUser {
   );
 }
 
+/// Result of requesting an SMS code.
+@immutable
+class OtpChallenge {
+  const OtpChallenge({required this.resendIn, required this.expiresIn, this.devCode});
+
+  final Duration resendIn;
+  final Duration expiresIn;
+
+  /// Only returned by a development server (`OTP_DEV_ECHO=true`); never in production.
+  final String? devCode;
+}
+
 abstract interface class AuthRepository {
   Future<CurrentUser?> restoreSession();
 
   /// Sends a one-time code by SMS. Server enforces rate limits.
-  Future<void> requestCode(String phone);
+  Future<OtpChallenge> requestCode(String phone);
 
   Future<CurrentUser> verifyCode({required String phone, required String code});
 

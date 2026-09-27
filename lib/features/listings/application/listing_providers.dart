@@ -9,6 +9,7 @@ import '../../../core/utils/clock.dart';
 import '../../../data/demo/demo_database.dart';
 import '../../../data/demo/demo_seed.dart';
 import '../../catalog/application/catalog_providers.dart';
+import '../../location/application/location_controller.dart';
 import '../data/demo_listing_repository.dart';
 import '../data/remote_listing_repository.dart';
 import '../domain/listing.dart';
@@ -23,7 +24,14 @@ final listingRepositoryProvider = Provider<ListingRepository>((ref) {
       clock: ref.watch(clockProvider),
     );
   }
-  return RemoteListingRepository(ref.watch(apiClientProvider));
+  return RemoteListingRepository(
+    ref.watch(apiClientProvider),
+    location: () {
+      final selection = ref.read(locationProvider);
+      final point = selection.fromDevice ? selection.point : null;
+      return point == null ? null : (lat: point.latitude, lng: point.longitude);
+    },
+  );
 });
 
 /// Bumped after mutations (publish, status change) so feeds refetch.
@@ -84,6 +92,12 @@ final listingDetailProvider = FutureProvider.autoDispose.family<Listing, String>
 
 final similarListingsProvider = FutureProvider.autoDispose.family<List<Listing>, Listing>((ref, listing) {
   return ref.watch(listingRepositoryProvider).similar(listing);
+});
+
+/// The signed-in user's listings in every status.
+final myListingsProvider = FutureProvider.autoDispose<List<Listing>>((ref) {
+  ref.watch(listingsRevisionProvider);
+  return ref.watch(listingRepositoryProvider).mine();
 });
 
 final sellerListingsProvider = FutureProvider.autoDispose.family<List<Listing>, String>((ref, sellerId) {

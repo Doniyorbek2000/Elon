@@ -53,6 +53,10 @@
 	<string>Yaqin atrofdagi e’lonlarni ko‘rsatish uchun tumaningizni aniqlaymiz. Aniq manzil saqlanmaydi.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>E’lon va chat uchun rasmlarni tanlash imkonini beradi.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

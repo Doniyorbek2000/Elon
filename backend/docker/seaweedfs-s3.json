@@ -1,0 +1,9 @@
+{
+  "identities": [
+    {
+      "name": "bozor-dev",
+      "credentials": [{ "accessKey": "bozor_dev_access", "secretKey": "bozor_dev_secret_key" }],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    }
+  ]
+}

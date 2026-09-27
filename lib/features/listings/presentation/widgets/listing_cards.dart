@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/routes.dart';
-import '../../../../core/config/feature_flags.dart';
 import '../../../../core/design/app_colors.dart';
 import '../../../../core/design/app_icons.dart';
 import '../../../../core/design/app_tokens.dart';
@@ -72,7 +71,6 @@ class ListingCard extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final now = ref.watch(clockProvider)();
     final visual = listingVisual(ref, listing.categoryId);
-    final showBadge = ref.watch(featureFlagsProvider).showPromotionBadges;
     final promotion = listing.promotion;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -99,7 +97,7 @@ class ListingCard extends ConsumerWidget {
                     tag: '$heroPrefix-${listing.id}',
                     child: AppImage(image: listing.cover, placeholderIcon: visual.icon, tone: visual.tone),
                   ),
-                  if (showBadge && promotion != null && promotion.isActive(now))
+                  if (promotion != null && promotion.isActive(now))
                     PositionedDirectional(
                       top: AppSpacing.sm,
                       start: AppSpacing.sm,
@@ -156,7 +154,6 @@ class ListingTile extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final now = ref.watch(clockProvider)();
     final visual = listingVisual(ref, listing.categoryId);
-    final showBadge = ref.watch(featureFlagsProvider).showPromotionBadges;
     final promotion = listing.promotion;
     final thumbWidth = MediaQuery.textScalerOf(context).scale(1) > 1.3 ? 96.0 : 112.0;
 
@@ -193,7 +190,7 @@ class ListingTile extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          if (showBadge && promotion != null && promotion.isActive(now)) ...[
+                          if (promotion != null && promotion.isActive(now)) ...[
                             PromotionBadge(type: promotion.type),
                             const SizedBox(width: AppSpacing.xs),
                           ],
@@ -222,8 +219,8 @@ class ListingTile extends ConsumerWidget {
                           label: listing.status.label,
                           dense: true,
                           style: switch (listing.status) {
-                            ListingStatus.pendingReview => PillStyle.warning,
-                            ListingStatus.rejected => PillStyle.danger,
+                            ListingStatus.pendingReview || ListingStatus.reserved => PillStyle.warning,
+                            ListingStatus.rejected || ListingStatus.expired => PillStyle.danger,
                             ListingStatus.sold => PillStyle.success,
                             _ => PillStyle.neutral,
                           },

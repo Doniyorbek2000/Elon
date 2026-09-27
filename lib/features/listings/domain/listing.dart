@@ -15,6 +15,9 @@ enum ItemCondition {
     ItemCondition.used => 'Ishlatilgan',
   };
 
+  /// Wire value used by the API (`new` | `used`).
+  String get apiValue => this == ItemCondition.newItem ? 'new' : 'used';
+
   static ItemCondition? parse(Object? value) => switch (value) {
     'new' || 'newItem' => ItemCondition.newItem,
     'used' => ItemCondition.used,
@@ -22,18 +25,26 @@ enum ItemCondition {
   };
 }
 
+/// Mirrors the server lifecycle: draft → pendingReview → active ⇄ reserved →
+/// sold; expired after the TTL; rejected by moderation; archived by owner.
 enum ListingStatus {
+  draft,
   active,
   pendingReview,
+  reserved,
   rejected,
   sold,
+  expired,
   archived;
 
   String get label => switch (this) {
+    ListingStatus.draft => 'Qoralama',
     ListingStatus.active => 'Faol',
     ListingStatus.pendingReview => 'Tekshiruvda',
+    ListingStatus.reserved => 'Band qilingan',
     ListingStatus.rejected => 'Rad etilgan',
     ListingStatus.sold => 'Sotilgan',
+    ListingStatus.expired => 'Muddati tugagan',
     ListingStatus.archived => 'Arxivda',
   };
 
@@ -75,6 +86,8 @@ class Listing {
     this.promotion,
     this.status = ListingStatus.active,
     this.distanceKm,
+    this.shareUrl,
+    this.rejectReason,
   });
 
   final String id;
@@ -99,6 +112,12 @@ class Listing {
   /// Filled by the backend for proximity queries.
   final double? distanceKm;
 
+  /// Canonical web URL (App Links / Universal Links) from the server.
+  final String? shareUrl;
+
+  /// Moderation reason, visible to the owner only.
+  final String? rejectReason;
+
   MediaImage? get cover => images.isEmpty ? null : images.first;
 
   Listing copyWith({int? views, int? favorites, ListingStatus? status, double? distanceKm, Promotion? promotion}) =>
@@ -120,6 +139,8 @@ class Listing {
         promotion: promotion ?? this.promotion,
         status: status ?? this.status,
         distanceKm: distanceKm ?? this.distanceKm,
+        shareUrl: shareUrl,
+        rejectReason: rejectReason,
       );
 
   factory Listing.fromJson(Map<String, dynamic> json) => Listing(
@@ -143,12 +164,11 @@ class Listing {
     ],
     views: json['views'] as int? ?? 0,
     favorites: json['favorites'] as int? ?? 0,
-    promotion: switch (PromotionType.parse(json['promotion'])) {
-      final PromotionType type => Promotion(type),
-      null => null,
-    },
+    promotion: Promotion.fromJson(json),
     status: ListingStatus.parse(json['status']),
     distanceKm: (json['distanceKm'] as num?)?.toDouble(),
+    shareUrl: json['shareUrl'] as String?,
+    rejectReason: json['rejectReason'] as String?,
   );
 
   @override

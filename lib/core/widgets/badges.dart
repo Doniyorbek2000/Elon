@@ -99,11 +99,15 @@ class PromotionBadge extends StatelessWidget {
     label: type.badge,
     dense: dense,
     style: switch (type) {
-      PromotionType.vip || PromotionType.premiumVacancy => PillStyle.vip,
+      PromotionType.vip => PillStyle.vip,
       PromotionType.top || PromotionType.featured => PillStyle.warning,
-      PromotionType.bump => PillStyle.primary,
+      PromotionType.urgent => PillStyle.danger,
     },
-    icon: type == PromotionType.vip ? Icons.diamond_rounded : null,
+    icon: switch (type) {
+      PromotionType.vip => Icons.diamond_rounded,
+      PromotionType.urgent => Icons.bolt_rounded,
+      _ => null,
+    },
   );
 }
 

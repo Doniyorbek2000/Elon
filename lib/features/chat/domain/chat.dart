@@ -3,7 +3,8 @@ import 'package:flutter/foundation.dart';
 import '../../../core/domain/media_image.dart';
 import '../../../core/domain/public_profile.dart';
 
-enum ConversationSubject { listing, job, service, direct }
+/// `candidate`: employer ↔ job seeker about a CV (server context `direct`).
+enum ConversationSubject { listing, job, service, candidate, direct }
 
 /// Pinned context card shown at the top of a conversation
 /// (listing image, title, price) so both sides know what is discussed.
@@ -22,6 +23,25 @@ class ConversationContext {
   final String title;
   final String? subtitle;
   final MediaImage? image;
+
+  static ConversationContext? fromJson(Map<String, dynamic>? json) {
+    if (json == null) return null;
+    final subject = ConversationSubject.values.firstWhere(
+      (s) => s.name == json['subject'],
+      orElse: () => ConversationSubject.direct,
+    );
+    if (subject == ConversationSubject.direct) return null;
+    final price = json['price'] as Map<String, dynamic>?;
+    return ConversationContext(
+      subject: subject,
+      refId: json['refId'] as String,
+      title: json['title'] as String? ?? '',
+      subtitle:
+          json['subtitle'] as String? ??
+          (price == null ? null : '${price['amount']} ${price['currency'] == 'usd' ? 'y.e.' : 'so‘m'}'),
+      image: json['image'] == null ? null : MediaImage.fromJson(json['image'] as Map<String, dynamic>),
+    );
+  }
 }
 
 @immutable
@@ -43,6 +63,18 @@ class Conversation {
   final String? lastMessagePreview;
   final int unreadCount;
   final bool isBlocked;
+
+  factory Conversation.fromJson(Map<String, dynamic> json) => Conversation(
+    id: json['id'] as String,
+    peer: json['peer'] == null
+        ? PublicProfile(id: '', name: 'O‘chirilgan foydalanuvchi', memberSince: DateTime.fromMillisecondsSinceEpoch(0))
+        : PublicProfile.fromJson(json['peer'] as Map<String, dynamic>),
+    updatedAt: DateTime.parse((json['lastMessageAt'] ?? json['updatedAt']) as String),
+    context: ConversationContext.fromJson(json['context'] as Map<String, dynamic>?),
+    lastMessagePreview: json['lastMessagePreview'] as String?,
+    unreadCount: (json['unreadCount'] as num?)?.toInt() ?? 0,
+    isBlocked: json['isBlocked'] as bool? ?? false,
+  );
 
   Conversation copyWith({
     DateTime? updatedAt,
@@ -77,7 +109,30 @@ class ChatMessage {
     this.image,
     this.sharedRefId,
     this.delivery = DeliveryState.sent,
+    this.clientId,
   });
+
+  factory ChatMessage.fromJson(Map<String, dynamic> json) {
+    final images = json['images'] as List<dynamic>? ?? const [];
+    final shared = json['sharedListing'] as Map<String, dynamic>?;
+    return ChatMessage(
+      id: json['id'] as String,
+      conversationId: json['conversationId'] as String,
+      senderId: json['senderId'] as String,
+      sentAt: DateTime.parse(json['createdAt'] as String),
+      kind: switch (json['type']) {
+        'image' => MessageKind.image,
+        'listingShare' => MessageKind.listing,
+        'system' => MessageKind.system,
+        _ => MessageKind.text,
+      },
+      text: json['text'] as String? ?? shared?['title'] as String?,
+      image: images.isEmpty ? null : MediaImage.fromJson(images.first as Map<String, dynamic>),
+      sharedRefId: shared?['id'] as String?,
+      delivery: DeliveryState.values.firstWhere((d) => d.name == json['delivery'], orElse: () => DeliveryState.sent),
+      clientId: json['clientId'] as String?,
+    );
+  }
 
   final String id;
   final String conversationId;
@@ -89,6 +144,9 @@ class ChatMessage {
   final String? sharedRefId;
   final DeliveryState delivery;
 
+  /// Client-generated id; the server deduplicates retries by it.
+  final String? clientId;
+
   ChatMessage copyWith({DeliveryState? delivery}) => ChatMessage(
     id: id,
     conversationId: conversationId,
@@ -99,6 +157,7 @@ class ChatMessage {
     image: image,
     sharedRefId: sharedRefId,
     delivery: delivery ?? this.delivery,
+    clientId: clientId,
   );
 
   String get preview => switch (kind) {
@@ -142,15 +201,6 @@ final class PresenceChanged extends ChatEvent {
   final bool isOnline;
 }
 
-/// Transport seam: a WebSocket implementation (e.g. `web_socket_channel`)
-/// plugs in here when `FeatureFlags.realtimeChatEnabled` is on.
-abstract interface class ChatRealtimeGateway {
-  Stream<ChatEvent> get events;
-  Future<void> connect();
-  Future<void> disconnect();
-  void sendTyping(String conversationId, {required bool isTyping});
-}
-
 abstract interface class ChatRepository {
   Stream<List<Conversation>> watchConversations();
   Stream<List<ChatMessage>> watchMessages(String conversationId);
@@ -163,4 +213,13 @@ abstract interface class ChatRepository {
   Future<void> sendImage(String conversationId, MediaImage image);
   Future<void> markRead(String conversationId);
   Future<void> setBlocked(String conversationId, {required bool blocked});
+
+  /// Loads the next page of older messages; returns whether more exist.
+  Future<bool> loadOlder(String conversationId);
+
+  /// Re-sends a message that failed (same client id → no duplicates).
+  Future<void> retry(String conversationId, ChatMessage message);
+
+  /// Ephemeral typing indicator (never persisted).
+  void sendTyping(String conversationId, {required bool isTyping});
 }

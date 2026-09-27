@@ -178,4 +178,15 @@ class DemoChatRepository implements ChatRepository {
     await _messagesChanged.close();
     await _typing.close();
   }
+
+  @override
+  Future<bool> loadOlder(String conversationId) async => false;
+
+  @override
+  Future<void> retry(String conversationId, ChatMessage message) async {
+    if (message.text != null) await sendText(conversationId, message.text!);
+  }
+
+  @override
+  void sendTyping(String conversationId, {required bool isTyping}) {}
 }

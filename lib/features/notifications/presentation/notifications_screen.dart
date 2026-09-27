@@ -33,7 +33,7 @@ class NotificationsScreen extends ConsumerWidget {
       body: notifications.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => FailureView(error: error, onRetry: () => ref.invalidate(notificationsProvider)),
-        data: (items) => items.isEmpty
+        data: (paged) => paged.items.isEmpty
             ? const EmptyState(
                 icon: Icons.notifications_none_rounded,
                 title: 'Bildirishnomalar yo‘q',
@@ -42,11 +42,26 @@ class NotificationsScreen extends ConsumerWidget {
             : RefreshIndicator.adaptive(
                 onRefresh: () => ref.refresh(notificationsProvider.future),
                 child: ContentWidth(
-                  child: ListView.separated(
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                    itemCount: items.length,
-                    separatorBuilder: (_, _) => const Divider(indent: 72),
-                    itemBuilder: (_, index) => _NotificationTile(notification: items[index]),
+                  child: NotificationListener<ScrollNotification>(
+                    onNotification: (notification) {
+                      if (notification.metrics.extentAfter < 400) {
+                        ref.read(notificationsProvider.notifier).loadMore();
+                      }
+                      return false;
+                    },
+                    child: ListView.separated(
+                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                      itemCount: paged.items.length + 1,
+                      separatorBuilder: (_, _) => const Divider(indent: 72),
+                      itemBuilder: (_, index) => index == paged.items.length
+                          ? LoadMoreFooter(
+                              isLoading: paged.isLoadingMore,
+                              hasMore: paged.hasMore,
+                              error: paged.loadMoreError,
+                              onRetry: () => ref.read(notificationsProvider.notifier).loadMore(),
+                            )
+                          : _NotificationTile(notification: paged.items[index]),
+                    ),
                   ),
                 ),
               ),
@@ -75,7 +90,11 @@ class _NotificationTile extends ConsumerWidget {
     return Material(
       color: notification.isRead ? Colors.transparent : palette.primarySoft.withValues(alpha: 0.5),
       child: InkWell(
-        onTap: notification.deepLink == null ? null : () => context.push(notification.deepLink!),
+        onTap: () {
+          if (!notification.isRead) ref.read(notificationsProvider.notifier).markRead(notification.id).ignore();
+          final link = notification.deepLink;
+          if (link != null) context.push(link);
+        },
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
           child: Row(

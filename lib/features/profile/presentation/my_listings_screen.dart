@@ -3,25 +3,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/routes.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/config/feature_flags.dart';
 import '../../../core/design/app_tokens.dart';
-import '../../../core/domain/promotion.dart';
 import '../../../core/sharing/share_sheet.dart';
-import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/common.dart';
-import '../../../core/widgets/sheets.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../auth/application/session_controller.dart';
 import '../../listings/application/listing_providers.dart';
 import '../../listings/domain/listing.dart';
 import '../../listings/presentation/listing_detail_screen.dart';
 import '../../listings/presentation/widgets/listing_cards.dart';
-import '../../monetization/application/monetization_providers.dart';
+import '../../monetization/domain/monetization.dart';
+import '../../monetization/presentation/promote_sheet.dart';
 
 enum _Tab {
-  active('Faol', {ListingStatus.active}),
-  review('Tekshiruvda', {ListingStatus.pendingReview, ListingStatus.rejected}),
-  archive('Arxiv', {ListingStatus.sold, ListingStatus.archived});
+  active('Faol', {ListingStatus.active, ListingStatus.reserved}),
+  review('Tekshiruvda', {ListingStatus.draft, ListingStatus.pendingReview, ListingStatus.rejected}),
+  archive('Arxiv', {ListingStatus.sold, ListingStatus.expired, ListingStatus.archived});
 
   const _Tab(this.label, this.statuses);
 
@@ -36,7 +35,7 @@ class MyListingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(sessionProvider);
     if (user == null) return const SizedBox.shrink();
-    final listings = ref.watch(sellerListingsProvider(user.id));
+    final listings = ref.watch(myListingsProvider);
 
     return DefaultTabController(
       length: _Tab.values.length,
@@ -60,8 +59,7 @@ class MyListingsScreen extends ConsumerWidget {
         ),
         body: listings.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) =>
-              FailureView(error: error, onRetry: () => ref.invalidate(sellerListingsProvider(user.id))),
+          error: (error, _) => FailureView(error: error, onRetry: () => ref.invalidate(myListingsProvider)),
           data: (items) => TabBarView(
             children: [
               for (final tab in _Tab.values)
@@ -104,12 +102,19 @@ class _ListingsTab extends ConsumerWidget {
   }
 
   Future<void> _promote(BuildContext context, WidgetRef ref, Listing listing) async {
-    await showAppSheet<void>(context, builder: (_) => _PromoteSheet(listing: listing));
+    final activated = await showPromoteSheet(
+      context,
+      target: PromotionTarget.listing,
+      targetId: listing.id,
+      itemTitle: listing.title,
+    );
+    if (activated) ref.read(listingsRevisionProvider.notifier).bump();
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final canPromote = ref.watch(featureFlagsProvider).canSellPromotions;
+    final canPromote = ref.watch(featureFlagsProvider).canPromoteListings;
+    final remote = !ref.watch(appConfigProvider).useDemoData;
     if (items.isEmpty) {
       return EmptyState(
         icon: Icons.inventory_2_outlined,
@@ -137,74 +142,34 @@ class _ListingsTab extends ConsumerWidget {
             onSelected: (value) => switch (value) {
               'share' => showShareSheet(context, listingSharePayload(ref, listing)),
               'sold' => _setStatus(context, ref, listing, ListingStatus.sold),
+              'reserve' => _setStatus(context, ref, listing, ListingStatus.reserved),
               'archive' => _setStatus(context, ref, listing, ListingStatus.archived),
               'activate' => _setStatus(context, ref, listing, ListingStatus.active),
               'promote' => _promote(context, ref, listing),
+              'stats' => context.push(AppRoutes.listingStats(listing.id)),
               'delete' => _delete(context, ref, listing),
               _ => null,
             },
             itemBuilder: (_) => [
               if (listing.status == ListingStatus.active) ...[
                 const PopupMenuItem(value: 'share', child: Text('Ulashish')),
-                if (canPromote) const PopupMenuItem(value: 'promote', child: Text('Reklama qilish')),
+                if (canPromote) const PopupMenuItem(value: 'promote', child: Text('Tezroq sotish (TOP/VIP)')),
+                if (remote) const PopupMenuItem(value: 'stats', child: Text('Statistika')),
+                const PopupMenuItem(value: 'reserve', child: Text('Band qilindi deb belgilash')),
                 const PopupMenuItem(value: 'sold', child: Text('Sotildi deb belgilash')),
                 const PopupMenuItem(value: 'archive', child: Text('Arxivlash')),
               ],
-              if (listing.status == ListingStatus.sold || listing.status == ListingStatus.archived)
+              if (listing.status == ListingStatus.reserved) ...[
+                const PopupMenuItem(value: 'activate', child: Text('Yana sotuvga qo‘yish')),
+                const PopupMenuItem(value: 'sold', child: Text('Sotildi deb belgilash')),
+              ],
+              if (const {ListingStatus.sold, ListingStatus.archived, ListingStatus.expired}.contains(listing.status))
                 const PopupMenuItem(value: 'activate', child: Text('Qayta faollashtirish')),
               const PopupMenuItem(value: 'delete', child: Text('O‘chirish')),
             ],
           ),
         );
       },
-    );
-  }
-}
-
-/// Paid promotion picker — reachable only when `canSellPromotions` is on.
-class _PromoteSheet extends ConsumerWidget {
-  const _PromoteSheet({required this.listing});
-
-  final Listing listing;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final products = ref.watch(promotionProductsProvider(PromotionTarget.listing)).value ?? const [];
-    final text = Theme.of(context).textTheme;
-    return SheetScaffold(
-      title: 'E’lonni ko‘tarish',
-      body: ListView(
-        shrinkWrap: true,
-        padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.xl),
-        children: [
-          Text(listing.title, style: text.bodySmall),
-          const SizedBox(height: AppSpacing.md),
-          for (final product in products)
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: SurfaceCard(
-                onTap: () {
-                  Navigator.pop(context);
-                  showAppSnack(context, 'To‘lov tizimi ulanganidan so‘ng faollashadi');
-                },
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('${product.title} · ${product.durationDays} kun', style: text.titleSmall),
-                          Text(product.description, style: text.bodySmall),
-                        ],
-                      ),
-                    ),
-                    Text(Formatters.money(product.price), style: text.titleSmall),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      ),
     );
   }
 }

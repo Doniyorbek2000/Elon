@@ -148,7 +148,7 @@ class _CandidateView extends ConsumerWidget {
             onPressed: () => showContactSheet(
               context,
               person: profile,
-              loadPhone: () => ref.read(jobRepositoryProvider).revealPhone(profile.id),
+              loadPhone: () => ref.read(jobRepositoryProvider).revealCandidatePhone(candidate.id),
             ),
             icon: const Icon(Icons.call_rounded),
             label: const Text('Qo‘ng‘iroq'),
@@ -159,7 +159,7 @@ class _CandidateView extends ConsumerWidget {
               ref,
               peer: profile,
               subject: ConversationContext(
-                subject: ConversationSubject.job,
+                subject: ConversationSubject.candidate,
                 refId: candidate.id,
                 title: candidate.desiredPosition,
                 subtitle: '${candidate.experienceYears} yil tajriba',

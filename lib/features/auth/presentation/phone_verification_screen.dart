@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,8 +28,6 @@ class PhoneVerificationScreen extends ConsumerStatefulWidget {
 }
 
 class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScreen> {
-  static const _resendSeconds = 60;
-
   final _phone = TextEditingController();
   final _code = TextEditingController();
   final _codeFocus = FocusNode();
@@ -36,6 +35,7 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
   bool _busy = false;
   String? _error;
   int _secondsLeft = 0;
+  String? _devCode;
   Timer? _timer;
 
   @override
@@ -49,9 +49,9 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
 
   String get _fullPhone => '998${UzPhoneInputFormatter.digitsOf(_phone.text)}';
 
-  void _startTimer() {
+  void _startTimer(Duration resendIn) {
     _timer?.cancel();
-    setState(() => _secondsLeft = _resendSeconds);
+    setState(() => _secondsLeft = resendIn.inSeconds);
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted || _secondsLeft <= 1) {
         timer.cancel();
@@ -72,20 +72,24 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
       _error = null;
     });
     try {
-      await ref.read(sessionProvider.notifier).requestCode(_fullPhone);
+      final challenge = await ref.read(sessionProvider.notifier).requestCode(_fullPhone);
       if (!mounted) return;
       setState(() {
         _busy = false;
         _codeSent = true;
+        // Development servers may echo the code; release builds never show it.
+        _devCode = kReleaseMode ? null : challenge.devCode;
       });
-      _startTimer();
+      _startTimer(challenge.resendIn);
       _codeFocus.requestFocus();
     } on Object catch (error) {
       if (!mounted) return;
+      final failure = error.asFailure();
       setState(() {
         _busy = false;
-        _error = error.asFailure().message;
+        _error = failure.message;
       });
+      if (failure case RateLimitFailure(:final retryAfter?)) _startTimer(retryAfter);
     }
   }
 
@@ -123,6 +127,7 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
     final text = Theme.of(context).textTheme;
     final palette = context.palette;
     final demo = ref.watch(appConfigProvider).useDemoData;
+    final devCode = _devCode;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Kirish')),
@@ -202,13 +207,15 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
                     ),
                   ],
                 ),
-                if (demo)
+                if (demo || devCode != null)
                   Container(
                     margin: const EdgeInsets.only(top: AppSpacing.md),
                     padding: const EdgeInsets.all(AppSpacing.md),
                     decoration: BoxDecoration(color: palette.primarySoft, borderRadius: AppRadii.mdAll),
                     child: Text(
-                      'Demo rejim: haqiqiy SMS yuborilmaydi. Kod — ${DemoAuthRepository.demoCode}',
+                      demo
+                          ? 'Demo rejim: haqiqiy SMS yuborilmaydi. Kod — ${DemoAuthRepository.demoCode}'
+                          : 'Test server: SMS yuborilmadi. Kod — $devCode',
                       style: text.bodySmall?.copyWith(color: palette.primary),
                       textAlign: TextAlign.center,
                     ),

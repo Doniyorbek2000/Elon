@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/app_config.dart';
 import '../../../core/domain/public_profile.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/network/api_client.dart';
 import '../../../data/demo/demo_database.dart';
 
 abstract interface class ProfilesRepository {
@@ -30,9 +32,20 @@ class DemoProfilesRepository implements ProfilesRepository {
   }
 }
 
-final profilesRepositoryProvider = Provider<ProfilesRepository>(
-  (ref) => DemoProfilesRepository(ref.watch(demoDatabaseProvider)),
-);
+class RemoteProfilesRepository implements ProfilesRepository {
+  RemoteProfilesRepository(this._api);
+
+  final ApiClient _api;
+
+  @override
+  Future<PublicProfile> getProfile(String userId) async =>
+      PublicProfile.fromJson(await _api.get<JsonMap>('/users/$userId'));
+}
+
+final profilesRepositoryProvider = Provider<ProfilesRepository>((ref) {
+  if (ref.watch(appConfigProvider).useDemoData) return DemoProfilesRepository(ref.watch(demoDatabaseProvider));
+  return RemoteProfilesRepository(ref.watch(apiClientProvider));
+});
 
 final publicProfileProvider = FutureProvider.autoDispose.family<PublicProfile, String>((ref, userId) {
   return ref.watch(profilesRepositoryProvider).getProfile(userId);

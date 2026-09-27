@@ -17,11 +17,12 @@ class DemoAuthRepository implements AuthRepository {
   Future<CurrentUser?> restoreSession() async => _db.currentUser;
 
   @override
-  Future<void> requestCode(String phone) async {
+  Future<OtpChallenge> requestCode(String phone) async {
     await _db.roundTrip();
     if (!RegExp(r'^998\d{9}$').hasMatch(phone)) {
       throw const ValidationFailure('Telefon raqami noto‘g‘ri');
     }
+    return const OtpChallenge(resendIn: Duration(seconds: 60), expiresIn: Duration(minutes: 5), devCode: demoCode);
   }
 
   @override

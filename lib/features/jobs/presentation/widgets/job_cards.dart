@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/routes.dart';
-import '../../../../core/config/feature_flags.dart';
 import '../../../../core/design/app_colors.dart';
 import '../../../../core/design/app_icons.dart';
 import '../../../../core/design/app_tokens.dart';
@@ -25,7 +24,6 @@ class JobCard extends ConsumerWidget {
     final palette = context.palette;
     final text = Theme.of(context).textTheme;
     final now = ref.watch(clockProvider)();
-    final showBadges = ref.watch(featureFlagsProvider).showPromotionBadges;
     final promotion = job.promotion;
     final salary = Formatters.salaryRange(job.salaryMin, job.salaryMax, job.currency);
     final meta = '${job.place.shortLabel} · ${Formatters.relativeTime(job.publishedAt, now)}';
@@ -52,8 +50,11 @@ class JobCard extends ConsumerWidget {
                         child: Text(job.title, style: text.titleSmall, maxLines: 2, overflow: TextOverflow.ellipsis),
                       ),
                       const SizedBox(width: AppSpacing.sm),
-                      if (showBadges && promotion != null && promotion.isActive(now))
-                        PromotionBadge(type: promotion.type)
+                      if (promotion != null && promotion.isActive(now))
+                        Wrap(
+                          spacing: AppSpacing.xs,
+                          children: [for (final badge in promotion.all) PromotionBadge(type: badge)],
+                        )
                       else if (job.isNew(now))
                         const StatusPill(label: 'Yangi', style: PillStyle.success, dense: true),
                     ],

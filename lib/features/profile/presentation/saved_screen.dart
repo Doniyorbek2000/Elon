@@ -4,10 +4,13 @@ import 'package:flutter_riverpod/misc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/routes.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../auth/application/session_controller.dart';
 import '../../jobs/application/job_providers.dart';
+import '../../jobs/data/remote_job_repository.dart';
 import '../../jobs/domain/job.dart';
 import '../../jobs/presentation/widgets/job_cards.dart';
 import '../../listings/application/listing_providers.dart';
@@ -18,14 +21,22 @@ import '../../services/application/services_providers.dart';
 import '../../services/domain/service_provider.dart';
 import '../../services/presentation/widgets/provider_cards.dart';
 
+/// With a backend and an account, favorites are listed by the server (one
+/// query, removed items filtered out); otherwise from the local id set.
+bool _serverFavorites(Ref ref) => !ref.watch(appConfigProvider).useDemoData && ref.watch(sessionProvider) != null;
+
 final _savedListingsProvider = FutureProvider.autoDispose<List<Listing>>((ref) {
   ref.watch(savedItemsProvider);
+  if (_serverFavorites(ref)) return ref.watch(favoritesRepositoryProvider).list(SavedKind.listing, Listing.fromJson);
   final ids = ref.read(savedItemsProvider.notifier).idsOf(SavedKind.listing);
   return ids.isEmpty ? Future.value(const []) : ref.watch(listingRepositoryProvider).getByIds(ids);
 });
 
 final _savedJobsProvider = FutureProvider.autoDispose<List<Job>>((ref) async {
   ref.watch(savedItemsProvider);
+  if (_serverFavorites(ref)) {
+    return ref.watch(favoritesRepositoryProvider).list(SavedKind.job, RemoteJobRepository.jobFromJson);
+  }
   final ids = ref.read(savedItemsProvider.notifier).idsOf(SavedKind.job);
   final repository = ref.watch(jobRepositoryProvider);
   final jobs = await Future.wait(ids.map((id) => repository.getJob(id).then<Job?>((j) => j, onError: (_) => null)));
@@ -34,6 +45,9 @@ final _savedJobsProvider = FutureProvider.autoDispose<List<Job>>((ref) async {
 
 final _savedProvidersProvider = FutureProvider.autoDispose<List<ServiceProvider>>((ref) async {
   ref.watch(savedItemsProvider);
+  if (_serverFavorites(ref)) {
+    return ref.watch(favoritesRepositoryProvider).list(SavedKind.provider, ServiceProvider.fromJson);
+  }
   final ids = ref.read(savedItemsProvider.notifier).idsOf(SavedKind.provider);
   final repository = ref.watch(servicesRepositoryProvider);
   final providers = await Future.wait(

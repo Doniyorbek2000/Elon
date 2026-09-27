@@ -41,6 +41,11 @@ class MyApplicationsController extends AsyncNotifier<List<JobApplication>> {
     return ref.watch(jobRepositoryProvider).myApplications(user.id);
   }
 
+  Future<void> withdraw(String applicationId) async {
+    await ref.read(jobRepositoryProvider).withdrawApplication(applicationId);
+    ref.invalidateSelf();
+  }
+
   Future<JobApplication> apply(String jobId, {String? message}) async {
     final user = ref.read(sessionProvider);
     if (user == null) throw StateError('apply() requires a signed-in user');
@@ -61,3 +66,16 @@ final applicationForJobProvider = Provider.autoDispose.family<JobApplication?, S
   final applications = ref.watch(myApplicationsProvider).value ?? const [];
   return applications.where((a) => a.job.id == jobId).firstOrNull;
 });
+
+/// Employer: own vacancies in every status.
+final myJobsProvider = FutureProvider.autoDispose<List<Job>>((ref) => ref.watch(jobRepositoryProvider).myJobs());
+
+/// Employer: applicants of one of their vacancies (server checks ownership).
+final applicantsProvider = FutureProvider.autoDispose.family<List<Applicant>, String>((ref, jobId) {
+  return ref.watch(jobRepositoryProvider).applicants(jobId);
+});
+
+/// Job seeker: own CV (null until created).
+final myResumeProvider = FutureProvider.autoDispose<CandidateProfile?>(
+  (ref) => ref.watch(jobRepositoryProvider).myResume(),
+);

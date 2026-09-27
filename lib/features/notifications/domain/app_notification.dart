@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/domain/paged.dart';
+
 enum NotificationKind { message, priceDrop, application, listingApproved, system }
 
 @immutable
@@ -24,6 +26,21 @@ class AppNotification {
   /// In-app route to open when tapped (same format as push payloads).
   final String? deepLink;
 
+  factory AppNotification.fromJson(Map<String, dynamic> json) => AppNotification(
+    id: json['id'] as String,
+    kind: switch (json['type']) {
+      'message' => NotificationKind.message,
+      'listingStatus' => NotificationKind.listingApproved,
+      'applicationReceived' || 'applicationStatus' => NotificationKind.application,
+      _ => NotificationKind.system,
+    },
+    title: json['title'] as String,
+    body: json['body'] as String? ?? '',
+    createdAt: DateTime.parse(json['createdAt'] as String),
+    isRead: json['isRead'] as bool? ?? false,
+    deepLink: json['deepLink'] as String?,
+  );
+
   AppNotification markRead() => AppNotification(
     id: id,
     kind: kind,
@@ -36,6 +53,9 @@ class AppNotification {
 }
 
 abstract interface class NotificationsRepository {
-  Future<List<AppNotification>> list();
+  /// Newest first; [cursor] pages further back.
+  Future<PageResult<AppNotification>> page({String? cursor});
+  Future<int> unreadCount();
+  Future<void> markRead(String id);
   Future<void> markAllRead();
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/saved/application/saved_items_controller.dart';
 import '../design/app_colors.dart';
 import '../design/app_tokens.dart';
+import '../errors/app_failure.dart';
 
 /// Heart toggle with a spring pop + haptic. Rebuilds only for its own item.
 class FavoriteButton extends ConsumerStatefulWidget {
@@ -40,10 +43,19 @@ class _FavoriteButtonState extends ConsumerState<FavoriteButton> with SingleTick
     super.dispose();
   }
 
-  void _toggle() {
-    final saved = ref.read(savedItemsProvider.notifier).toggle(widget.kind, widget.id);
-    HapticFeedback.lightImpact();
-    if (saved && !AppMotion.reduced(context)) _pop.forward(from: 0);
+  Future<void> _toggle() async {
+    final willSave = !ref.read(isSavedProvider((widget.kind, widget.id)));
+    unawaited(HapticFeedback.lightImpact());
+    if (willSave && !AppMotion.reduced(context)) _pop.forward(from: 0);
+    try {
+      await ref.read(savedItemsProvider.notifier).toggle(widget.kind, widget.id);
+    } on Object catch (error) {
+      // State was rolled back by the controller; tell the user why.
+      if (!mounted) return;
+      ScaffoldMessenger.maybeOf(context)
+        ?..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(error.asFailure().message)));
+    }
   }
 
   @override

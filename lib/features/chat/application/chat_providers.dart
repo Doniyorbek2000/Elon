@@ -1,19 +1,45 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/app_config.dart';
+import '../../../core/logging/app_logger.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/utils/clock.dart';
 import '../../../data/demo/demo_database.dart';
+import '../../auth/application/session_controller.dart';
+import '../../create_listing/data/media_services.dart';
 import '../../trust_safety/domain/trust_safety.dart';
 import '../data/demo_chat_repository.dart';
+import '../data/remote_chat_repository.dart';
 import '../domain/chat.dart';
 
-/// Demo transport until the WebSocket gateway ships (see [ChatRealtimeGateway]).
+/// Demo data locally; with a backend, REST + authenticated Socket.IO.
+/// Rebuilt per signed-in account so nothing leaks across sign-outs.
 final chatRepositoryProvider = Provider<ChatRepository>((ref) {
-  final repository = DemoChatRepository(ref.watch(demoDatabaseProvider), clock: ref.watch(clockProvider));
+  final config = ref.watch(appConfigProvider);
+  if (config.useDemoData) {
+    final repository = DemoChatRepository(ref.watch(demoDatabaseProvider), clock: ref.watch(clockProvider));
+    ref.onDispose(repository.dispose);
+    return repository;
+  }
+  final userId = ref.watch(sessionProvider.select((user) => user?.id));
+  final base = Uri.parse(config.apiBaseUrl);
+  final repository = RemoteChatRepository(
+    api: ref.watch(apiClientProvider),
+    tokens: ref.watch(tokenStoreProvider),
+    uploads: ref.watch(mediaUploadServiceProvider),
+    socketOrigin: base.origin,
+    currentUserId: () => userId,
+    logger: ref.watch(appLoggerProvider),
+  );
   ref.onDispose(repository.dispose);
   return repository;
 });
 
 final conversationsProvider = StreamProvider<List<Conversation>>((ref) {
+  // Guests have no conversations; avoid opening a socket for them.
+  if (!ref.watch(appConfigProvider).useDemoData && ref.watch(sessionProvider) == null) {
+    return Stream.value(const []);
+  }
   return ref.watch(chatRepositoryProvider).watchConversations();
 });
 

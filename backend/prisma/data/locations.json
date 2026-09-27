@@ -1,0 +1,645 @@
+[
+ {
+  "id": "namangan",
+  "name": "Namangan viloyati",
+  "lat": 40.9983,
+  "lng": 71.6726,
+  "districts": [
+   {
+    "id": "namangan_city",
+    "name": "Namangan shahri",
+    "lat": 40.9983,
+    "lng": 71.6726,
+    "localities": [
+     {
+      "id": "nc_davlatobod",
+      "name": "Davlatobod"
+     },
+     {
+      "id": "nc_yangi_namangan",
+      "name": "Yangi Namangan"
+     },
+     {
+      "id": "nc_markaz",
+      "name": "Markaz"
+     }
+    ]
+   },
+   {
+    "id": "chust",
+    "name": "Chust tumani",
+    "lat": 41.0034,
+    "lng": 71.2372,
+    "localities": [
+     {
+      "id": "chust_karkidon",
+      "name": "Karkidon"
+     },
+     {
+      "id": "chust_markaz",
+      "name": "Markaz"
+     },
+     {
+      "id": "chust_yangi_hayot",
+      "name": "Yangi hayot"
+     },
+     {
+      "id": "chust_olmos",
+      "name": "Olmos"
+     },
+     {
+      "id": "chust_gova",
+      "name": "G‘ova"
+     },
+     {
+      "id": "chust_varzik",
+      "name": "Varzik"
+     },
+     {
+      "id": "chust_sarvak",
+      "name": "Sarvak"
+     }
+    ]
+   },
+   {
+    "id": "pop",
+    "name": "Pop tumani",
+    "lat": 40.8736,
+    "lng": 71.1089,
+    "localities": [
+     {
+      "id": "pop_markaz",
+      "name": "Markaz"
+     },
+     {
+      "id": "pop_chodak",
+      "name": "Chodak"
+     },
+     {
+      "id": "pop_pungon",
+      "name": "Pungon"
+     }
+    ]
+   },
+   {
+    "id": "chortoq",
+    "name": "Chortoq tumani",
+    "lat": 41.0692,
+    "lng": 71.8237,
+    "localities": []
+   },
+   {
+    "id": "kosonsoy",
+    "name": "Kosonsoy tumani",
+    "lat": 41.2567,
+    "lng": 71.5467,
+    "localities": []
+   },
+   {
+    "id": "mingbuloq",
+    "name": "Mingbuloq tumani",
+    "lat": 40.7639,
+    "lng": 71.3956,
+    "localities": []
+   },
+   {
+    "id": "namangan_d",
+    "name": "Namangan tumani",
+    "lat": 40.9642,
+    "lng": 71.608,
+    "localities": []
+   },
+   {
+    "id": "norin",
+    "name": "Norin tumani",
+    "lat": 40.9261,
+    "lng": 72.0564,
+    "localities": []
+   },
+   {
+    "id": "toraqorgon",
+    "name": "To‘raqo‘rg‘on tumani",
+    "lat": 41.0033,
+    "lng": 71.5097,
+    "localities": []
+   },
+   {
+    "id": "uchqorgon",
+    "name": "Uchqo‘rg‘on tumani",
+    "lat": 41.1136,
+    "lng": 72.0797,
+    "localities": []
+   },
+   {
+    "id": "uychi",
+    "name": "Uychi tumani",
+    "lat": 41.0806,
+    "lng": 71.9236,
+    "localities": []
+   },
+   {
+    "id": "yangiqorgon",
+    "name": "Yangiqo‘rg‘on tumani",
+    "lat": 41.1947,
+    "lng": 71.7231,
+    "localities": []
+   }
+  ]
+ },
+ {
+  "id": "tashkent_city",
+  "name": "Toshkent shahri",
+  "lat": 41.2995,
+  "lng": 69.2401,
+  "districts": [
+   {
+    "id": "yunusobod",
+    "name": "Yunusobod tumani",
+    "lat": 41.365,
+    "lng": 69.287,
+    "localities": []
+   },
+   {
+    "id": "chilonzor",
+    "name": "Chilonzor tumani",
+    "lat": 41.2756,
+    "lng": 69.2034,
+    "localities": []
+   },
+   {
+    "id": "mirzo_ulugbek",
+    "name": "Mirzo Ulug‘bek tumani",
+    "lat": 41.3275,
+    "lng": 69.335,
+    "localities": []
+   },
+   {
+    "id": "yakkasaroy",
+    "name": "Yakkasaroy tumani",
+    "lat": 41.287,
+    "lng": 69.25,
+    "localities": []
+   },
+   {
+    "id": "shayxontohur",
+    "name": "Shayxontohur tumani",
+    "lat": 41.323,
+    "lng": 69.228,
+    "localities": []
+   },
+   {
+    "id": "olmazor",
+    "name": "Olmazor tumani",
+    "lat": 41.353,
+    "lng": 69.215,
+    "localities": []
+   },
+   {
+    "id": "mirobod",
+    "name": "Mirobod tumani",
+    "lat": 41.29,
+    "lng": 69.28,
+    "localities": []
+   },
+   {
+    "id": "sergeli",
+    "name": "Sergeli tumani",
+    "lat": 41.225,
+    "lng": 69.22,
+    "localities": []
+   },
+   {
+    "id": "uchtepa",
+    "name": "Uchtepa tumani",
+    "lat": 41.29,
+    "lng": 69.17,
+    "localities": []
+   },
+   {
+    "id": "yashnobod",
+    "name": "Yashnobod tumani",
+    "lat": 41.29,
+    "lng": 69.34,
+    "localities": []
+   },
+   {
+    "id": "bektemir",
+    "name": "Bektemir tumani",
+    "lat": 41.209,
+    "lng": 69.334,
+    "localities": []
+   },
+   {
+    "id": "yangihayot",
+    "name": "Yangihayot tumani",
+    "lat": 41.2,
+    "lng": 69.2,
+    "localities": []
+   }
+  ]
+ },
+ {
+  "id": "tashkent",
+  "name": "Toshkent viloyati",
+  "lat": 41.0,
+  "lng": 69.6,
+  "districts": [
+   {
+    "id": "nurafshon",
+    "name": "Nurafshon shahri",
+    "lat": 41.04,
+    "lng": 69.358,
+    "localities": []
+   },
+   {
+    "id": "chirchiq",
+    "name": "Chirchiq shahri",
+    "lat": 41.4689,
+    "lng": 69.5822,
+    "localities": []
+   },
+   {
+    "id": "angren",
+    "name": "Angren shahri",
+    "lat": 41.0167,
+    "lng": 70.1436,
+    "localities": []
+   },
+   {
+    "id": "olmaliq",
+    "name": "Olmaliq shahri",
+    "lat": 40.8447,
+    "lng": 69.5983,
+    "localities": []
+   },
+   {
+    "id": "zangiota",
+    "name": "Zangiota tumani",
+    "lat": 41.19,
+    "lng": 69.14,
+    "localities": []
+   },
+   {
+    "id": "qibray",
+    "name": "Qibray tumani",
+    "lat": 41.39,
+    "lng": 69.465,
+    "localities": []
+   }
+  ]
+ },
+ {
+  "id": "andijan",
+  "name": "Andijon viloyati",
+  "lat": 40.7821,
+  "lng": 72.3442,
+  "districts": [
+   {
+    "id": "andijan_city",
+    "name": "Andijon shahri",
+    "lat": 40.7821,
+    "lng": 72.3442,
+    "localities": []
+   },
+   {
+    "id": "asaka",
+    "name": "Asaka tumani",
+    "lat": 40.6415,
+    "lng": 72.2387,
+    "localities": []
+   },
+   {
+    "id": "xonobod",
+    "name": "Xonobod shahri",
+    "lat": 40.8036,
+    "lng": 73.002,
+    "localities": []
+   },
+   {
+    "id": "shahrixon",
+    "name": "Shahrixon tumani",
+    "lat": 40.7133,
+    "lng": 72.0572,
+    "localities": []
+   },
+   {
+    "id": "baliqchi",
+    "name": "Baliqchi tumani",
+    "lat": 40.8667,
+    "lng": 71.9,
+    "localities": []
+   }
+  ]
+ },
+ {
+  "id": "fergana",
+  "name": "Farg‘ona viloyati",
+  "lat": 40.3842,
+  "lng": 71.7843,
+  "districts": [
+   {
+    "id": "fergana_city",
+    "name": "Farg‘ona shahri",
+    "lat": 40.3842,
+    "lng": 71.7843,
+    "localities": []
+   },
+   {
+    "id": "margilan",
+    "name": "Marg‘ilon shahri",
+    "lat": 40.4711,
+    "lng": 71.7247,
+    "localities": []
+   },
+   {
+    "id": "kokand",
+    "name": "Qo‘qon shahri",
+    "lat": 40.5286,
+    "lng": 70.9425,
+    "localities": []
+   },
+   {
+    "id": "quvasoy",
+    "name": "Quvasoy shahri",
+    "lat": 40.2972,
+    "lng": 71.98,
+    "localities": []
+   },
+   {
+    "id": "rishton",
+    "name": "Rishton tumani",
+    "lat": 40.3567,
+    "lng": 71.2847,
+    "localities": []
+   }
+  ]
+ },
+ {
+  "id": "samarkand",
+  "name": "Samarqand viloyati",
+  "lat": 39.6542,
+  "lng": 66.9597,
+  "districts": [
+   {
+    "id": "samarkand_city",
+    "name": "Samarqand shahri",
+    "lat": 39.6542,
+    "lng": 66.9597,
+    "localities": []
+   },
+   {
+    "id": "urgut",
+    "name": "Urgut tumani",
+    "lat": 39.4022,
+    "lng": 67.2431,
+    "localities": []
+   },
+   {
+    "id": "kattaqorgon",
+    "name": "Kattaqo‘rg‘on shahri",
+    "lat": 39.8989,
+    "lng": 66.2561,
+    "localities": []
+   },
+   {
+    "id": "pastdargom",
+    "name": "Pastdarg‘om tumani",
+    "lat": 39.727,
+    "lng": 66.66,
+    "localities": []
+   }
+  ]
+ },
+ {
+  "id": "bukhara",
+  "name": "Buxoro viloyati",
+  "lat": 39.7747,
+  "lng": 64.4286,
+  "districts": [
+   {
+    "id": "bukhara_city",
+    "name": "Buxoro shahri",
+    "lat": 39.7747,
+    "lng": 64.4286,
+    "localities": []
+   },
+   {
+    "id": "kogon",
+    "name": "Kogon shahri",
+    "lat": 39.7222,
+    "lng": 64.5519,
+    "localities": []
+   },
+   {
+    "id": "gijduvon",
+    "name": "G‘ijduvon tumani",
+    "lat": 40.1,
+    "lng": 64.6833,
+    "localities": []
+   }
+  ]
+ },
+ {
+  "id": "khorezm",
+  "name": "Xorazm viloyati",
+  "lat": 41.55,
+  "lng": 60.6333,
+  "districts": [
+   {
+    "id": "urgench",
+    "name": "Urganch shahri",
+    "lat": 41.55,
+    "lng": 60.6333,
+    "localities": []
+   },
+   {
+    "id": "khiva",
+    "name": "Xiva shahri",
+    "lat": 41.3783,
+    "lng": 60.3639,
+    "localities": []
+   },
+   {
+    "id": "xonqa",
+    "name": "Xonqa tumani",
+    "lat": 41.4744,
+    "lng": 60.78,
+    "localities": []
+   }
+  ]
+ },
+ {
+  "id": "karakalpakstan",
+  "name": "Qoraqalpog‘iston Respublikasi",
+  "lat": 42.4611,
+  "lng": 59.6166,
+  "districts": [
+   {
+    "id": "nukus",
+    "name": "Nukus shahri",
+    "lat": 42.4611,
+    "lng": 59.6166,
+    "localities": []
+   },
+   {
+    "id": "xojayli",
+    "name": "Xo‘jayli tumani",
+    "lat": 42.4047,
+    "lng": 59.4517,
+    "localities": []
+   },
+   {
+    "id": "tortkol",
+    "name": "To‘rtko‘l tumani",
+    "lat": 41.55,
+    "lng": 61.0,
+    "localities": []
+   }
+  ]
+ },
+ {
+  "id": "kashkadarya",
+  "name": "Qashqadaryo viloyati",
+  "lat": 38.8606,
+  "lng": 65.7847,
+  "districts": [
+   {
+    "id": "karshi",
+    "name": "Qarshi shahri",
+    "lat": 38.8606,
+    "lng": 65.7847,
+    "localities": []
+   },
+   {
+    "id": "shahrisabz",
+    "name": "Shahrisabz shahri",
+    "lat": 39.0578,
+    "lng": 66.8342,
+    "localities": []
+   },
+   {
+    "id": "guzor",
+    "name": "G‘uzor tumani",
+    "lat": 38.6208,
+    "lng": 66.2481,
+    "localities": []
+   }
+  ]
+ },
+ {
+  "id": "surkhandarya",
+  "name": "Surxondaryo viloyati",
+  "lat": 37.2242,
+  "lng": 67.2783,
+  "districts": [
+   {
+    "id": "termez",
+    "name": "Termiz shahri",
+    "lat": 37.2242,
+    "lng": 67.2783,
+    "localities": []
+   },
+   {
+    "id": "denov",
+    "name": "Denov tumani",
+    "lat": 38.2667,
+    "lng": 67.9,
+    "localities": []
+   },
+   {
+    "id": "sherobod",
+    "name": "Sherobod tumani",
+    "lat": 37.6667,
+    "lng": 67.0,
+    "localities": []
+   }
+  ]
+ },
+ {
+  "id": "jizzakh",
+  "name": "Jizzax viloyati",
+  "lat": 40.1158,
+  "lng": 67.8422,
+  "districts": [
+   {
+    "id": "jizzakh_city",
+    "name": "Jizzax shahri",
+    "lat": 40.1158,
+    "lng": 67.8422,
+    "localities": []
+   },
+   {
+    "id": "gallaorol",
+    "name": "G‘allaorol tumani",
+    "lat": 40.0214,
+    "lng": 67.5956,
+    "localities": []
+   },
+   {
+    "id": "zomin",
+    "name": "Zomin tumani",
+    "lat": 39.96,
+    "lng": 68.395,
+    "localities": []
+   }
+  ]
+ },
+ {
+  "id": "sirdarya",
+  "name": "Sirdaryo viloyati",
+  "lat": 40.4897,
+  "lng": 68.7842,
+  "districts": [
+   {
+    "id": "guliston",
+    "name": "Guliston shahri",
+    "lat": 40.4897,
+    "lng": 68.7842,
+    "localities": []
+   },
+   {
+    "id": "yangiyer",
+    "name": "Yangiyer shahri",
+    "lat": 40.275,
+    "lng": 68.8225,
+    "localities": []
+   },
+   {
+    "id": "shirin",
+    "name": "Shirin shahri",
+    "lat": 40.2269,
+    "lng": 69.1017,
+    "localities": []
+   }
+  ]
+ },
+ {
+  "id": "navoiy",
+  "name": "Navoiy viloyati",
+  "lat": 40.0844,
+  "lng": 65.3792,
+  "districts": [
+   {
+    "id": "navoiy_city",
+    "name": "Navoiy shahri",
+    "lat": 40.0844,
+    "lng": 65.3792,
+    "localities": []
+   },
+   {
+    "id": "zarafshon",
+    "name": "Zarafshon shahri",
+    "lat": 41.5747,
+    "lng": 64.2011,
+    "localities": []
+   },
+   {
+    "id": "karmana",
+    "name": "Karmana tumani",
+    "lat": 40.1367,
+    "lng": 65.3561,
+    "localities": []
+   }
+  ]
+ }
+]

@@ -1,3 +1,4 @@
+import '../../../core/domain/money.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../data/demo/demo_database.dart';
 import '../../search/domain/search_normalizer.dart';
@@ -61,6 +62,93 @@ class DemoServicesRepository implements ServicesRepository {
   Future<String> revealPhone(String providerId) async {
     await _db.roundTrip(0.4);
     final provider = await getProvider(providerId);
-    return _db.seed.phoneBook[provider.profile.id] ?? '998901000000';
+    return _db.seed.phoneBook[provider.profile.id] ??
+        (throw const NotFoundFailure('Raqam yashirilgan. Chat orqali yozing.'));
+  }
+
+  ServiceProvider? _mine;
+
+  @override
+  Future<ServiceProvider?> myProvider() async {
+    await _db.roundTrip(0.4);
+    return _mine;
+  }
+
+  @override
+  Future<ServiceProvider> saveProvider(ProviderDraft draft) async {
+    await _db.roundTrip();
+    final user = _db.currentUser;
+    if (user == null) throw const UnauthorizedFailure();
+    final provider = ServiceProvider(
+      id: _mine?.id ?? _db.nextId('sp'),
+      profile: user.toPublic(),
+      profession: draft.profession,
+      categoryId: draft.categoryIds.first,
+      place: draft.place,
+      description: draft.description,
+      experienceYears: draft.experienceYears,
+      serviceArea: [?draft.place.districtName],
+      offerings: _mine?.offerings ?? const [],
+    );
+    _mine = provider;
+    return provider;
+  }
+
+  @override
+  Future<void> addOffering(OfferingDraft draft) async {
+    await _db.roundTrip(0.6);
+    final mine = _mine;
+    if (mine == null) throw const ValidationFailure('Avval usta profilini yarating');
+    _mine = ServiceProvider(
+      id: mine.id,
+      profile: mine.profile,
+      profession: mine.profession,
+      categoryId: mine.categoryId,
+      place: mine.place,
+      description: mine.description,
+      experienceYears: mine.experienceYears,
+      serviceArea: mine.serviceArea,
+      offerings: [
+        ...mine.offerings,
+        ServiceOffering(
+          id: _db.nextId('of'),
+          categoryId: draft.categoryId,
+          title: draft.title,
+          pricingType: draft.pricingType,
+          description: draft.description,
+          priceFrom: draft.priceFrom == null ? null : Money.uzs(draft.priceFrom!),
+          priceUnit: draft.priceUnit,
+        ),
+      ],
+    );
+  }
+
+  @override
+  Future<void> deleteOffering(String offeringId) async {
+    await _db.roundTrip(0.4);
+    final mine = _mine;
+    if (mine == null) return;
+    _mine = ServiceProvider(
+      id: mine.id,
+      profile: mine.profile,
+      profession: mine.profession,
+      categoryId: mine.categoryId,
+      place: mine.place,
+      description: mine.description,
+      experienceYears: mine.experienceYears,
+      serviceArea: mine.serviceArea,
+      offerings: mine.offerings.where((o) => o.id != offeringId).toList(),
+    );
+  }
+
+  /// Demo has no conversation history to prove eligibility, so reviews are
+  /// refused rather than faked.
+  @override
+  Future<void> submitReview(String providerId, {required int rating, String? text}) async {
+    await _db.roundTrip(0.4);
+    throw const ValidationFailure(
+      'Sharh qoldirish uchun avval usta bilan yozishgan bo‘lishingiz kerak',
+      code: 'NOT_ELIGIBLE',
+    );
   }
 }

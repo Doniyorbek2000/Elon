@@ -120,7 +120,7 @@ void main() {
   group('Favorites', () {
     test('toggle persists across containers', () async {
       final controller = container.read(savedItemsProvider.notifier);
-      expect(controller.toggle(SavedKind.listing, 'l_cobalt_2023'), isTrue);
+      expect(await controller.toggle(SavedKind.listing, 'l_cobalt_2023'), isTrue);
       expect(container.read(isSavedProvider((SavedKind.listing, 'l_cobalt_2023'))), isTrue);
       await Future<void>.delayed(Duration.zero);
 
@@ -128,7 +128,7 @@ void main() {
       addTearDown(second.dispose);
       expect(second.read(isSavedProvider((SavedKind.listing, 'l_cobalt_2023'))), isTrue);
 
-      expect(second.read(savedItemsProvider.notifier).toggle(SavedKind.listing, 'l_cobalt_2023'), isFalse);
+      expect(await second.read(savedItemsProvider.notifier).toggle(SavedKind.listing, 'l_cobalt_2023'), isFalse);
       expect(second.read(savedItemsProvider), isEmpty);
     });
   });
@@ -176,7 +176,7 @@ void main() {
       addTearDown(subscription.close);
       await container.read(myApplicationsProvider.future);
       final application = await container.read(myApplicationsProvider.notifier).apply('j_haydovchi', message: 'Salom');
-      expect(application.status, ApplicationStatus.sent);
+      expect(application.status, ApplicationStatus.submitted);
       expect(container.read(applicationForJobProvider('j_haydovchi')), isNotNull);
       expect(() => container.read(myApplicationsProvider.notifier).apply('j_haydovchi'), throwsA(anything));
     });

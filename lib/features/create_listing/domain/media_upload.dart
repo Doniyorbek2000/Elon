@@ -19,7 +19,8 @@ class UploadProgress {
 /// Uploads a (client-compressed) photo. The server generates thumbnail/
 /// feed/detail renditions; the client only ever uploads once.
 abstract interface class MediaUploadService {
-  Stream<UploadProgress> upload(String localPath);
+  /// [purpose]: `listing` | `avatar` | `chat` | `portfolio` | `offering`.
+  Stream<UploadProgress> upload(String localPath, {String purpose = 'listing'});
 }
 
 @immutable

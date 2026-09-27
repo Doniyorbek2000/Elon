@@ -56,6 +56,33 @@ class Region {
 class LocationTree {
   const LocationTree(this.regions);
 
+  /// Parses `GET /locations/tree`.
+  factory LocationTree.fromJson(List<dynamic> json) {
+    GeoPoint? point(Map<String, dynamic> m) => m['lat'] is num && m['lng'] is num
+        ? GeoPoint((m['lat'] as num).toDouble(), (m['lng'] as num).toDouble())
+        : null;
+    return LocationTree([
+      for (final r in json.cast<Map<String, dynamic>>())
+        Region(
+          id: r['id'] as String,
+          name: r['name'] as String,
+          center: point(r) ?? const GeoPoint(41.3, 69.24),
+          districts: [
+            for (final d in (r['districts'] as List<dynamic>? ?? const []).cast<Map<String, dynamic>>())
+              District(
+                id: d['id'] as String,
+                name: d['name'] as String,
+                center: point(d),
+                localities: [
+                  for (final l in (d['localities'] as List<dynamic>? ?? const []).cast<Map<String, dynamic>>())
+                    Locality(id: l['id'] as String, name: l['name'] as String),
+                ],
+              ),
+          ],
+        ),
+    ]);
+  }
+
   final List<Region> regions;
 
   Region? region(String? id) => regions.where((r) => r.id == id).firstOrNull;

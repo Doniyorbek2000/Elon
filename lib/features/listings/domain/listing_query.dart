@@ -96,7 +96,7 @@ class ListingQuery {
     'radius': radiusKm,
     'priceMin': minPrice,
     'priceMax': maxPrice,
-    'condition': condition?.name,
+    'condition': condition?.apiValue,
     'sort': sort.name,
     'seller': sellerId,
     'limit': pageSize,

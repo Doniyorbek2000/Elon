@@ -17,6 +17,8 @@ import '../../../core/widgets/detail_widgets.dart';
 import '../../../core/widgets/favorite_button.dart';
 import '../../../core/widgets/sheets.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../auth/application/session_controller.dart';
+import '../../auth/presentation/auth_gate.dart';
 import '../../chat/domain/chat.dart';
 import '../../chat/presentation/start_chat.dart';
 import '../../listings/presentation/widgets/photo_gallery.dart';
@@ -25,6 +27,7 @@ import '../../trust_safety/domain/trust_safety.dart';
 import '../../trust_safety/presentation/report_sheet.dart';
 import '../application/services_providers.dart';
 import '../domain/service_provider.dart';
+import 'provider_editor_screen.dart';
 
 class ProviderProfileScreen extends ConsumerWidget {
   const ProviderProfileScreen({super.key, required this.providerId});
@@ -195,17 +198,29 @@ class _ProviderView extends ConsumerWidget {
                 DetailSection(
                   title: 'Sharhlar',
                   trailing: RatingLabel(rating: provider.rating, count: provider.reviewCount),
-                  child: provider.reviews.isEmpty
-                      ? Text('Hali sharhlar yo‘q', style: text.bodySmall)
-                      : Column(
-                          children: [
-                            for (final review in provider.reviews)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                                child: _ReviewCard(review: review, now: now),
-                              ),
-                          ],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (provider.reviews.isEmpty)
+                        Text('Hali sharhlar yo‘q', style: text.bodySmall)
+                      else
+                        for (final review in provider.reviews)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                            child: _ReviewCard(review: review, now: now),
+                          ),
+                      if (ref.watch(sessionProvider)?.id != provider.profile.id)
+                        TextButton.icon(
+                          onPressed: () async {
+                            if (await ensureSignedIn(context, ref) && context.mounted) {
+                              await showReviewSheet(context, ref, provider: provider);
+                            }
+                          },
+                          icon: const Icon(Icons.rate_review_outlined),
+                          label: const Text('Sharh qoldirish'),
                         ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 const SafetyTipsCard(

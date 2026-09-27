@@ -17,6 +17,7 @@ import '../../listings/application/listing_providers.dart';
 import '../../listings/domain/listing_query.dart';
 import '../../listings/presentation/widgets/listing_feed_slivers.dart';
 import '../../location/application/location_controller.dart';
+import '../../monetization/presentation/promoted_blocks.dart';
 import '../../notifications/application/notifications_providers.dart';
 
 /// Default "nearby" radius when the user hasn't picked one.
@@ -71,6 +72,15 @@ class HomeScreen extends ConsumerWidget {
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(gutter, AppSpacing.xl, gutter, AppSpacing.sm),
                 sliver: const SliverToBoxAdapter(child: _CategoryGrid()),
+              ),
+              SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    FeaturedListingsBlock(placement: 'home', regionId: query.regionId, gutter: gutter),
+                    AdBanner(regionId: query.regionId, districtId: query.districtId, gutter: gutter),
+                  ],
+                ),
               ),
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(gutter, AppSpacing.sm, gutter - AppSpacing.sm, AppSpacing.sm),

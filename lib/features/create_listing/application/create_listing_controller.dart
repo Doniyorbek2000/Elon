@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/app_config.dart';
 import '../../../core/domain/money.dart';
 import '../../../core/domain/place.dart';
 import '../../../core/domain/public_profile.dart';
@@ -253,7 +254,9 @@ class CreateListingController extends Notifier<ListingDraft> {
     if (user == null) throw StateError('publish() requires a signed-in user');
 
     final draft = state;
-    final needsReview = ListingRiskAssessor.requiresModeration(riskSignals());
+    // Demo mode approximates moderation locally; the server decides otherwise.
+    final needsReview =
+        ref.read(appConfigProvider).useDemoData && ListingRiskAssessor.requiresModeration(riskSignals());
     final PublishedItem item;
     if (_tree.rootOf(draft.categoryId!)?.kind == CategoryKind.jobs) {
       item = await _publishVacancy(draft, user.toPublic());
@@ -283,15 +286,18 @@ class CreateListingController extends Notifier<ListingDraft> {
             ListingAttribute(
               key: entry.key,
               label: fieldsByKey[entry.key]?.label ?? entry.key,
-              value: fieldsByKey[entry.key]?.unit == null
-                  ? entry.value
-                  : '${entry.value} ${fieldsByKey[entry.key]!.unit}',
+              value: fieldsByKey[entry.key]?.displayValue(entry.value) ?? entry.value,
             ),
         ],
+        attributeValues: {
+          for (final entry in draft.attributes.entries)
+            if (fieldsByKey[entry.key]?.toApiValue(entry.value) case final Object value) entry.key: value,
+        },
       ),
       sellerId: userId,
     );
     if (needsReview) await repository.updateStatus(listing.id, ListingStatus.pendingReview);
+    final underReview = needsReview || listing.status == ListingStatus.pendingReview;
     return PublishedItem(
       target: ShareTarget.listing,
       id: listing.id,
@@ -299,7 +305,7 @@ class CreateListingController extends Notifier<ListingDraft> {
       subtitle: listing.price == null ? 'Kelishiladi' : Formatters.money(listing.price!),
       place: listing.place,
       image: listing.cover,
-      pendingReview: needsReview,
+      pendingReview: underReview,
     );
   }
 
