@@ -32,7 +32,7 @@ class NewListing {
   final List<ListingAttribute> attributes;
 
   /// Typed values keyed by attribute key, validated by the server schema
-  /// (number → num, boolean → bool, multiSelect → List<String>).
+  /// (number → num, boolean → bool, multiSelect → `List<String>`).
   final Map<String, Object> attributeValues;
 
   /// Request body for `POST /listings`.

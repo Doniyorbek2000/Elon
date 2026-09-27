@@ -94,7 +94,7 @@ class _UserHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final text = Theme.of(context).textTheme;
     final palette = context.palette;
-    final myListings = ref.watch(sellerListingsProvider(user.id)).value ?? const [];
+    final myListings = ref.watch(myListingsProvider).value ?? const [];
     final savedCount = ref.watch(savedItemsProvider).length;
     final views = myListings.fold<int>(0, (sum, l) => sum + l.views);
 
@@ -220,6 +220,18 @@ class _Menu extends ConsumerWidget {
           () => context.push(AppRoutes.applications),
           0,
         ),
+      if (signedIn)
+        (Icons.description_outlined, AccentTone.green, 'Mening rezyumem', () => context.push(AppRoutes.resume), 0),
+      if (signedIn)
+        (
+          Icons.business_center_outlined,
+          AccentTone.orange,
+          'Vakansiyalarim va arizalar',
+          () => context.push(AppRoutes.employerJobs),
+          0,
+        ),
+      if (signedIn)
+        (Icons.handyman_outlined, AccentTone.purple, 'Usta profilim', () => context.push(AppRoutes.providerEditor), 0),
       (Icons.favorite_border_rounded, AccentTone.red, 'Saqlanganlar', () => context.push(AppRoutes.saved), 0),
       if (signedIn)
         (

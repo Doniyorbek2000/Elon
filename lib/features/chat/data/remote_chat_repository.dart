@@ -20,18 +20,13 @@ import '../domain/chat.dart';
 /// * Identity is only the access token in the handshake.
 class RemoteChatRepository implements ChatRepository {
   RemoteChatRepository({
-    required ApiClient api,
-    required TokenStore tokens,
-    required MediaUploadService uploads,
-    required String socketOrigin,
-    required String? Function() currentUserId,
-    required AppLogger logger,
-  }) : _api = api,
-       _tokens = tokens,
-       _uploads = uploads,
-       _socketOrigin = socketOrigin,
-       _currentUserId = currentUserId,
-       _logger = logger;
+    required this._api,
+    required this._tokens,
+    required this._uploads,
+    required this._socketOrigin,
+    required this._currentUserId,
+    required this._logger,
+  });
 
   final ApiClient _api;
   final TokenStore _tokens;
@@ -95,6 +90,7 @@ class RemoteChatRepository implements ChatRepository {
   }
 
   Future<void> _resync() async {
+    if (_disposed) return;
     try {
       await _refreshConversations();
       for (final conversationId in _messages.keys.toList()) {
@@ -165,20 +161,20 @@ class RemoteChatRepository implements ChatRepository {
         else
           m,
     ];
-    _messagesChanged.add(conversationId);
+    _notifyMessages(conversationId);
   }
 
   void _onTyping(Map<String, dynamic> data) {
+    if (_disposed) return;
     final conversationId = data['conversationId'] as String;
     final isTyping = data['isTyping'] == true;
     _typingTimers.remove(conversationId)?.cancel();
     _typingController.add((conversationId, isTyping));
     if (isTyping) {
       // Typing expires unless refreshed (the sender may have gone offline).
-      _typingTimers[conversationId] = Timer(
-        const Duration(seconds: 6),
-        () => _typingController.add((conversationId, false)),
-      );
+      _typingTimers[conversationId] = Timer(const Duration(seconds: 6), () {
+        if (!_disposed) _typingController.add((conversationId, false));
+      });
     }
   }
 
@@ -213,12 +209,18 @@ class RemoteChatRepository implements ChatRepository {
   // ─────────────────────────────────────────────────────────── state
 
   void _publishConversations(List<Conversation> next) {
+    if (_disposed) return;
     _conversations = next;
-    if (!_conversationsController.isClosed) _conversationsController.add(List.unmodifiable(next));
+    _conversationsController.add(List.unmodifiable(next));
+  }
+
+  void _notifyMessages(String conversationId) {
+    if (!_disposed) _messagesChanged.add(conversationId);
   }
 
   /// Keeps messages oldest → newest, deduplicated by id and client id.
   void _upsertMessage(ChatMessage message) {
+    if (_disposed) return;
     final list = [...?_messages[message.conversationId]];
     final index = list.indexWhere(
       (m) => m.id == message.id || (message.clientId != null && m.clientId == message.clientId),
@@ -234,7 +236,7 @@ class RemoteChatRepository implements ChatRepository {
       list.sort((a, b) => a.sentAt.compareTo(b.sentAt));
     }
     _messages[message.conversationId] = list;
-    _messagesChanged.add(message.conversationId);
+    _notifyMessages(message.conversationId);
   }
 
   Future<void> _refreshConversations() async {
@@ -262,7 +264,7 @@ class RemoteChatRepository implements ChatRepository {
         _upsertMessage(message);
       }
     }
-    _messagesChanged.add(conversationId);
+    _notifyMessages(conversationId);
   }
 
   // ─────────────────────────────────────────────────────────── API
@@ -464,8 +466,9 @@ class RemoteChatRepository implements ChatRepository {
   @override
   void sendTyping(String conversationId, {required bool isTyping}) {
     final socket = _socket;
-    if (socket != null && socket.connected)
+    if (socket != null && socket.connected) {
       socket.emit('typing', {'conversationId': conversationId, 'isTyping': isTyping});
+    }
   }
 
   void dispose() {
@@ -473,7 +476,9 @@ class RemoteChatRepository implements ChatRepository {
     for (final timer in _typingTimers.values) {
       timer.cancel();
     }
-    _socket?.dispose();
+    _socket
+      ?..clearListeners()
+      ..dispose();
     _socket = null;
     _conversationsController.close();
     _messagesChanged.close();

@@ -22,6 +22,9 @@ abstract final class AppRoutes {
   static const help = '/account/help';
   static const plans = '/account/plans';
   static const editProfile = '/account/edit';
+  static const resume = '/account/resume';
+  static const providerEditor = '/account/provider';
+  static const employerJobs = '/employer/jobs';
 
   static String listing(String id) => '/listing/$id';
   static String job(String id) => '/job/$id';
@@ -30,6 +33,7 @@ abstract final class AppRoutes {
   static String seller(String id) => '/seller/$id';
   static String chat(String id) => '/chat/$id';
   static String serviceCategory(String id) => '/services/category/$id';
+  static String applicants(String jobId) => '/employer/jobs/$jobId/applicants';
 
   static String listingsFor({String? categoryId, String? sort, String? text}) =>
       Uri(path: listings, queryParameters: {'category': ?categoryId, 'sort': ?sort, 'q': ?text}).toString();
@@ -47,5 +51,14 @@ abstract final class AppRoutes {
       hiring ? Uri(path: jobs, queryParameters: {'mode': 'hire'}).toString() : jobs;
 
   /// Routes that require a signed-in account.
-  static const protectedPrefixes = [create, myListings, applications, editProfile, '/chat/'];
+  static const protectedPrefixes = [
+    create,
+    myListings,
+    applications,
+    editProfile,
+    resume,
+    providerEditor,
+    '/employer/',
+    '/chat/',
+  ];
 }

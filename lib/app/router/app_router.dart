@@ -11,6 +11,7 @@ import '../../features/chat/presentation/conversation_screen.dart';
 import '../../features/create_listing/presentation/create_listing_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/jobs/presentation/candidate_detail_screen.dart';
+import '../../features/jobs/presentation/employer_screens.dart';
 import '../../features/jobs/presentation/job_detail_screen.dart';
 import '../../features/jobs/presentation/jobs_screen.dart';
 import '../../features/listings/domain/listing_query.dart';
@@ -25,6 +26,7 @@ import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/profile/presentation/saved_screen.dart';
 import '../../features/profile/presentation/seller_profile_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
+import '../../features/services/presentation/provider_editor_screen.dart';
 import '../../features/services/presentation/provider_profile_screen.dart';
 import '../../features/services/presentation/services_screen.dart';
 import '../../features/settings/application/settings_controller.dart';
@@ -171,6 +173,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: AppRoutes.help, builder: (_, _) => const HelpScreen()),
       GoRoute(path: AppRoutes.plans, builder: (_, _) => const PlansScreen()),
       GoRoute(path: AppRoutes.editProfile, builder: (_, _) => const EditProfileScreen()),
+      GoRoute(path: AppRoutes.resume, builder: (_, _) => const ResumeEditScreen()),
+      GoRoute(path: AppRoutes.providerEditor, builder: (_, _) => const ProviderEditorScreen()),
+      GoRoute(
+        path: AppRoutes.employerJobs,
+        builder: (_, _) => const EmployerJobsScreen(),
+        routes: [
+          GoRoute(
+            path: ':id/applicants',
+            builder: (_, state) => ApplicantsScreen(jobId: state.pathParameters['id']!),
+          ),
+        ],
+      ),
     ],
   );
   ref.onDispose(router.dispose);

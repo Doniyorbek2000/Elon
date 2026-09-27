@@ -8,6 +8,7 @@ import '../../../core/config/feature_flags.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/domain/media_image.dart';
+import '../../../core/errors/app_failure.dart';
 import '../../../core/utils/clock.dart';
 import '../../../core/utils/external_actions.dart';
 import '../../../core/utils/formatters.dart';
@@ -84,6 +85,25 @@ class MyApplicationsScreen extends ConsumerWidget {
                                   ApplicationStatus.rejected => PillStyle.danger,
                                 },
                               ),
+                              if (application.status.isOpen)
+                                IconButton(
+                                  tooltip: 'Arizani qaytarib olish',
+                                  icon: const Icon(Icons.undo_rounded),
+                                  onPressed: () async {
+                                    final confirmed = await confirmDialog(
+                                      context,
+                                      title: 'Arizani qaytarib olasizmi?',
+                                      message: 'Ish beruvchi arizangizni boshqa ko‘rmaydi.',
+                                      confirmLabel: 'Qaytarib olish',
+                                    );
+                                    if (!confirmed) return;
+                                    try {
+                                      await ref.read(myApplicationsProvider.notifier).withdraw(application.id);
+                                    } on Object catch (error) {
+                                      if (context.mounted) showAppSnack(context, error.asFailure().message);
+                                    }
+                                  },
+                                ),
                             ],
                           ),
                         );

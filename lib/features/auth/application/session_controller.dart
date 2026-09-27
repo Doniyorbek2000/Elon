@@ -61,6 +61,7 @@ class SessionController extends Notifier<CurrentUser?> {
   }
 
   Future<void> signOut() async {
+    // Push tokens are bound to the session server-side and removed on logout.
     await _auth.signOut();
     state = null;
   }

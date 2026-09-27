@@ -120,7 +120,7 @@ void main() {
   group('Favorites', () {
     test('toggle persists across containers', () async {
       final controller = container.read(savedItemsProvider.notifier);
-      expect(controller.toggle(SavedKind.listing, 'l_cobalt_2023'), isTrue);
+      expect(await controller.toggle(SavedKind.listing, 'l_cobalt_2023'), isTrue);
       expect(container.read(isSavedProvider((SavedKind.listing, 'l_cobalt_2023'))), isTrue);
       await Future<void>.delayed(Duration.zero);
 
@@ -128,7 +128,7 @@ void main() {
       addTearDown(second.dispose);
       expect(second.read(isSavedProvider((SavedKind.listing, 'l_cobalt_2023'))), isTrue);
 
-      expect(second.read(savedItemsProvider.notifier).toggle(SavedKind.listing, 'l_cobalt_2023'), isFalse);
+      expect(await second.read(savedItemsProvider.notifier).toggle(SavedKind.listing, 'l_cobalt_2023'), isFalse);
       expect(second.read(savedItemsProvider), isEmpty);
     });
   });
