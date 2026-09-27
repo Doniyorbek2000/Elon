@@ -4,7 +4,8 @@ enum Currency {
   uzs,
   usd;
 
-  static Currency parse(Object? value) => value == 'usd' || value == 'USD' ? Currency.usd : Currency.uzs;
+  static Currency parse(Object? value) =>
+      value == 'usd' || value == 'USD' ? Currency.usd : Currency.uzs;
 
   String get label => switch (this) {
     Currency.uzs => 'so‘m',
@@ -31,13 +32,17 @@ class Money implements Comparable<Money> {
   factory Money.fromJson(Map<String, dynamic> json) =>
       Money((json['amount'] as num).round(), Currency.parse(json['currency']));
 
-  Map<String, dynamic> toJson() => {'amount': amount, 'currency': currency.name};
+  Map<String, dynamic> toJson() => {
+    'amount': amount,
+    'currency': currency.name,
+  };
 
   @override
   int compareTo(Money other) => approxUzs.compareTo(other.approxUzs);
 
   @override
-  bool operator ==(Object other) => other is Money && other.amount == amount && other.currency == currency;
+  bool operator ==(Object other) =>
+      other is Money && other.amount == amount && other.currency == currency;
 
   @override
   int get hashCode => Object.hash(amount, currency);

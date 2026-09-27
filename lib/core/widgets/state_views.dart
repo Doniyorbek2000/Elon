@@ -45,7 +45,10 @@ class EmptyState extends StatelessWidget {
               Container(
                 width: circle,
                 height: circle,
-                decoration: BoxDecoration(color: pair.background, shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                  color: pair.background,
+                  shape: BoxShape.circle,
+                ),
                 child: Icon(icon, size: circle * 0.42, color: pair.foreground),
               ),
               const SizedBox(height: AppSpacing.xl),
@@ -54,7 +57,9 @@ class EmptyState extends StatelessWidget {
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   message!,
-                  style: text.bodyMedium?.copyWith(color: palette.textSecondary),
+                  style: text.bodyMedium?.copyWith(
+                    color: palette.textSecondary,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -72,7 +77,12 @@ class EmptyState extends StatelessWidget {
 
 /// Maps a failure to friendly copy; offline gets its own illustration.
 class FailureView extends StatelessWidget {
-  const FailureView({super.key, required this.error, this.onRetry, this.compact = false});
+  const FailureView({
+    super.key,
+    required this.error,
+    this.onRetry,
+    this.compact = false,
+  });
 
   final Object error;
   final VoidCallback? onRetry;
@@ -88,9 +98,24 @@ class FailureView extends StatelessWidget {
         'Ulanishni tekshirib, qayta urinib ko‘ring. Saqlangan ma’lumotlar ko‘rinib turadi.',
         AccentTone.amber,
       ),
-      TimeoutFailure() => (Icons.hourglass_empty_rounded, 'Server javob bermadi', failure.message, AccentTone.amber),
-      NotFoundFailure() => (Icons.search_off_rounded, 'Topilmadi', failure.message, AccentTone.slate),
-      _ => (Icons.error_outline_rounded, 'Nimadir xato ketdi', failure.message, AccentTone.red),
+      TimeoutFailure() => (
+        Icons.hourglass_empty_rounded,
+        'Server javob bermadi',
+        failure.message,
+        AccentTone.amber,
+      ),
+      NotFoundFailure() => (
+        Icons.search_off_rounded,
+        'Topilmadi',
+        failure.message,
+        AccentTone.slate,
+      ),
+      _ => (
+        Icons.error_outline_rounded,
+        'Nimadir xato ketdi',
+        failure.message,
+        AccentTone.red,
+      ),
     };
     return EmptyState(
       icon: icon,
@@ -106,7 +131,13 @@ class FailureView extends StatelessWidget {
 
 /// Footer for infinite lists: spinner while loading, retry on error.
 class LoadMoreFooter extends StatelessWidget {
-  const LoadMoreFooter({super.key, required this.isLoading, required this.hasMore, this.error, this.onRetry});
+  const LoadMoreFooter({
+    super.key,
+    required this.isLoading,
+    required this.hasMore,
+    this.error,
+    this.onRetry,
+  });
 
   final bool isLoading;
   final bool hasMore;
@@ -124,11 +155,15 @@ class LoadMoreFooter extends StatelessWidget {
         label: const Text('Yana yuklashda xato. Qayta urinish'),
       );
     } else if (isLoading || hasMore) {
-      child = const SizedBox.square(dimension: 24, child: CircularProgressIndicator(strokeWidth: 2.4));
+      child = const SizedBox.square(
+        dimension: 24,
+        child: CircularProgressIndicator(strokeWidth: 2.4),
+      );
     } else {
       child = Text(
         'Hammasi ko‘rsatildi',
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: palette.textTertiary),
+        style: Theme.of(context).textTheme.bodySmall
+            ?.copyWith(color: palette.textTertiary),
       );
     }
     return Padding(

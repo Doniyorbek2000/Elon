@@ -56,7 +56,9 @@ class DemoSearchRepository implements SearchRepository {
           text: category.name,
           kind: SuggestionKind.category,
           refId: category.id,
-          subtitle: category.parentId == null ? 'Kategoriya' : _categories.byId(category.parentId)?.name,
+          subtitle: category.parentId == null
+              ? 'Kategoriya'
+              : _categories.byId(category.parentId)?.name,
         ),
       );
       category.children.forEach(visit);
@@ -68,14 +70,23 @@ class DemoSearchRepository implements SearchRepository {
       if (seenTitles.add(listing.title.toLowerCase())) {
         consider(
           listing.title,
-          SearchSuggestion(text: listing.title, kind: SuggestionKind.query, subtitle: 'E’lonlar'),
+          SearchSuggestion(
+            text: listing.title,
+            kind: SuggestionKind.query,
+            subtitle: 'E’lonlar',
+          ),
         );
       }
     }
     for (final job in _db.jobs) {
       consider(
         job.title,
-        SearchSuggestion(text: job.title, kind: SuggestionKind.job, refId: job.id, subtitle: job.company.name),
+        SearchSuggestion(
+          text: job.title,
+          kind: SuggestionKind.job,
+          refId: job.id,
+          subtitle: job.company.name,
+        ),
       );
     }
     for (final provider in _db.providers) {
@@ -98,16 +109,25 @@ class DemoSearchRepository implements SearchRepository {
   }
 
   @override
-  Future<SearchResults> search(String query, {required ListingQuery listingFilters}) async {
+  Future<SearchResults> search(
+    String query, {
+    required ListingQuery listingFilters,
+  }) async {
     final (listingPage, jobs, providers) = await (
       _listings.search(listingFilters.copyWith(text: query)),
-      _jobs.searchJobs(JobQuery(text: query, regionId: listingFilters.regionId)),
-      _services.search(ProviderQuery(text: query, regionId: listingFilters.regionId)),
+      _jobs.searchJobs(
+        JobQuery(text: query, regionId: listingFilters.regionId),
+      ),
+      _services.search(
+        ProviderQuery(text: query, regionId: listingFilters.regionId),
+      ),
     ).wait;
     final tokens = SearchNormalizer.tokens(query);
     final users = [
       for (final user in _db.seed.users)
-        if (!_db.blockedUserIds.contains(user.id) && SearchNormalizer.matches(tokens, user.name)) user,
+        if (!_db.blockedUserIds.contains(user.id) &&
+            SearchNormalizer.matches(tokens, user.name))
+          user,
     ];
     return SearchResults(
       listings: listingPage.items,

@@ -38,18 +38,28 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
     super.dispose();
   }
 
-  JobQuery get _query => _refinements.copyWith(regionId: () => ref.watch(locationProvider).regionId);
+  JobQuery get _query => _refinements.copyWith(
+    regionId: () => ref.watch(locationProvider).regionId,
+  );
 
   Future<void> _openFilters() async {
-    final result = await showAppSheet<JobQuery>(context, builder: (_) => _JobFilterSheet(initial: _refinements));
+    final result = await showAppSheet<JobQuery>(
+      context,
+      builder: (_) => _JobFilterSheet(initial: _refinements),
+    );
     if (result != null && mounted) setState(() => _refinements = result);
   }
 
   @override
   Widget build(BuildContext context) {
-    final gutter = adaptiveGutter(context, maxWidth: AppBreakpoints.contentMaxWidth);
+    final gutter = adaptiveGutter(
+      context,
+      maxWidth: AppBreakpoints.contentMaxWidth,
+    );
     final query = _query;
-    final selectedType = _refinements.types.length == 1 ? _refinements.types.first : null;
+    final selectedType = _refinements.types.length == 1
+        ? _refinements.types.first
+        : null;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Ish')),
@@ -77,11 +87,21 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
               sliver: SliverToBoxAdapter(
                 child: AppSearchField(
                   controller: _search,
-                  hint: _hiring ? 'Kasb yoki ko‘nikma...' : 'Kasb yoki kompaniya...',
-                  activeFilters: _refinements.activeFilterCount - (selectedType != null ? 1 : 0),
+                  hint: _hiring
+                      ? 'Kasb yoki ko‘nikma...'
+                      : 'Kasb yoki kompaniya...',
+                  activeFilters:
+                      _refinements.activeFilterCount -
+                      (selectedType != null ? 1 : 0),
                   onFilterTap: _openFilters,
-                  onSubmitted: (value) => setState(() => _refinements = _refinements.copyWith(text: value.trim())),
-                  onClear: () => setState(() => _refinements = _refinements.copyWith(text: '')),
+                  onSubmitted: (value) => setState(
+                    () => _refinements = _refinements.copyWith(
+                      text: value.trim(),
+                    ),
+                  ),
+                  onClear: () => setState(
+                    () => _refinements = _refinements.copyWith(text: ''),
+                  ),
                 ),
               ),
             ),
@@ -93,8 +113,11 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                   items: const [null, ...EmploymentType.values],
                   selected: selectedType,
                   labelOf: (type) => type?.label ?? 'Barchasi',
-                  onSelected: (type) =>
-                      setState(() => _refinements = _refinements.copyWith(types: type == null ? const {} : {type})),
+                  onSelected: (type) => setState(
+                    () => _refinements = _refinements.copyWith(
+                      types: type == null ? const {} : {type},
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -102,12 +125,21 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(gutter, AppSpacing.md, gutter, 0),
                 sliver: SliverToBoxAdapter(
-                  child: _PostVacancyCard(onTap: () => context.push(AppRoutes.createIn('jobs'))),
+                  child: _PostVacancyCard(
+                    onTap: () => context.push(AppRoutes.createIn('jobs')),
+                  ),
                 ),
               ),
             SliverPadding(
-              padding: EdgeInsets.fromLTRB(gutter, AppSpacing.md, gutter, AppSpacing.xxxl),
-              sliver: _hiring ? _CandidateResults(query: query) : _JobResults(query: query),
+              padding: EdgeInsets.fromLTRB(
+                gutter,
+                AppSpacing.md,
+                gutter,
+                AppSpacing.xxxl,
+              ),
+              sliver: _hiring
+                  ? _CandidateResults(query: query)
+                  : _JobResults(query: query),
             ),
           ],
         ),
@@ -137,25 +169,39 @@ class _IntentSwitch extends StatelessWidget {
             child: AnimatedContainer(
               duration: AppMotion.of(context, AppMotion.fast),
               constraints: const BoxConstraints(minHeight: AppTouch.minTarget),
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.sm,
+              ),
               decoration: BoxDecoration(
                 color: selected ? palette.surface : Colors.transparent,
                 borderRadius: BorderRadius.circular(AppRadii.md - 2),
                 boxShadow: selected
-                    ? AppShadows.card(palette, dark: Theme.of(context).brightness == Brightness.dark)
+                    ? AppShadows.card(
+                        palette,
+                        dark: Theme.of(context).brightness == Brightness.dark,
+                      )
                     : null,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(icon, size: AppIconSize.sm, color: selected ? palette.primary : palette.textSecondary),
+                  Icon(
+                    icon,
+                    size: AppIconSize.sm,
+                    color: selected ? palette.primary : palette.textSecondary,
+                  ),
                   const SizedBox(width: AppSpacing.xs + 2),
                   Flexible(
                     child: Text(
                       label,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: text.labelLarge?.copyWith(color: selected ? palette.textPrimary : palette.textSecondary),
+                      style: text.labelLarge?.copyWith(
+                        color: selected
+                            ? palette.textPrimary
+                            : palette.textSecondary,
+                      ),
                     ),
                   ),
                 ],
@@ -168,7 +214,10 @@ class _IntentSwitch extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.xs),
-      decoration: BoxDecoration(color: palette.surfaceMuted, borderRadius: AppRadii.mdAll),
+      decoration: BoxDecoration(
+        color: palette.surfaceMuted,
+        borderRadius: AppRadii.mdAll,
+      ),
       child: Row(
         children: [
           segment('Ish qidiraman', Icons.person_search_rounded, false),
@@ -194,16 +243,25 @@ class _PostVacancyCard extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
-          const Icon(Icons.campaign_rounded, color: Colors.white, size: AppIconSize.xl),
+          const Icon(
+            Icons.campaign_rounded,
+            color: Colors.white,
+            size: AppIconSize.xl,
+          ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Vakansiya joylash', style: text.titleSmall?.copyWith(color: Colors.white)),
+                Text(
+                  'Vakansiya joylash',
+                  style: text.titleSmall?.copyWith(color: Colors.white),
+                ),
                 Text(
                   'Bepul. Hududingizdagi nomzodlar ko‘radi.',
-                  style: text.bodySmall?.copyWith(color: Colors.white.withValues(alpha: 0.85)),
+                  style: text.bodySmall?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.85),
+                  ),
                 ),
               ],
             ),
@@ -242,7 +300,11 @@ class _JobResults extends ConsumerWidget {
           skipLoadingOnRefresh: true,
           loading: _skeletonList,
           error: (error, _) => SliverToBoxAdapter(
-            child: FailureView(error: error, compact: true, onRetry: () => ref.invalidate(jobSearchProvider(query))),
+            child: FailureView(
+              error: error,
+              compact: true,
+              onRetry: () => ref.invalidate(jobSearchProvider(query)),
+            ),
           ),
           data: (jobs) => jobs.isEmpty
               ? const SliverToBoxAdapter(
@@ -255,8 +317,10 @@ class _JobResults extends ConsumerWidget {
                 )
               : SliverList.separated(
                   itemCount: jobs.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
-                  itemBuilder: (_, index) => JobCard(key: ValueKey(jobs[index].id), job: jobs[index]),
+                  separatorBuilder: (_, _) =>
+                      const SizedBox(height: AppSpacing.md),
+                  itemBuilder: (_, index) =>
+                      JobCard(key: ValueKey(jobs[index].id), job: jobs[index]),
                 ),
         );
   }
@@ -286,14 +350,17 @@ class _CandidateResults extends ConsumerWidget {
                   child: EmptyState(
                     icon: Icons.person_search_outlined,
                     title: 'Nomzod topilmadi',
-                    message: 'Vakansiya joylang — mos nomzodlar o‘zlari bog‘lanadi.',
+                    message:
+                        'Vakansiya joylang — mos nomzodlar o‘zlari bog‘lanadi.',
                     compact: true,
                   ),
                 )
               : SliverList.separated(
                   itemCount: candidates.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
-                  itemBuilder: (_, index) => CandidateCard(candidate: candidates[index]),
+                  separatorBuilder: (_, _) =>
+                      const SizedBox(height: AppSpacing.md),
+                  itemBuilder: (_, index) =>
+                      CandidateCard(candidate: candidates[index]),
                 ),
         );
   }
@@ -310,7 +377,9 @@ class _JobFilterSheet extends StatefulWidget {
 
 class _JobFilterSheetState extends State<_JobFilterSheet> {
   late JobQuery _query = widget.initial;
-  late final _salary = TextEditingController(text: ThousandsInputFormatter.format(widget.initial.minSalary));
+  late final _salary = TextEditingController(
+    text: ThousandsInputFormatter.format(widget.initial.minSalary),
+  );
 
   @override
   void dispose() {
@@ -336,7 +405,12 @@ class _JobFilterSheetState extends State<_JobFilterSheet> {
         child: const Text('Tozalash'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.lg),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.xl,
+          0,
+          AppSpacing.xl,
+          AppSpacing.lg,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -350,7 +424,9 @@ class _JobFilterSheetState extends State<_JobFilterSheet> {
                     label: Text(type.label),
                     selected: _query.types.contains(type),
                     labelStyle: text.labelMedium?.copyWith(
-                      color: _query.types.contains(type) ? palette.onPrimary : palette.textPrimary,
+                      color: _query.types.contains(type)
+                          ? palette.onPrimary
+                          : palette.textPrimary,
                     ),
                     onSelected: (selected) => setState(() {
                       final types = {..._query.types};
@@ -365,14 +441,21 @@ class _JobFilterSheetState extends State<_JobFilterSheet> {
               spacing: AppSpacing.sm,
               runSpacing: AppSpacing.sm,
               children: [
-                for (final level in <ExperienceLevel?>[null, ...ExperienceLevel.values])
+                for (final level in <ExperienceLevel?>[
+                  null,
+                  ...ExperienceLevel.values,
+                ])
                   ChoiceChip(
                     label: Text(level?.label ?? 'Farqi yo‘q'),
                     selected: _query.experience == level,
                     labelStyle: text.labelMedium?.copyWith(
-                      color: _query.experience == level ? palette.onPrimary : palette.textPrimary,
+                      color: _query.experience == level
+                          ? palette.onPrimary
+                          : palette.textPrimary,
                     ),
-                    onSelected: (_) => setState(() => _query = _query.copyWith(experience: () => level)),
+                    onSelected: (_) => setState(
+                      () => _query = _query.copyWith(experience: () => level),
+                    ),
                   ),
               ],
             ),
@@ -381,21 +464,29 @@ class _JobFilterSheetState extends State<_JobFilterSheet> {
               controller: _salary,
               keyboardType: TextInputType.number,
               inputFormatters: const [ThousandsInputFormatter()],
-              decoration: const InputDecoration(hintText: 'Masalan: 4 000 000', suffixText: 'so‘m'),
+              decoration: const InputDecoration(
+                hintText: 'Masalan: 4 000 000',
+                suffixText: 'so‘m',
+              ),
             ),
             const SizedBox(height: AppSpacing.md),
             SwitchListTile.adaptive(
               contentPadding: EdgeInsets.zero,
               title: const Text('Avval yuqori maoshlilar'),
               value: _query.sortBySalary,
-              onChanged: (value) => setState(() => _query = _query.copyWith(sortBySalary: value)),
+              onChanged: (value) =>
+                  setState(() => _query = _query.copyWith(sortBySalary: value)),
             ),
           ],
         ),
       ),
       actions: FilledButton(
-        onPressed: () =>
-            Navigator.pop(context, _query.copyWith(minSalary: () => ThousandsInputFormatter.parse(_salary.text))),
+        onPressed: () => Navigator.pop(
+          context,
+          _query.copyWith(
+            minSalary: () => ThousandsInputFormatter.parse(_salary.text),
+          ),
+        ),
         child: const Text('Natijalarni ko‘rsatish'),
       ),
     );

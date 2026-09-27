@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/app_config.dart';
 import '../../../core/domain/money.dart';
 import '../../../core/domain/place.dart';
 import '../../../core/domain/public_profile.dart';
@@ -45,12 +46,16 @@ class CreateListingController extends Notifier<ListingDraft> {
         subscription.cancel();
       }
     });
-    final stored = ref.read(keyValueStoreProvider).getJson(StoreKeys.listingDraft);
+    final stored = ref
+        .read(keyValueStoreProvider)
+        .getJson(StoreKeys.listingDraft);
     if (stored != null) {
       try {
         final draft = ListingDraft.fromJson(stored);
         // Resume uploads that were interrupted by the app closing.
-        Future.microtask(() => draft.photos.where((p) => !p.isUploaded).forEach(_startUpload));
+        Future.microtask(
+          () => draft.photos.where((p) => !p.isUploaded).forEach(_startUpload),
+        );
         return draft;
       } on Object {
         ref.read(keyValueStoreProvider).remove(StoreKeys.listingDraft).ignore();
@@ -61,8 +66,9 @@ class CreateListingController extends Notifier<ListingDraft> {
 
   CategoryTree get _tree => ref.read(categoryTreeProvider);
 
-  CategoryFormSchema get schema =>
-      state.categoryId == null ? CategoryFormSchema.generic : _tree.schemaFor(state.categoryId!);
+  CategoryFormSchema get schema => state.categoryId == null
+      ? CategoryFormSchema.generic
+      : _tree.schemaFor(state.categoryId!);
 
   void _update(ListingDraft next) {
     state = next;
@@ -98,12 +104,16 @@ class CreateListingController extends Notifier<ListingDraft> {
   }
 
   void setTitle(String value) => _update(state.copyWith(title: value));
-  void setDescription(String value) => _update(state.copyWith(description: value));
+  void setDescription(String value) =>
+      _update(state.copyWith(description: value));
   void setPrice(int? value) => _update(state.copyWith(price: () => value));
-  void setPriceMax(int? value) => _update(state.copyWith(priceMax: () => value));
+  void setPriceMax(int? value) =>
+      _update(state.copyWith(priceMax: () => value));
   void setCurrency(Currency value) => _update(state.copyWith(currency: value));
-  void setNegotiable({required bool value}) => _update(state.copyWith(negotiable: value));
-  void setCondition(ItemCondition? value) => _update(state.copyWith(condition: () => value));
+  void setNegotiable({required bool value}) =>
+      _update(state.copyWith(negotiable: value));
+  void setCondition(ItemCondition? value) =>
+      _update(state.copyWith(condition: () => value));
   void setPlace(Place value) => _update(state.copyWith(place: value));
 
   void setAttribute(String key, String value) {
@@ -125,7 +135,10 @@ class CreateListingController extends Notifier<ListingDraft> {
     if (accepted.isEmpty) return;
     final added = [
       for (final path in accepted)
-        DraftPhoto(id: 'p${DateTime.now().microsecondsSinceEpoch}_${_photoSequence++}', localPath: path),
+        DraftPhoto(
+          id: 'p${DateTime.now().microsecondsSinceEpoch}_${_photoSequence++}',
+          localPath: path,
+        ),
     ];
     _update(state.copyWith(photos: [...state.photos, ...added]));
     added.forEach(_startUpload);
@@ -137,16 +150,26 @@ class CreateListingController extends Notifier<ListingDraft> {
         .read(mediaUploadServiceProvider)
         .upload(photo.localPath)
         .listen(
-          (progress) =>
-              _patchPhoto(photo.id, (p) => p.copyWith(progress: progress.fraction, remoteId: progress.remoteId)),
-          onError: (Object _) => _patchPhoto(photo.id, (p) => p.copyWith(failed: true)),
+          (progress) => _patchPhoto(
+            photo.id,
+            (p) => p.copyWith(
+              progress: progress.fraction,
+              remoteId: progress.remoteId,
+            ),
+          ),
+          onError: (Object _) =>
+              _patchPhoto(photo.id, (p) => p.copyWith(failed: true)),
           onDone: () => _uploads.remove(photo.id),
         );
   }
 
   void _patchPhoto(String id, DraftPhoto Function(DraftPhoto) patch) {
     if (!ref.mounted) return;
-    _update(state.copyWith(photos: [for (final p in state.photos) p.id == id ? patch(p) : p]));
+    _update(
+      state.copyWith(
+        photos: [for (final p in state.photos) p.id == id ? patch(p) : p],
+      ),
+    );
   }
 
   void retryUpload(String id) {
@@ -158,7 +181,9 @@ class CreateListingController extends Notifier<ListingDraft> {
 
   void removePhoto(String id) {
     _uploads.remove(id)?.cancel();
-    _update(state.copyWith(photos: state.photos.where((p) => p.id != id).toList()));
+    _update(
+      state.copyWith(photos: state.photos.where((p) => p.id != id).toList()),
+    );
   }
 
   void movePhoto(int from, int to) {
@@ -182,14 +207,19 @@ class CreateListingController extends Notifier<ListingDraft> {
     final draft = state;
     switch (step) {
       case CreateStep.details:
-        if (draft.categoryId == null) errors[DraftField.category] = 'Kategoriyani tanlang';
+        if (draft.categoryId == null)
+          errors[DraftField.category] = 'Kategoriyani tanlang';
         final title = draft.title.trim();
         if (title.length < ListingDraft.titleMinLength) {
-          errors[DraftField.title] = 'Sarlavha kamida ${ListingDraft.titleMinLength} ta belgidan iborat bo‘lsin';
+          errors[DraftField.title] =
+              'Sarlavha kamida ${ListingDraft.titleMinLength} ta belgidan iborat bo‘lsin';
         }
         final priceMode = schema.priceMode;
-        if (priceMode == PriceMode.required && !draft.negotiable && (draft.price == null || draft.price! <= 0)) {
-          errors[DraftField.price] = 'Narxni kiriting yoki «Kelishiladi»ni tanlang';
+        if (priceMode == PriceMode.required &&
+            !draft.negotiable &&
+            (draft.price == null || draft.price! <= 0)) {
+          errors[DraftField.price] =
+              'Narxni kiriting yoki «Kelishiladi»ni tanlang';
         }
         if (priceMode == PriceMode.salary &&
             draft.price != null &&
@@ -197,7 +227,8 @@ class CreateListingController extends Notifier<ListingDraft> {
             draft.priceMax! < draft.price!) {
           errors[DraftField.price] = 'Maksimal maosh minimaldan kam bo‘lmasin';
         }
-        if (draft.description.trim().length < ListingDraft.descriptionMinLength) {
+        if (draft.description.trim().length <
+            ListingDraft.descriptionMinLength) {
           errors[DraftField.description] =
               'Tavsifni batafsilroq yozing (kamida ${ListingDraft.descriptionMinLength} belgi)';
         }
@@ -207,9 +238,11 @@ class CreateListingController extends Notifier<ListingDraft> {
           if (error != null) errors[DraftField.attribute(field.key)] = error;
         }
       case CreateStep.photos:
-        if (schema.photosRequired && draft.photos.isEmpty) errors[DraftField.photos] = 'Kamida bitta rasm qo‘shing';
+        if (schema.photosRequired && draft.photos.isEmpty)
+          errors[DraftField.photos] = 'Kamida bitta rasm qo‘shing';
         if (draft.uploadsFailed) {
-          errors[DraftField.photos] = 'Ba’zi rasmlar yuklanmadi — qayta urinib ko‘ring yoki o‘chiring';
+          errors[DraftField.photos] =
+              'Ba’zi rasmlar yuklanmadi — qayta urinib ko‘ring yoki o‘chiring';
         }
       case CreateStep.review:
         errors
@@ -229,7 +262,8 @@ class CreateListingController extends Notifier<ListingDraft> {
   }
 
   void back() {
-    if (state.step.index > 0) _update(state.copyWith(step: CreateStep.values[state.step.index - 1]));
+    if (state.step.index > 0)
+      _update(state.copyWith(step: CreateStep.values[state.step.index - 1]));
   }
 
   void goTo(CreateStep step) {
@@ -240,20 +274,26 @@ class CreateListingController extends Notifier<ListingDraft> {
     title: state.title,
     description: state.description,
     price: state.money,
-    referencePrice: state.categoryId == null ? null : ref.read(categoryReferencePriceProvider(state.categoryId!)),
+    referencePrice: state.categoryId == null
+        ? null
+        : ref.read(categoryReferencePriceProvider(state.categoryId!)),
   );
 
   /// Publishes and clears the draft. Vacancies go to the jobs vertical;
   /// everything else becomes a marketplace listing. Throws [AppFailure].
   Future<PublishedItem> publish() async {
     final errors = validate(CreateStep.review);
-    if (errors.isNotEmpty) throw StateError('Draft invalid: ${errors.keys.join(', ')}');
+    if (errors.isNotEmpty)
+      throw StateError('Draft invalid: ${errors.keys.join(', ')}');
     if (state.uploadsPending) throw StateError('Uploads still in progress');
     final user = ref.read(sessionProvider);
     if (user == null) throw StateError('publish() requires a signed-in user');
 
     final draft = state;
-    final needsReview = ListingRiskAssessor.requiresModeration(riskSignals());
+    // Demo mode approximates moderation locally; the server decides otherwise.
+    final needsReview =
+        ref.read(appConfigProvider).useDemoData &&
+        ListingRiskAssessor.requiresModeration(riskSignals());
     final PublishedItem item;
     if (_tree.rootOf(draft.categoryId!)?.kind == CategoryKind.jobs) {
       item = await _publishVacancy(draft, user.toPublic());
@@ -265,7 +305,11 @@ class CreateListingController extends Notifier<ListingDraft> {
     return item;
   }
 
-  Future<PublishedItem> _publishListing(ListingDraft draft, String userId, {required bool needsReview}) async {
+  Future<PublishedItem> _publishListing(
+    ListingDraft draft,
+    String userId, {
+    required bool needsReview,
+  }) async {
     final fieldsByKey = {for (final f in schema.fields) f.key: f};
     final repository = ref.read(listingRepositoryProvider);
     final listing = await repository.publish(
@@ -283,29 +327,49 @@ class CreateListingController extends Notifier<ListingDraft> {
             ListingAttribute(
               key: entry.key,
               label: fieldsByKey[entry.key]?.label ?? entry.key,
-              value: fieldsByKey[entry.key]?.unit == null
-                  ? entry.value
-                  : '${entry.value} ${fieldsByKey[entry.key]!.unit}',
+              value:
+                  fieldsByKey[entry.key]?.displayValue(entry.value) ??
+                  entry.value,
             ),
         ],
+        attributeValues: {
+          for (final entry in draft.attributes.entries)
+            if (fieldsByKey[entry.key]?.toApiValue(entry.value)
+                case final Object value)
+              entry.key: value,
+        },
       ),
       sellerId: userId,
     );
-    if (needsReview) await repository.updateStatus(listing.id, ListingStatus.pendingReview);
+    if (needsReview)
+      await repository.updateStatus(listing.id, ListingStatus.pendingReview);
+    final underReview =
+        needsReview || listing.status == ListingStatus.pendingReview;
     return PublishedItem(
       target: ShareTarget.listing,
       id: listing.id,
       title: listing.title,
-      subtitle: listing.price == null ? 'Kelishiladi' : Formatters.money(listing.price!),
+      subtitle: listing.price == null
+          ? 'Kelishiladi'
+          : Formatters.money(listing.price!),
       place: listing.place,
       image: listing.cover,
-      pendingReview: needsReview,
+      pendingReview: underReview,
     );
   }
 
-  Future<PublishedItem> _publishVacancy(ListingDraft draft, PublicProfile employer) async {
-    T option<T extends Enum>(List<T> values, String key, String Function(T) label, T fallback) =>
-        values.where((v) => label(v) == draft.attributes[key]).firstOrNull ?? fallback;
+  Future<PublishedItem> _publishVacancy(
+    ListingDraft draft,
+    PublicProfile employer,
+  ) async {
+    T option<T extends Enum>(
+      List<T> values,
+      String key,
+      String Function(T) label,
+      T fallback,
+    ) =>
+        values.where((v) => label(v) == draft.attributes[key]).firstOrNull ??
+        fallback;
     final job = await ref
         .read(jobRepositoryProvider)
         .postVacancy(
@@ -313,8 +377,18 @@ class CreateListingController extends Notifier<ListingDraft> {
             title: draft.title.trim(),
             companyName: draft.attributes['company'] ?? employer.name,
             place: draft.place!,
-            employmentType: option(EmploymentType.values, 'employment', (e) => e.label, EmploymentType.fullTime),
-            experience: option(ExperienceLevel.values, 'experience', (e) => e.label, ExperienceLevel.none),
+            employmentType: option(
+              EmploymentType.values,
+              'employment',
+              (e) => e.label,
+              EmploymentType.fullTime,
+            ),
+            experience: option(
+              ExperienceLevel.values,
+              'experience',
+              (e) => e.label,
+              ExperienceLevel.none,
+            ),
             description: draft.description.trim(),
             workingHours: draft.attributes['hours'] ?? '',
             salaryMin: draft.price,
@@ -327,7 +401,11 @@ class CreateListingController extends Notifier<ListingDraft> {
       target: ShareTarget.job,
       id: job.id,
       title: job.title,
-      subtitle: Formatters.salaryRange(job.salaryMin, job.salaryMax, job.currency),
+      subtitle: Formatters.salaryRange(
+        job.salaryMin,
+        job.salaryMax,
+        job.currency,
+      ),
       place: job.place,
       pendingReview: false,
     );
@@ -352,4 +430,7 @@ class CreateListingController extends Notifier<ListingDraft> {
   void acknowledgeRestore() => state = state.copyWith(restored: false);
 }
 
-final createListingProvider = NotifierProvider<CreateListingController, ListingDraft>(CreateListingController.new);
+final createListingProvider =
+    NotifierProvider<CreateListingController, ListingDraft>(
+      CreateListingController.new,
+    );

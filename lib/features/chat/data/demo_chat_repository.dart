@@ -23,7 +23,8 @@ class DemoChatRepository implements ChatRepository {
   String get _me => _db.currentUser?.id ?? 'guest';
 
   List<Conversation> _sortedConversations() =>
-      _db.conversations.values.toList()..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      _db.conversations.values.toList()
+        ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
 
   @override
   Stream<List<Conversation>> watchConversations() async* {
@@ -37,9 +38,14 @@ class DemoChatRepository implements ChatRepository {
   @override
   Stream<List<ChatMessage>> watchMessages(String conversationId) async* {
     await _db.roundTrip(0.4);
-    yield List.unmodifiable(_db.messages[conversationId] ?? const <ChatMessage>[]);
+    yield List.unmodifiable(
+      _db.messages[conversationId] ?? const <ChatMessage>[],
+    );
     await for (final changedId in _messagesChanged.stream) {
-      if (changedId == conversationId) yield List.unmodifiable(_db.messages[conversationId] ?? const <ChatMessage>[]);
+      if (changedId == conversationId)
+        yield List.unmodifiable(
+          _db.messages[conversationId] ?? const <ChatMessage>[],
+        );
     }
   }
 
@@ -54,15 +60,26 @@ class DemoChatRepository implements ChatRepository {
   @override
   Future<Conversation> getConversation(String conversationId) async {
     await _db.roundTrip(0.3);
-    return _db.conversations[conversationId] ?? (throw const NotFoundFailure('Suhbat topilmadi'));
+    return _db.conversations[conversationId] ??
+        (throw const NotFoundFailure('Suhbat topilmadi'));
   }
 
   @override
-  Future<Conversation> openConversation({required PublicProfile peer, ConversationContext? context}) async {
+  Future<Conversation> openConversation({
+    required PublicProfile peer,
+    ConversationContext? context,
+  }) async {
     await _db.roundTrip(0.5);
-    final existing = _db.conversations.values.where((c) => c.peer.id == peer.id && c.context?.refId == context?.refId);
+    final existing = _db.conversations.values.where(
+      (c) => c.peer.id == peer.id && c.context?.refId == context?.refId,
+    );
     if (existing.isNotEmpty) return existing.first;
-    final conversation = Conversation(id: _db.nextId('c'), peer: peer, updatedAt: _clock(), context: context);
+    final conversation = Conversation(
+      id: _db.nextId('c'),
+      peer: peer,
+      updatedAt: _clock(),
+      context: context,
+    );
     _db.conversations[conversation.id] = conversation;
     _db.messages[conversation.id] = [];
     _conversationsChanged.add(null);
@@ -76,14 +93,20 @@ class DemoChatRepository implements ChatRepository {
       _db.conversations[conversationId] = conversation.copyWith(
         updatedAt: message.sentAt,
         lastMessagePreview: message.preview,
-        unreadCount: message.senderId == _me ? conversation.unreadCount : conversation.unreadCount + 1,
+        unreadCount: message.senderId == _me
+            ? conversation.unreadCount
+            : conversation.unreadCount + 1,
       );
     }
     _messagesChanged.add(conversationId);
     _conversationsChanged.add(null);
   }
 
-  void _setDelivery(String conversationId, String messageId, DeliveryState state) {
+  void _setDelivery(
+    String conversationId,
+    String messageId,
+    DeliveryState state,
+  ) {
     final list = _db.messages[conversationId];
     if (list == null) return;
     final index = list.indexWhere((m) => m.id == messageId);
@@ -92,19 +115,27 @@ class DemoChatRepository implements ChatRepository {
     _messagesChanged.add(conversationId);
   }
 
-  void _after(Duration delay, void Function() action) => _timers.add(Timer(delay, action));
+  void _after(Duration delay, void Function() action) =>
+      _timers.add(Timer(delay, action));
 
   Future<void> _send(String conversationId, ChatMessage message) async {
     final conversation = _db.conversations[conversationId];
     if (conversation == null) throw const NotFoundFailure('Suhbat topilmadi');
-    if (conversation.isBlocked) throw const ValidationFailure('Siz bu foydalanuvchini bloklagansiz');
+    if (conversation.isBlocked)
+      throw const ValidationFailure('Siz bu foydalanuvchini bloklagansiz');
     _append(conversationId, message);
     await _db.roundTrip(0.4);
     _setDelivery(conversationId, message.id, DeliveryState.delivered);
     if (!_db.simulatesPeers) return;
-    _after(const Duration(milliseconds: 1400), () => _setDelivery(conversationId, message.id, DeliveryState.read));
+    _after(
+      const Duration(milliseconds: 1400),
+      () => _setDelivery(conversationId, message.id, DeliveryState.read),
+    );
     if (_autoReplied.add(conversationId)) {
-      _after(const Duration(milliseconds: 1800), () => _typing.add((conversationId, true)));
+      _after(
+        const Duration(milliseconds: 1800),
+        () => _typing.add((conversationId, true)),
+      );
       _after(const Duration(milliseconds: 4200), () {
         _typing.add((conversationId, false));
         _append(
@@ -157,11 +188,16 @@ class DemoChatRepository implements ChatRepository {
   }
 
   @override
-  Future<void> setBlocked(String conversationId, {required bool blocked}) async {
+  Future<void> setBlocked(
+    String conversationId, {
+    required bool blocked,
+  }) async {
     await _db.roundTrip(0.4);
     final conversation = _db.conversations[conversationId];
     if (conversation == null) return;
-    _db.conversations[conversationId] = conversation.copyWith(isBlocked: blocked);
+    _db.conversations[conversationId] = conversation.copyWith(
+      isBlocked: blocked,
+    );
     if (blocked) {
       _db.blockedUserIds.add(conversation.peer.id);
     } else {
@@ -178,4 +214,15 @@ class DemoChatRepository implements ChatRepository {
     await _messagesChanged.close();
     await _typing.close();
   }
+
+  @override
+  Future<bool> loadOlder(String conversationId) async => false;
+
+  @override
+  Future<void> retry(String conversationId, ChatMessage message) async {
+    if (message.text != null) await sendText(conversationId, message.text!);
+  }
+
+  @override
+  void sendTyping(String conversationId, {required bool isTyping}) {}
 }

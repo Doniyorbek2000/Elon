@@ -19,7 +19,9 @@ class GeoPoint {
     final dLng = rad(other.longitude - longitude);
     final a =
         math.pow(math.sin(dLat / 2), 2) +
-        math.cos(rad(latitude)) * math.cos(rad(other.latitude)) * math.pow(math.sin(dLng / 2), 2);
+        math.cos(rad(latitude)) *
+            math.cos(rad(other.latitude)) *
+            math.pow(math.sin(dLng / 2), 2);
     return earthRadiusKm * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
   }
 }
@@ -34,7 +36,12 @@ class Locality {
 
 @immutable
 class District {
-  const District({required this.id, required this.name, this.center, this.localities = const []});
+  const District({
+    required this.id,
+    required this.name,
+    this.center,
+    this.localities = const [],
+  });
 
   final String id;
   final String name;
@@ -44,7 +51,12 @@ class District {
 
 @immutable
 class Region {
-  const Region({required this.id, required this.name, required this.center, this.districts = const []});
+  const Region({
+    required this.id,
+    required this.name,
+    required this.center,
+    this.districts = const [],
+  });
 
   final String id;
   final String name;
@@ -56,6 +68,38 @@ class Region {
 class LocationTree {
   const LocationTree(this.regions);
 
+  /// Parses `GET /locations/tree`.
+  factory LocationTree.fromJson(List<dynamic> json) {
+    GeoPoint? point(Map<String, dynamic> m) =>
+        m['lat'] is num && m['lng'] is num
+        ? GeoPoint((m['lat'] as num).toDouble(), (m['lng'] as num).toDouble())
+        : null;
+    return LocationTree([
+      for (final r in json.cast<Map<String, dynamic>>())
+        Region(
+          id: r['id'] as String,
+          name: r['name'] as String,
+          center: point(r) ?? const GeoPoint(41.3, 69.24),
+          districts: [
+            for (final d
+                in (r['districts'] as List<dynamic>? ?? const [])
+                    .cast<Map<String, dynamic>>())
+              District(
+                id: d['id'] as String,
+                name: d['name'] as String,
+                center: point(d),
+                localities: [
+                  for (final l
+                      in (d['localities'] as List<dynamic>? ?? const [])
+                          .cast<Map<String, dynamic>>())
+                    Locality(id: l['id'] as String, name: l['name'] as String),
+                ],
+              ),
+          ],
+        ),
+    ]);
+  }
+
   final List<Region> regions;
 
   Region? region(String? id) => regions.where((r) => r.id == id).firstOrNull;
@@ -64,7 +108,9 @@ class LocationTree {
       region(regionId)?.districts.where((d) => d.id == districtId).firstOrNull;
 
   /// Nearest district center to [point] across the whole tree (offline reverse geocoding).
-  ({Region region, District district, double distanceKm})? nearestDistrict(GeoPoint point) {
+  ({Region region, District district, double distanceKm})? nearestDistrict(
+    GeoPoint point,
+  ) {
     ({Region region, District district, double distanceKm})? best;
     for (final region in regions) {
       for (final district in region.districts) {
@@ -132,19 +178,23 @@ class LocationSelection {
     fromDevice: fromDevice,
   );
 
-  factory LocationSelection.fromJson(Map<String, dynamic> json) => LocationSelection(
-    regionId: json['regionId'] as String,
-    regionName: json['regionName'] as String,
-    districtId: json['districtId'] as String?,
-    districtName: json['districtName'] as String?,
-    localityId: json['localityId'] as String?,
-    localityName: json['localityName'] as String?,
-    radiusKm: json['radiusKm'] as int?,
-    point: json['lat'] is num && json['lng'] is num
-        ? GeoPoint((json['lat'] as num).toDouble(), (json['lng'] as num).toDouble())
-        : null,
-    fromDevice: json['fromDevice'] as bool? ?? false,
-  );
+  factory LocationSelection.fromJson(Map<String, dynamic> json) =>
+      LocationSelection(
+        regionId: json['regionId'] as String,
+        regionName: json['regionName'] as String,
+        districtId: json['districtId'] as String?,
+        districtName: json['districtName'] as String?,
+        localityId: json['localityId'] as String?,
+        localityName: json['localityName'] as String?,
+        radiusKm: json['radiusKm'] as int?,
+        point: json['lat'] is num && json['lng'] is num
+            ? GeoPoint(
+                (json['lat'] as num).toDouble(),
+                (json['lng'] as num).toDouble(),
+              )
+            : null,
+        fromDevice: json['fromDevice'] as bool? ?? false,
+      );
 
   Map<String, dynamic> toJson() => {
     'regionId': regionId,
@@ -169,5 +219,6 @@ class LocationSelection {
       other.fromDevice == fromDevice;
 
   @override
-  int get hashCode => Object.hash(regionId, districtId, localityId, radiusKm, fromDevice);
+  int get hashCode =>
+      Object.hash(regionId, districtId, localityId, radiusKm, fromDevice);
 }

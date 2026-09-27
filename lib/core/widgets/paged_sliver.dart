@@ -6,7 +6,10 @@ import '../design/app_tokens.dart';
 
 /// Horizontal padding that keeps content within [maxWidth] on tablets while
 /// using the standard page gutter on phones.
-double adaptiveGutter(BuildContext context, {double maxWidth = AppBreakpoints.wideContentMaxWidth}) {
+double adaptiveGutter(
+  BuildContext context, {
+  double maxWidth = AppBreakpoints.wideContentMaxWidth,
+}) {
   final width = MediaQuery.sizeOf(context).width;
   final gutter = AppBreakpoints.pagePadding(context);
   return math.max(gutter, (width - maxWidth) / 2);
@@ -14,7 +17,12 @@ double adaptiveGutter(BuildContext context, {double maxWidth = AppBreakpoints.wi
 
 /// Calls [onLoadMore] when the user scrolls within [threshold] px of the end.
 class InfiniteScrollTrigger extends StatelessWidget {
-  const InfiniteScrollTrigger({super.key, required this.child, required this.onLoadMore, this.threshold = 600});
+  const InfiniteScrollTrigger({
+    super.key,
+    required this.child,
+    required this.onLoadMore,
+    this.threshold = 600,
+  });
 
   final Widget child;
   final VoidCallback onLoadMore;

@@ -22,7 +22,12 @@ enum SuggestionKind { query, category, listing, job, service }
 
 @immutable
 class SearchSuggestion {
-  const SearchSuggestion({required this.text, required this.kind, this.refId, this.subtitle});
+  const SearchSuggestion({
+    required this.text,
+    required this.kind,
+    this.refId,
+    this.subtitle,
+  });
 
   final String text;
   final SuggestionKind kind;
@@ -48,8 +53,10 @@ class SearchResults {
   /// Set when typo tolerance rewrote the query ("ayfon" → "iphone").
   final String? correctedQuery;
 
-  bool get isEmpty => listings.isEmpty && jobs.isEmpty && providers.isEmpty && users.isEmpty;
-  int get total => listings.length + jobs.length + providers.length + users.length;
+  bool get isEmpty =>
+      listings.isEmpty && jobs.isEmpty && providers.isEmpty && users.isEmpty;
+  int get total =>
+      listings.length + jobs.length + providers.length + users.length;
 }
 
 /// Universal search across verticals. The demo implementation does local
@@ -58,5 +65,8 @@ class SearchResults {
 abstract interface class SearchRepository {
   Future<List<SearchSuggestion>> suggest(String query);
   Future<List<String>> popular();
-  Future<SearchResults> search(String query, {required ListingQuery listingFilters});
+  Future<SearchResults> search(
+    String query, {
+    required ListingQuery listingFilters,
+  });
 }

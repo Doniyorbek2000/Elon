@@ -52,12 +52,21 @@ class ListingFeedSlivers extends ConsumerWidget {
                     itemCount: 6,
                     itemBuilder: (_, _) => const ListingCardSkeleton(),
                   )
-                : Column(children: List.generate(6, (_) => const ListingTileSkeleton())),
+                : Column(
+                    children: List.generate(
+                      6,
+                      (_) => const ListingTileSkeleton(),
+                    ),
+                  ),
           ),
         ),
       ),
       error: (error, _) => SliverToBoxAdapter(
-        child: FailureView(error: error, compact: true, onRetry: () => ref.invalidate(listingFeedProvider(query))),
+        child: FailureView(
+          error: error,
+          compact: true,
+          onRetry: () => ref.invalidate(listingFeedProvider(query)),
+        ),
       ),
       data: (state) {
         if (state.isEmpty) {
@@ -86,7 +95,11 @@ class ListingFeedSlivers extends ConsumerWidget {
                         heroPrefix: heroPrefix,
                       ),
                     )
-                  : _TileList(items: state.items, width: width, heroPrefix: heroPrefix),
+                  : _TileList(
+                      items: state.items,
+                      width: width,
+                      heroPrefix: heroPrefix,
+                    ),
             ),
             SliverToBoxAdapter(child: _footer(ref, state)),
           ],
@@ -104,7 +117,11 @@ class ListingFeedSlivers extends ConsumerWidget {
 }
 
 class _TileList extends StatelessWidget {
-  const _TileList({required this.items, required this.width, required this.heroPrefix});
+  const _TileList({
+    required this.items,
+    required this.width,
+    required this.heroPrefix,
+  });
 
   final List<Listing> items;
   final double width;
@@ -118,8 +135,11 @@ class _TileList extends StatelessWidget {
       return SliverList.separated(
         itemCount: items.length,
         separatorBuilder: (_, _) => const Divider(height: AppSpacing.sm),
-        itemBuilder: (_, index) =>
-            ListingTile(key: ValueKey(items[index].id), listing: items[index], heroPrefix: heroPrefix),
+        itemBuilder: (_, index) => ListingTile(
+          key: ValueKey(items[index].id),
+          listing: items[index],
+          heroPrefix: heroPrefix,
+        ),
       );
     }
     final rows = (items.length / columns).ceil();
@@ -132,7 +152,10 @@ class _TileList extends StatelessWidget {
             if (column > 0) const SizedBox(width: AppSpacing.xl),
             Expanded(
               child: row * columns + column < items.length
-                  ? ListingTile(listing: items[row * columns + column], heroPrefix: heroPrefix)
+                  ? ListingTile(
+                      listing: items[row * columns + column],
+                      heroPrefix: heroPrefix,
+                    )
                   : const SizedBox.shrink(),
             ),
           ],

@@ -16,6 +16,7 @@ class NewListing {
     this.negotiable = false,
     this.condition,
     this.attributes = const [],
+    this.attributeValues = const {},
   });
 
   final String categoryId;
@@ -26,7 +27,31 @@ class NewListing {
   final Money? price;
   final bool negotiable;
   final ItemCondition? condition;
+
+  /// Display attributes (label + formatted value) for local/demo rendering.
   final List<ListingAttribute> attributes;
+
+  /// Typed values keyed by attribute key, validated by the server schema
+  /// (number → num, boolean → bool, multiSelect → List<String>).
+  final Map<String, Object> attributeValues;
+
+  /// Request body for `POST /listings`.
+  Map<String, dynamic> toApiJson() => {
+    'categoryId': categoryId,
+    'title': title,
+    'description': description,
+    'place': {
+      'regionId': place.regionId,
+      'districtId': ?place.districtId,
+      'lat': ?place.latitude,
+      'lng': ?place.longitude,
+    },
+    'mediaIds': imageIds,
+    'price': ?price?.toJson(),
+    'negotiable': negotiable,
+    'condition': ?condition?.apiValue,
+    'attributes': attributeValues,
+  };
 
   Map<String, dynamic> toJson() => {
     'categoryId': categoryId,
@@ -51,6 +76,9 @@ abstract interface class ListingRepository {
   Future<List<Listing>> similar(Listing listing, {int limit = 8});
 
   Future<List<Listing>> bySeller(String sellerId);
+
+  /// The signed-in user's own listings in every status (drafts, review, sold…).
+  Future<List<Listing>> mine();
 
   Future<void> recordView(String id);
 

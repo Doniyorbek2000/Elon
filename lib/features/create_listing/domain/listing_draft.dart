@@ -18,7 +18,13 @@ enum CreateStep {
 
 @immutable
 class DraftPhoto {
-  const DraftPhoto({required this.id, required this.localPath, this.progress = 0, this.remoteId, this.failed = false});
+  const DraftPhoto({
+    required this.id,
+    required this.localPath,
+    this.progress = 0,
+    this.remoteId,
+    this.failed = false,
+  });
 
   final String id;
   final String localPath;
@@ -29,13 +35,14 @@ class DraftPhoto {
   bool get isUploaded => remoteId != null;
   bool get isUploading => !isUploaded && !failed;
 
-  DraftPhoto copyWith({double? progress, String? remoteId, bool? failed}) => DraftPhoto(
-    id: id,
-    localPath: localPath,
-    progress: progress ?? this.progress,
-    remoteId: remoteId ?? this.remoteId,
-    failed: failed ?? this.failed,
-  );
+  DraftPhoto copyWith({double? progress, String? remoteId, bool? failed}) =>
+      DraftPhoto(
+        id: id,
+        localPath: localPath,
+        progress: progress ?? this.progress,
+        remoteId: remoteId ?? this.remoteId,
+        failed: failed ?? this.failed,
+      );
 
   factory DraftPhoto.fromJson(Map<String, dynamic> json) => DraftPhoto(
     id: json['id'] as String,
@@ -44,7 +51,11 @@ class DraftPhoto {
     progress: json['remoteId'] == null ? 0 : 1,
   );
 
-  Map<String, dynamic> toJson() => {'id': id, 'path': localPath, 'remoteId': ?remoteId};
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'path': localPath,
+    'remoteId': ?remoteId,
+  };
 }
 
 /// Everything the user typed in the create flow. Persisted on every change so
@@ -92,7 +103,11 @@ class ListingDraft {
   static const descriptionMaxLength = 3000;
 
   bool get hasContent =>
-      categoryId != null || title.isNotEmpty || description.isNotEmpty || price != null || photos.isNotEmpty;
+      categoryId != null ||
+      title.isNotEmpty ||
+      description.isNotEmpty ||
+      price != null ||
+      photos.isNotEmpty;
 
   bool get uploadsPending => photos.any((p) => p.isUploading);
   bool get uploadsFailed => photos.any((p) => p.failed);
@@ -130,7 +145,9 @@ class ListingDraft {
   );
 
   factory ListingDraft.fromJson(Map<String, dynamic> json) => ListingDraft(
-    step: CreateStep.values.where((s) => s.name == json['step']).firstOrNull ?? CreateStep.details,
+    step:
+        CreateStep.values.where((s) => s.name == json['step']).firstOrNull ??
+        CreateStep.details,
     categoryId: json['categoryId'] as String?,
     title: json['title'] as String? ?? '',
     description: json['description'] as String? ?? '',
@@ -140,10 +157,13 @@ class ListingDraft {
     negotiable: json['negotiable'] as bool? ?? false,
     condition: ItemCondition.parse(json['condition']),
     attributes: {
-      for (final entry in (json['attributes'] as Map<String, dynamic>? ?? const {}).entries)
+      for (final entry
+          in (json['attributes'] as Map<String, dynamic>? ?? const {}).entries)
         entry.key: '${entry.value}',
     },
-    place: json['place'] == null ? null : Place.fromJson(json['place'] as Map<String, dynamic>),
+    place: json['place'] == null
+        ? null
+        : Place.fromJson(json['place'] as Map<String, dynamic>),
     photos: [
       for (final photo in json['photos'] as List<dynamic>? ?? const [])
         DraftPhoto.fromJson(photo as Map<String, dynamic>),

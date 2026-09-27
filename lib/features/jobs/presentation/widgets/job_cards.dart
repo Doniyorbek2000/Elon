@@ -27,19 +27,29 @@ class JobCard extends ConsumerWidget {
     final now = ref.watch(clockProvider)();
     final showBadges = ref.watch(featureFlagsProvider).showPromotionBadges;
     final promotion = job.promotion;
-    final salary = Formatters.salaryRange(job.salaryMin, job.salaryMax, job.currency);
-    final meta = '${job.place.shortLabel} · ${Formatters.relativeTime(job.publishedAt, now)}';
+    final salary = Formatters.salaryRange(
+      job.salaryMin,
+      job.salaryMax,
+      job.currency,
+    );
+    final meta =
+        '${job.place.shortLabel} · ${Formatters.relativeTime(job.publishedAt, now)}';
 
     return SurfaceCard(
       padding: const EdgeInsets.all(AppSpacing.md + 2),
       onTap: () => context.push(AppRoutes.job(job.id)),
       child: Semantics(
-        label: '${job.title}, ${job.company.name}, $salary, ${job.employmentType.label}, $meta',
+        label:
+            '${job.title}, ${job.company.name}, $salary, ${job.employmentType.label}, $meta',
         excludeSemantics: true,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ToneIcon(icon: AppIcons.forKey(job.company.iconKey), tone: job.company.tone, size: 48),
+            ToneIcon(
+              icon: AppIcons.forKey(job.company.iconKey),
+              tone: job.company.tone,
+              size: 48,
+            ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
@@ -49,13 +59,24 @@ class JobCard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Text(job.title, style: text.titleSmall, maxLines: 2, overflow: TextOverflow.ellipsis),
+                        child: Text(
+                          job.title,
+                          style: text.titleSmall,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       const SizedBox(width: AppSpacing.sm),
-                      if (showBadges && promotion != null && promotion.isActive(now))
+                      if (showBadges &&
+                          promotion != null &&
+                          promotion.isActive(now))
                         PromotionBadge(type: promotion.type)
                       else if (job.isNew(now))
-                        const StatusPill(label: 'Yangi', style: PillStyle.success, dense: true),
+                        const StatusPill(
+                          label: 'Yangi',
+                          style: PillStyle.success,
+                          dense: true,
+                        ),
                     ],
                   ),
                   const SizedBox(height: 2),
@@ -76,7 +97,10 @@ class JobCard extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.xs + 2),
                   Text(
                     salary,
-                    style: text.titleSmall?.copyWith(color: palette.price, fontWeight: FontWeight.w800),
+                    style: text.titleSmall?.copyWith(
+                      color: palette.price,
+                      fontWeight: FontWeight.w800,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -87,7 +111,12 @@ class JobCard extends ConsumerWidget {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       StatusPill(label: job.employmentType.label, dense: true),
-                      Text(meta, style: text.bodySmall?.copyWith(color: palette.textTertiary)),
+                      Text(
+                        meta,
+                        style: text.bodySmall?.copyWith(
+                          color: palette.textTertiary,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -127,15 +156,27 @@ class CandidateCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(candidate.desiredPosition, style: text.titleSmall, maxLines: 2, overflow: TextOverflow.ellipsis),
+                Text(
+                  candidate.desiredPosition,
+                  style: text.titleSmall,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 2),
                 Row(
                   children: [
                     Flexible(
-                      child: Text(candidate.profile.name, style: text.bodySmall, overflow: TextOverflow.ellipsis),
+                      child: Text(
+                        candidate.profile.name,
+                        style: text.bodySmall,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     const SizedBox(width: AppSpacing.xs),
-                    VerifiedBadge(level: candidate.profile.verification, size: 14),
+                    VerifiedBadge(
+                      level: candidate.profile.verification,
+                      size: 14,
+                    ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.xs + 2),
@@ -143,7 +184,10 @@ class CandidateCard extends ConsumerWidget {
                   candidate.expectedSalary == null
                       ? 'Maosh: kelishiladi'
                       : '${Formatters.money(candidate.expectedSalary!)} dan',
-                  style: text.titleSmall?.copyWith(color: palette.price, fontWeight: FontWeight.w800),
+                  style: text.titleSmall?.copyWith(
+                    color: palette.price,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.xs + 2),
                 Text(

@@ -28,8 +28,11 @@ class PagedState<T> {
     this.total,
   });
 
-  factory PagedState.fromPage(PageResult<T> page) =>
-      PagedState(items: page.items, nextCursor: page.nextCursor, total: page.total);
+  factory PagedState.fromPage(PageResult<T> page) => PagedState(
+    items: page.items,
+    nextCursor: page.nextCursor,
+    total: page.total,
+  );
 
   final List<T> items;
   final String? nextCursor;
@@ -40,15 +43,22 @@ class PagedState<T> {
   bool get hasMore => nextCursor != null;
   bool get isEmpty => items.isEmpty;
 
-  PagedState<T> appending(PageResult<T> page) =>
-      PagedState(items: [...items, ...page.items], nextCursor: page.nextCursor, total: page.total ?? total);
+  PagedState<T> appending(PageResult<T> page) => PagedState(
+    items: [...items, ...page.items],
+    nextCursor: page.nextCursor,
+    total: page.total ?? total,
+  );
 
-  PagedState<T> copyWith({List<T>? items, bool? isLoadingMore, AppFailure? loadMoreError, bool clearError = false}) =>
-      PagedState(
-        items: items ?? this.items,
-        nextCursor: nextCursor,
-        isLoadingMore: isLoadingMore ?? this.isLoadingMore,
-        loadMoreError: clearError ? null : loadMoreError ?? this.loadMoreError,
-        total: total,
-      );
+  PagedState<T> copyWith({
+    List<T>? items,
+    bool? isLoadingMore,
+    AppFailure? loadMoreError,
+    bool clearError = false,
+  }) => PagedState(
+    items: items ?? this.items,
+    nextCursor: nextCursor,
+    isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+    loadMoreError: clearError ? null : loadMoreError ?? this.loadMoreError,
+    total: total,
+  );
 }

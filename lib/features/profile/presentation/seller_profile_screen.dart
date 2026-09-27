@@ -37,7 +37,10 @@ class SellerProfileScreen extends ConsumerWidget {
           ),
           error: (error, _) => Scaffold(
             appBar: AppBar(),
-            body: FailureView(error: error, onRetry: () => ref.invalidate(publicProfileProvider(userId))),
+            body: FailureView(
+              error: error,
+              onRetry: () => ref.invalidate(publicProfileProvider(userId)),
+            ),
           ),
           data: (profile) => _SellerView(profile: profile),
         );
@@ -73,7 +76,9 @@ class _SellerView extends ConsumerWidget {
                 title: '${profile.name} — Bozor.uz',
                 subtitle: '${profile.activeListings} ta e’lon',
                 image: profile.avatar,
-                url: ref.read(deepLinksProvider).web(ShareTarget.seller, profile.id),
+                url: ref
+                    .read(deepLinksProvider)
+                    .web(ShareTarget.seller, profile.id),
               ),
             ),
           ),
@@ -81,8 +86,19 @@ class _SellerView extends ConsumerWidget {
             PopupMenuButton<String>(
               tooltip: 'Ko‘proq',
               onSelected: (value) {
-                if (value == 'report') showReportSheet(context, type: ReportTargetType.user, targetId: profile.id);
-                if (value == 'block') confirmAndBlock(context, ref, userId: profile.id, name: profile.name);
+                if (value == 'report')
+                  showReportSheet(
+                    context,
+                    type: ReportTargetType.user,
+                    targetId: profile.id,
+                  );
+                if (value == 'block')
+                  confirmAndBlock(
+                    context,
+                    ref,
+                    userId: profile.id,
+                    name: profile.name,
+                  );
               },
               itemBuilder: (_) => const [
                 PopupMenuItem(value: 'report', child: Text('Shikoyat qilish')),
@@ -94,17 +110,31 @@ class _SellerView extends ConsumerWidget {
       body: CustomScrollView(
         slivers: [
           SliverPadding(
-            padding: EdgeInsets.fromLTRB(gutter, AppSpacing.lg, gutter, AppSpacing.md),
+            padding: EdgeInsets.fromLTRB(
+              gutter,
+              AppSpacing.lg,
+              gutter,
+              AppSpacing.md,
+            ),
             sliver: SliverToBoxAdapter(
               child: Column(
                 children: [
-                  AppAvatar(name: profile.name, image: profile.avatar, size: 88, isOnline: profile.isOnline),
+                  AppAvatar(
+                    name: profile.name,
+                    image: profile.avatar,
+                    size: 88,
+                    isOnline: profile.isOnline,
+                  ),
                   const SizedBox(height: AppSpacing.md),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Flexible(
-                        child: Text(profile.name, style: text.titleLarge, textAlign: TextAlign.center),
+                        child: Text(
+                          profile.name,
+                          style: text.titleLarge,
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                       const SizedBox(width: AppSpacing.xs),
                       VerifiedBadge(level: profile.verification, size: 20),
@@ -112,13 +142,25 @@ class _SellerView extends ConsumerWidget {
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    Formatters.presence(isOnline: profile.isOnline, lastActiveAt: profile.lastActiveAt, now: now),
-                    style: text.bodySmall?.copyWith(color: profile.isOnline ? palette.success : null),
+                    Formatters.presence(
+                      isOnline: profile.isOnline,
+                      lastActiveAt: profile.lastActiveAt,
+                      now: now,
+                    ),
+                    style: text.bodySmall?.copyWith(
+                      color: profile.isOnline ? palette.success : null,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   profile.verification.isVerified
-                      ? VerifiedBadge(level: profile.verification, showLabel: true)
-                      : const StatusPill(label: 'Tasdiqlanmagan', icon: Icons.info_outline_rounded),
+                      ? VerifiedBadge(
+                          level: profile.verification,
+                          showLabel: true,
+                        )
+                      : const StatusPill(
+                          label: 'Tasdiqlanmagan',
+                          icon: Icons.info_outline_rounded,
+                        ),
                   const SizedBox(height: AppSpacing.xl),
                   SurfaceCard(
                     color: palette.surfaceMuted,
@@ -128,17 +170,31 @@ class _SellerView extends ConsumerWidget {
                       spacing: AppSpacing.lg,
                       runSpacing: AppSpacing.md,
                       children: [
-                        InfoTile(label: 'A’zo', value: '${Formatters.monthYear(profile.memberSince)} dan'),
-                        InfoTile(label: 'Faol e’lonlar', value: '${profile.activeListings}'),
+                        InfoTile(
+                          label: 'A’zo',
+                          value:
+                              '${Formatters.monthYear(profile.memberSince)} dan',
+                        ),
+                        InfoTile(
+                          label: 'Faol e’lonlar',
+                          value: '${profile.activeListings}',
+                        ),
                         if (profile.rating != null)
                           InfoTile(
                             label: 'Reyting',
-                            value: '★ ${profile.rating!.toStringAsFixed(1)} (${profile.reviewCount})',
+                            value:
+                                '★ ${profile.rating!.toStringAsFixed(1)} (${profile.reviewCount})',
                           ),
                         if (profile.responseRate != null)
-                          InfoTile(label: 'Javob beradi', value: '${(profile.responseRate! * 100).round()}%'),
+                          InfoTile(
+                            label: 'Javob beradi',
+                            value: '${(profile.responseRate! * 100).round()}%',
+                          ),
                         if (profile.responseTimeMinutes != null)
-                          InfoTile(label: 'Javob vaqti', value: '~${profile.responseTimeMinutes} daq'),
+                          InfoTile(
+                            label: 'Javob vaqti',
+                            value: '~${profile.responseTimeMinutes} daq',
+                          ),
                       ],
                     ),
                   ),
@@ -155,7 +211,11 @@ class _SellerView extends ConsumerWidget {
             query: ListingQuery(sellerId: profile.id),
             gutter: gutter,
             heroPrefix: 'seller-${profile.id}',
-            empty: const EmptyState(icon: Icons.inventory_2_outlined, title: 'Faol e’lonlar yo‘q', compact: true),
+            empty: const EmptyState(
+              icon: Icons.inventory_2_outlined,
+              title: 'Faol e’lonlar yo‘q',
+              compact: true,
+            ),
           ),
           const SliverSafeArea(
             top: false,

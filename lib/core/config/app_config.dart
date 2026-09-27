@@ -17,10 +17,18 @@ class AppConfig {
 
   factory AppConfig.fromEnvironment() => const AppConfig(
     apiBaseUrl: String.fromEnvironment('API_BASE_URL'),
-    webBaseUrl: String.fromEnvironment('WEB_BASE_URL', defaultValue: 'https://bozor.uz'),
+    webBaseUrl: String.fromEnvironment(
+      'WEB_BASE_URL',
+      defaultValue: 'https://bozor.uz',
+    ),
     appScheme: String.fromEnvironment('APP_SCHEME', defaultValue: 'bozor'),
-    supportTelegramUrl: String.fromEnvironment('SUPPORT_TELEGRAM_URL', defaultValue: 'https://t.me/bozoruz_support'),
-    demoLatency: Duration(milliseconds: int.fromEnvironment('DEMO_LATENCY_MS', defaultValue: 450)),
+    supportTelegramUrl: String.fromEnvironment(
+      'SUPPORT_TELEGRAM_URL',
+      defaultValue: 'https://t.me/bozoruz_support',
+    ),
+    demoLatency: Duration(
+      milliseconds: int.fromEnvironment('DEMO_LATENCY_MS', defaultValue: 450),
+    ),
   );
 
   /// Empty means no backend is configured and the app runs on local demo data.
@@ -48,4 +56,6 @@ class AppConfig {
   );
 }
 
-final appConfigProvider = Provider<AppConfig>((ref) => AppConfig.fromEnvironment());
+final appConfigProvider = Provider<AppConfig>(
+  (ref) => AppConfig.fromEnvironment(),
+);

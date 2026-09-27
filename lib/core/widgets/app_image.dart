@@ -49,7 +49,9 @@ class AppImage extends ConsumerWidget {
         if (media == null) return placeholder;
 
         final dpr = MediaQuery.devicePixelRatioOf(context);
-        final logicalWidth = constraints.hasBoundedWidth ? constraints.maxWidth : 400.0;
+        final logicalWidth = constraints.hasBoundedWidth
+            ? constraints.maxWidth
+            : 400.0;
         final cacheWidth = (logicalWidth * dpr).round().clamp(64, 2400);
 
         if (media.localPath != null) {
@@ -63,7 +65,9 @@ class AppImage extends ConsumerWidget {
             errorBuilder: (_, _, _) => placeholder,
           );
         }
-        final url = media.url(variant ?? ImageVariant.forPixelWidth(logicalWidth * dpr));
+        final url = media.url(
+          variant ?? ImageVariant.forPixelWidth(logicalWidth * dpr),
+        );
         if (url == null || !networkEnabled) return placeholder;
         return CachedNetworkImage(
           imageUrl: url,
@@ -82,7 +86,10 @@ class AppImage extends ConsumerWidget {
       image: true,
       label: semanticLabel,
       excludeSemantics: true,
-      child: ClipRRect(borderRadius: borderRadius ?? BorderRadius.zero, child: child),
+      child: ClipRRect(
+        borderRadius: borderRadius ?? BorderRadius.zero,
+        child: child,
+      ),
     );
   }
 }
@@ -101,14 +108,24 @@ class _Placeholder extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [pair.background, Color.lerp(pair.background, pair.foreground, 0.12)!],
+          colors: [
+            pair.background,
+            Color.lerp(pair.background, pair.foreground, 0.12)!,
+          ],
         ),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final size = (constraints.biggest.shortestSide * 0.36).clamp(16.0, 56.0);
+          final size = (constraints.biggest.shortestSide * 0.36).clamp(
+            16.0,
+            56.0,
+          );
           return Center(
-            child: Icon(icon, size: size, color: pair.foreground.withValues(alpha: 0.55)),
+            child: Icon(
+              icon,
+              size: size,
+              color: pair.foreground.withValues(alpha: 0.55),
+            ),
           );
         },
       ),

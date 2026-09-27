@@ -17,7 +17,10 @@ class UrlLauncherActions implements ExternalActions {
   }
 
   @override
-  Future<bool> openUrl(Uri url) => launchUrl(url, mode: LaunchMode.externalApplication);
+  Future<bool> openUrl(Uri url) =>
+      launchUrl(url, mode: LaunchMode.externalApplication);
 }
 
-final externalActionsProvider = Provider<ExternalActions>((ref) => const UrlLauncherActions());
+final externalActionsProvider = Provider<ExternalActions>(
+  (ref) => const UrlLauncherActions(),
+);

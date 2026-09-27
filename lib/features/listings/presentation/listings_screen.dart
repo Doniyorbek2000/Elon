@@ -19,7 +19,12 @@ import 'widgets/listing_filter_sheet.dart';
 /// Category/marketplace browsing: search, subcategory chips, location,
 /// sorting and filters over an infinite list.
 class ListingsScreen extends ConsumerStatefulWidget {
-  const ListingsScreen({super.key, this.categoryId, this.initialText = '', this.initialSort = ListingSort.newest});
+  const ListingsScreen({
+    super.key,
+    this.categoryId,
+    this.initialText = '',
+    this.initialSort = ListingSort.newest,
+  });
 
   final String? categoryId;
   final String initialText;
@@ -47,7 +52,11 @@ class _ListingsScreenState extends ConsumerState<ListingsScreen> {
 
   ListingQuery _effectiveQuery() {
     final location = ref.watch(locationProvider);
-    final radius = _refinements.radiusKm ?? (_refinements.sort == ListingSort.nearest ? location.radiusKm ?? 50 : null);
+    final radius =
+        _refinements.radiusKm ??
+        (_refinements.sort == ListingSort.nearest
+            ? location.radiusKm ?? 50
+            : null);
     return _refinements.copyWith(
       regionId: () => location.regionId,
       districtId: () => radius == null ? null : location.districtId,
@@ -56,7 +65,11 @@ class _ListingsScreenState extends ConsumerState<ListingsScreen> {
   }
 
   Future<void> _openFilters(ListingQuery effective, String areaLabel) async {
-    final result = await showListingFilterSheet(context, _refinements, areaLabel: areaLabel);
+    final result = await showListingFilterSheet(
+      context,
+      _refinements,
+      areaLabel: areaLabel,
+    );
     if (result != null && mounted) setState(() => _refinements = result);
   }
 
@@ -76,16 +89,20 @@ class _ListingsScreenState extends ConsumerState<ListingsScreen> {
     final selected = tree.byId(_refinements.categoryId);
     final (root, chips) = _chipContext(tree);
     final gutter = adaptiveGutter(context);
-    final title = selected == null ? 'Barcha e’lonlar' : (root?.name ?? selected.name);
+    final title = selected == null
+        ? 'Barcha e’lonlar'
+        : (root?.name ?? selected.name);
     final areaLabel = location.regionName.replaceAll(' viloyati', '');
     final palette = context.palette;
 
     return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: InfiniteScrollTrigger(
-        onLoadMore: () => ref.read(listingFeedProvider(query).notifier).loadMore(),
+        onLoadMore: () =>
+            ref.read(listingFeedProvider(query).notifier).loadMore(),
         child: RefreshIndicator.adaptive(
-          onRefresh: () => ref.read(listingFeedProvider(query).notifier).refresh(),
+          onRefresh: () =>
+              ref.read(listingFeedProvider(query).notifier).refresh(),
           child: CustomScrollView(
             slivers: [
               SliverPadding(
@@ -96,8 +113,14 @@ class _ListingsScreenState extends ConsumerState<ListingsScreen> {
                     hint: 'Qidirish...',
                     activeFilters: _refinements.activeFilterCount,
                     onFilterTap: () => _openFilters(query, areaLabel),
-                    onSubmitted: (value) => setState(() => _refinements = _refinements.copyWith(text: value.trim())),
-                    onClear: () => setState(() => _refinements = _refinements.copyWith(text: '')),
+                    onSubmitted: (value) => setState(
+                      () => _refinements = _refinements.copyWith(
+                        text: value.trim(),
+                      ),
+                    ),
+                    onClear: () => setState(
+                      () => _refinements = _refinements.copyWith(text: ''),
+                    ),
                   ),
                 ),
               ),
@@ -108,15 +131,25 @@ class _ListingsScreenState extends ConsumerState<ListingsScreen> {
                     child: ChoiceChipsRow<Category?>(
                       padding: EdgeInsets.symmetric(horizontal: gutter),
                       items: [null, ...chips],
-                      selected: selected?.hasChildren ?? false ? null : selected,
+                      selected: selected?.hasChildren ?? false
+                          ? null
+                          : selected,
                       labelOf: (c) => c?.name ?? 'Barchasi',
-                      onSelected: (c) =>
-                          setState(() => _refinements = _refinements.copyWith(categoryId: () => c?.id ?? root?.id)),
+                      onSelected: (c) => setState(
+                        () => _refinements = _refinements.copyWith(
+                          categoryId: () => c?.id ?? root?.id,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               SliverPadding(
-                padding: EdgeInsets.fromLTRB(gutter, AppSpacing.sm, gutter, AppSpacing.xs),
+                padding: EdgeInsets.fromLTRB(
+                  gutter,
+                  AppSpacing.sm,
+                  gutter,
+                  AppSpacing.xs,
+                ),
                 sliver: SliverToBoxAdapter(
                   child: Wrap(
                     spacing: AppSpacing.sm,
@@ -124,12 +157,24 @@ class _ListingsScreenState extends ConsumerState<ListingsScreen> {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       ActionChip(
-                        avatar: Icon(Icons.location_on_rounded, size: AppIconSize.sm, color: palette.primary),
-                        label: Text(query.radiusKm == null ? areaLabel : '${location.label} · ${query.radiusKm} km'),
+                        avatar: Icon(
+                          Icons.location_on_rounded,
+                          size: AppIconSize.sm,
+                          color: palette.primary,
+                        ),
+                        label: Text(
+                          query.radiusKm == null
+                              ? areaLabel
+                              : '${location.label} · ${query.radiusKm} km',
+                        ),
                         onPressed: () => context.push(AppRoutes.location),
                       ),
                       ActionChip(
-                        avatar: Icon(Icons.swap_vert_rounded, size: AppIconSize.sm, color: palette.primary),
+                        avatar: Icon(
+                          Icons.swap_vert_rounded,
+                          size: AppIconSize.sm,
+                          color: palette.primary,
+                        ),
                         label: Text(_refinements.sort.label),
                         onPressed: () => _openFilters(query, areaLabel),
                       ),
@@ -137,10 +182,17 @@ class _ListingsScreenState extends ConsumerState<ListingsScreen> {
                   ),
                 ),
               ),
-              ListingFeedSlivers(query: query, gutter: gutter, layout: ListingLayout.list, heroPrefix: 'browse'),
+              ListingFeedSlivers(
+                query: query,
+                gutter: gutter,
+                layout: ListingLayout.list,
+                heroPrefix: 'browse',
+              ),
               const SliverSafeArea(
                 top: false,
-                sliver: SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
+                sliver: SliverToBoxAdapter(
+                  child: SizedBox(height: AppSpacing.lg),
+                ),
               ),
             ],
           ),

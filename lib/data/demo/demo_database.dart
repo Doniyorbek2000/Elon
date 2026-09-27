@@ -14,7 +14,9 @@ import 'demo_seed.dart';
 /// Mutable in-memory backing store for demo repositories. Mimics a backend:
 /// repositories mutate it, and all of them observe the same state.
 class DemoDatabase {
-  DemoDatabase({required DateTime now, required this.latency}) : seed = DemoSeed(now), _now = now {
+  DemoDatabase({required DateTime now, required this.latency})
+    : seed = DemoSeed(now),
+      _now = now {
     listings = [...seed.myListings, ...seed.listings];
     jobs = [...seed.jobs];
     candidates = [...seed.candidates];
@@ -56,15 +58,20 @@ class DemoDatabase {
 
   DateTime get seededAt => _now;
 
-  String nextId(String prefix) => '${prefix}_${DateTime.now().microsecondsSinceEpoch}_${_sequence++}';
+  String nextId(String prefix) =>
+      '${prefix}_${DateTime.now().microsecondsSinceEpoch}_${_sequence++}';
 
   /// Simulated network round-trip so loading states are real in the demo.
-  Future<void> roundTrip([double factor = 1]) =>
-      latency == Duration.zero ? Future<void>.value() : Future<void>.delayed(latency * factor);
+  Future<void> roundTrip([double factor = 1]) => latency == Duration.zero
+      ? Future<void>.value()
+      : Future<void>.delayed(latency * factor);
 
   bool get simulatesPeers => latency > Duration.zero;
 }
 
 final demoDatabaseProvider = Provider<DemoDatabase>((ref) {
-  return DemoDatabase(now: ref.read(clockProvider)(), latency: ref.read(appConfigProvider).demoLatency);
+  return DemoDatabase(
+    now: ref.read(clockProvider)(),
+    latency: ref.read(appConfigProvider).demoLatency,
+  );
 });

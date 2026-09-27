@@ -20,7 +20,10 @@ enum VerificationLevel {
   };
 
   static VerificationLevel parse(Object? value) =>
-      VerificationLevel.values.firstWhere((level) => level.name == value, orElse: () => VerificationLevel.none);
+      VerificationLevel.values.firstWhere(
+        (level) => level.name == value,
+        orElse: () => VerificationLevel.none,
+      );
 }
 
 enum AccountType { personal, business }
@@ -62,7 +65,11 @@ class PublicProfile {
   final int activeListings;
 
   String get initials {
-    final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    final parts = name
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((p) => p.isNotEmpty)
+        .toList();
     if (parts.isEmpty) return '?';
     if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
     return (parts[0][0] + parts[1][0]).toUpperCase();
@@ -71,9 +78,13 @@ class PublicProfile {
   factory PublicProfile.fromJson(Map<String, dynamic> json) => PublicProfile(
     id: json['id'] as String,
     name: json['name'] as String,
-    avatar: json['avatar'] == null ? null : MediaImage.fromJson(json['avatar'] as Map<String, dynamic>),
+    avatar: json['avatar'] == null
+        ? null
+        : MediaImage.fromJson(json['avatar'] as Map<String, dynamic>),
     verification: VerificationLevel.parse(json['verification']),
-    accountType: json['accountType'] == 'business' ? AccountType.business : AccountType.personal,
+    accountType: json['accountType'] == 'business'
+        ? AccountType.business
+        : AccountType.personal,
     isOnline: json['isOnline'] as bool? ?? false,
     lastActiveAt: DateTime.tryParse(json['lastActiveAt'] as String? ?? ''),
     memberSince: DateTime.parse(json['memberSince'] as String),

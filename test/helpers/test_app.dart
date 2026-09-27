@@ -26,7 +26,8 @@ class FakePhotoPicker implements PhotoPicker {
   String? nextCamera = '/tmp/camera.jpg';
 
   @override
-  Future<List<String>> pickFromGallery({required int limit}) async => nextGallery.take(limit).toList();
+  Future<List<String>> pickFromGallery({required int limit}) async =>
+      nextGallery.take(limit).toList();
 
   @override
   Future<String?> takePhoto() async => nextCamera;
@@ -57,10 +58,12 @@ class RecordingShareService implements ShareService {
   Future<void> copyLink(SharePayload payload) async => shared.add(payload);
 
   @override
-  Future<void> shareSystem(SharePayload payload, {Rect? origin}) async => shared.add(payload);
+  Future<void> shareSystem(SharePayload payload, {Rect? origin}) async =>
+      shared.add(payload);
 
   @override
-  Future<void> shareToTelegram(SharePayload payload) async => shared.add(payload);
+  Future<void> shareToTelegram(SharePayload payload) async =>
+      shared.add(payload);
 }
 
 class RecordingExternalActions implements ExternalActions {
@@ -91,17 +94,23 @@ class TestHarness {
   final external = RecordingExternalActions();
   late ProviderContainer container;
 
-  static Future<TestHarness> create({bool onboarded = true, Map<String, Object> prefs = const {}}) async {
-    SharedPreferencesAsyncPlatform.instance = InMemorySharedPreferencesAsync.withData({
-      if (onboarded) StoreKeys.onboardingCompleted: true,
-      ...prefs,
-    });
+  static Future<TestHarness> create({
+    bool onboarded = true,
+    Map<String, Object> prefs = const {},
+  }) async {
+    SharedPreferencesAsyncPlatform.instance =
+        InMemorySharedPreferencesAsync.withData({
+          if (onboarded) StoreKeys.onboardingCompleted: true,
+          ...prefs,
+        });
     return TestHarness._(await KeyValueStore.open());
   }
 
   List<Override> get overrides => [
     keyValueStoreProvider.overrideWithValue(store),
-    appConfigProvider.overrideWithValue(AppConfig.fromEnvironment().copyWith(demoLatency: Duration.zero)),
+    appConfigProvider.overrideWithValue(
+      AppConfig.fromEnvironment().copyWith(demoLatency: Duration.zero),
+    ),
     clockProvider.overrideWithValue(() => testNow),
     networkImagesEnabledProvider.overrideWithValue(false),
     photoPickerProvider.overrideWithValue(photoPicker),
@@ -110,13 +119,21 @@ class TestHarness {
     externalActionsProvider.overrideWithValue(external),
   ];
 
-  ProviderContainer createContainer() => container = ProviderContainer(overrides: overrides, retry: (_, _) => null);
+  ProviderContainer createContainer() => container = ProviderContainer(
+    overrides: overrides,
+    retry: (_, _) => null,
+  );
 
   GoRouter get router => container.read(appRouterProvider);
 }
 
 /// Sets a device size + text scale for the duration of a test.
-void setDevice(WidgetTester tester, Size logicalSize, {double pixelRatio = 3, double textScale = 1}) {
+void setDevice(
+  WidgetTester tester,
+  Size logicalSize, {
+  double pixelRatio = 3,
+  double textScale = 1,
+}) {
   tester.view.physicalSize = logicalSize * pixelRatio;
   tester.view.devicePixelRatio = pixelRatio;
   tester.platformDispatcher.textScaleFactorTestValue = textScale;
@@ -140,7 +157,9 @@ Future<TestHarness> pumpBozorApp(
   );
   final container = harness.createContainer();
   addTearDown(container.dispose);
-  await tester.pumpWidget(UncontrolledProviderScope(container: container, child: const BozorApp()));
+  await tester.pumpWidget(
+    UncontrolledProviderScope(container: container, child: const BozorApp()),
+  );
   await settle(tester);
   if (location != null) {
     harness.router.go(location);

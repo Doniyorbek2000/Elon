@@ -46,7 +46,11 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     if (tokens.isEmpty) return tree.roots;
     final matches = <Category>[];
     void visit(Category category) {
-      if (SearchNormalizer.matches(tokens, '${category.name} ${category.subtitle ?? ''}')) matches.add(category);
+      if (SearchNormalizer.matches(
+        tokens,
+        '${category.name} ${category.subtitle ?? ''}',
+      ))
+        matches.add(category);
       category.children.forEach(visit);
     }
 
@@ -64,7 +68,12 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.sm),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.sm,
+                AppSpacing.lg,
+                AppSpacing.sm,
+              ),
               child: AppSearchField(
                 controller: _controller,
                 hint: 'Kategoriya qidirish...',
@@ -73,17 +82,29 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
             ),
             Expanded(
               child: categories.isEmpty
-                  ? const EmptyState(icon: Icons.category_outlined, title: 'Kategoriya topilmadi', compact: true)
+                  ? const EmptyState(
+                      icon: Icons.category_outlined,
+                      title: 'Kategoriya topilmadi',
+                      compact: true,
+                    )
                   : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.xs, AppSpacing.lg, AppSpacing.xxl),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        AppSpacing.xs,
+                        AppSpacing.lg,
+                        AppSpacing.xxl,
+                      ),
                       itemCount: categories.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
+                      separatorBuilder: (_, _) =>
+                          const SizedBox(height: AppSpacing.sm),
                       itemBuilder: (context, index) {
                         final category = categories[index];
                         final parent = tree.parentOf(category.id);
                         return _CategoryRow(
                           category: category,
-                          subtitle: parent == null ? category.subtitle : parent.name,
+                          subtitle: parent == null
+                              ? category.subtitle
+                              : parent.name,
                           onTap: () => openCategory(context, category),
                         );
                       },
@@ -97,7 +118,11 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
 }
 
 class _CategoryRow extends StatelessWidget {
-  const _CategoryRow({required this.category, required this.subtitle, required this.onTap});
+  const _CategoryRow({
+    required this.category,
+    required this.subtitle,
+    required this.onTap,
+  });
 
   final Category category;
   final String? subtitle;
@@ -108,11 +133,18 @@ class _CategoryRow extends StatelessWidget {
     final palette = context.palette;
     final text = Theme.of(context).textTheme;
     return SurfaceCard(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.md,
+      ),
       onTap: onTap,
       child: Row(
         children: [
-          ToneIcon(icon: AppIcons.forKey(category.iconKey), tone: category.tone, size: 46),
+          ToneIcon(
+            icon: AppIcons.forKey(category.iconKey),
+            tone: category.tone,
+            size: 46,
+          ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
@@ -121,7 +153,12 @@ class _CategoryRow extends StatelessWidget {
                 Text(category.name, style: text.titleSmall),
                 if (subtitle != null) ...[
                   const SizedBox(height: 2),
-                  Text(subtitle!, style: text.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(
+                    subtitle!,
+                    style: text.bodySmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
               ],
             ),

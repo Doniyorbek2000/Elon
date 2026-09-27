@@ -26,7 +26,8 @@ class CreateListingScreen extends ConsumerStatefulWidget {
   final String? initialCategoryId;
 
   @override
-  ConsumerState<CreateListingScreen> createState() => _CreateListingScreenState();
+  ConsumerState<CreateListingScreen> createState() =>
+      _CreateListingScreenState();
 }
 
 class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
@@ -34,7 +35,8 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
   bool _publishing = false;
   PublishedItem? _published;
 
-  CreateListingController get _controller => ref.read(createListingProvider.notifier);
+  CreateListingController get _controller =>
+      ref.read(createListingProvider.notifier);
 
   @override
   void initState() {
@@ -51,7 +53,10 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
           context,
           'Qoralama tiklandi',
           icon: Icons.restore_rounded,
-          action: SnackBarAction(label: 'Yangidan', onPressed: () => _controller.discard()),
+          action: SnackBarAction(
+            label: 'Yangidan',
+            onPressed: () => _controller.discard(),
+          ),
         );
       }
     });
@@ -63,7 +68,11 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
     setState(() => _errors = errors);
     if (errors.isNotEmpty) {
       HapticFeedback.heavyImpact();
-      showAppSnack(context, errors.values.first, icon: Icons.error_outline_rounded);
+      showAppSnack(
+        context,
+        errors.values.first,
+        icon: Icons.error_outline_rounded,
+      );
     }
   }
 
@@ -71,16 +80,34 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
     final errors = _controller.validate(CreateStep.review);
     if (errors.isNotEmpty) {
       setState(() => _errors = errors);
-      _controller.goTo(errors.containsKey(DraftField.photos) ? CreateStep.photos : CreateStep.details);
-      showAppSnack(context, errors.values.first, icon: Icons.error_outline_rounded);
+      _controller.goTo(
+        errors.containsKey(DraftField.photos)
+            ? CreateStep.photos
+            : CreateStep.details,
+      );
+      showAppSnack(
+        context,
+        errors.values.first,
+        icon: Icons.error_outline_rounded,
+      );
       return;
     }
-    if (_controller.riskSignals().any((s) => s.severity == RiskSeverity.blocking)) {
-      showAppSnack(context, 'E’londan karta raqamini olib tashlang', icon: Icons.gpp_bad_outlined);
+    if (_controller.riskSignals().any(
+      (s) => s.severity == RiskSeverity.blocking,
+    )) {
+      showAppSnack(
+        context,
+        'E’londan karta raqamini olib tashlang',
+        icon: Icons.gpp_bad_outlined,
+      );
       return;
     }
     if (ref.read(createListingProvider).uploadsPending) {
-      showAppSnack(context, 'Rasmlar yuklanmoqda, biroz kuting…', icon: Icons.cloud_upload_outlined);
+      showAppSnack(
+        context,
+        'Rasmlar yuklanmoqda, biroz kuting…',
+        icon: Icons.cloud_upload_outlined,
+      );
       return;
     }
     setState(() => _publishing = true);
@@ -95,7 +122,11 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
     } on Object catch (error) {
       if (!mounted) return;
       setState(() => _publishing = false);
-      showAppSnack(context, error.asFailure().message, icon: Icons.error_outline_rounded);
+      showAppSnack(
+        context,
+        error.asFailure().message,
+        icon: Icons.error_outline_rounded,
+      );
     }
   }
 
@@ -110,7 +141,12 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
       builder: (context) => SheetScaffold(
         title: 'Chiqishdan oldin',
         body: Padding(
-          padding: const EdgeInsets.fromLTRB(AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.lg),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            0,
+            AppSpacing.xl,
+            AppSpacing.lg,
+          ),
           child: Text(
             'Kiritgan ma’lumotlaringiz qoralama sifatida saqlanadi. Keyin davom ettirishingiz mumkin.',
             style: Theme.of(context).textTheme.bodyMedium,
@@ -125,7 +161,9 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
             ),
             const SizedBox(height: AppSpacing.sm),
             TextButton(
-              style: TextButton.styleFrom(foregroundColor: context.palette.danger),
+              style: TextButton.styleFrom(
+                foregroundColor: context.palette.danger,
+              ),
               onPressed: () => Navigator.pop(context, _CloseChoice.discard),
               child: const Text('Qoralamani o‘chirish'),
             ),
@@ -143,7 +181,8 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
   }
 
   /// Opened from a deep link there may be nothing underneath to pop to.
-  void _leave() => context.canPop() ? context.pop() : context.go(AppRoutes.home);
+  void _leave() =>
+      context.canPop() ? context.pop() : context.go(AppRoutes.home);
 
   @override
   Widget build(BuildContext context) {
@@ -165,7 +204,11 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          leading: IconButton(tooltip: 'Yopish', icon: const Icon(Icons.close_rounded), onPressed: _close),
+          leading: IconButton(
+            tooltip: 'Yopish',
+            icon: const Icon(Icons.close_rounded),
+            onPressed: _close,
+          ),
           title: const Text('Yangi e’lon'),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(76),
@@ -180,7 +223,10 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
             transitionBuilder: (child, animation) => FadeTransition(
               opacity: animation,
               child: SlideTransition(
-                position: Tween(begin: const Offset(0.04, 0), end: Offset.zero).animate(animation),
+                position: Tween(
+                  begin: const Offset(0.04, 0),
+                  end: Offset.zero,
+                ).animate(animation),
                 child: child,
               ),
             ),
@@ -197,22 +243,36 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
         bottomNavigationBar: StickyActionBar(
           children: [
             if (step.index > 0)
-              OutlinedButton(onPressed: _publishing ? null : _controller.back, child: const Text('Orqaga')),
+              OutlinedButton(
+                onPressed: _publishing ? null : _controller.back,
+                child: const Text('Orqaga'),
+              ),
             FilledButton(
               onPressed: _publishing ? null : (isLast ? _publish : _next),
               child: _publishing
                   ? const SizedBox.square(
                       dimension: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.4,
+                        color: Colors.white,
+                      ),
                     )
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Flexible(
-                          child: Text(isLast ? 'E’lonni joylash' : 'Davom etish', overflow: TextOverflow.ellipsis),
+                          child: Text(
+                            isLast ? 'E’lonni joylash' : 'Davom etish',
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                         const SizedBox(width: AppSpacing.sm),
-                        Icon(isLast ? Icons.check_rounded : Icons.arrow_forward_rounded, size: AppIconSize.md),
+                        Icon(
+                          isLast
+                              ? Icons.check_rounded
+                              : Icons.arrow_forward_rounded,
+                          size: AppIconSize.md,
+                        ),
                       ],
                     ),
             ),
@@ -236,7 +296,12 @@ class _StepIndicator extends StatelessWidget {
     final palette = context.palette;
     final text = Theme.of(context).textTheme;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.md),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.xl,
+        0,
+        AppSpacing.xl,
+        AppSpacing.md,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -248,12 +313,15 @@ class _StepIndicator extends StatelessWidget {
                   child: AnimatedContainer(
                     duration: AppMotion.of(context, AppMotion.medium),
                     height: 2,
-                    color: step.index <= current.index ? palette.primary : palette.border,
+                    color: step.index <= current.index
+                        ? palette.primary
+                        : palette.border,
                   ),
                 ),
               ),
             Semantics(
-              label: '${step.index + 1}-qadam: ${step.label}${step == current ? ', joriy' : ''}',
+              label:
+                  '${step.index + 1}-qadam: ${step.label}${step == current ? ', joriy' : ''}',
               button: step.index < current.index,
               excludeSemantics: true,
               child: GestureDetector(
@@ -268,21 +336,33 @@ class _StepIndicator extends StatelessWidget {
                         height: 32,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: step.index <= current.index ? palette.primary : palette.surface,
+                          color: step.index <= current.index
+                              ? palette.primary
+                              : palette.surface,
                           border: Border.all(
-                            color: step.index <= current.index ? palette.primary : palette.borderStrong,
+                            color: step.index <= current.index
+                                ? palette.primary
+                                : palette.borderStrong,
                             width: 1.5,
                           ),
-                          boxShadow: step == current ? AppShadows.primaryGlow(palette.primary) : null,
+                          boxShadow: step == current
+                              ? AppShadows.primaryGlow(palette.primary)
+                              : null,
                         ),
                         child: Center(
                           child: step.index < current.index
-                              ? Icon(Icons.check_rounded, size: 18, color: palette.onPrimary)
+                              ? Icon(
+                                  Icons.check_rounded,
+                                  size: 18,
+                                  color: palette.onPrimary,
+                                )
                               : Text(
                                   '${step.index + 1}',
                                   textScaler: TextScaler.noScaling,
                                   style: text.labelMedium?.copyWith(
-                                    color: step == current ? palette.onPrimary : palette.textSecondary,
+                                    color: step == current
+                                        ? palette.onPrimary
+                                        : palette.textSecondary,
                                   ),
                                 ),
                         ),
@@ -292,10 +372,15 @@ class _StepIndicator extends StatelessWidget {
                         step.label,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        textScaler: MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1.2),
+                        textScaler: MediaQuery.textScalerOf(context)
+                            .clamp(maxScaleFactor: 1.2),
                         style: text.labelSmall?.copyWith(
-                          color: step == current ? palette.textPrimary : palette.textSecondary,
-                          fontWeight: step == current ? FontWeight.w700 : FontWeight.w500,
+                          color: step == current
+                              ? palette.textPrimary
+                              : palette.textSecondary,
+                          fontWeight: step == current
+                              ? FontWeight.w700
+                              : FontWeight.w500,
                         ),
                       ),
                     ],
@@ -321,8 +406,12 @@ class _PublishedView extends ConsumerStatefulWidget {
   ConsumerState<_PublishedView> createState() => _PublishedViewState();
 }
 
-class _PublishedViewState extends ConsumerState<_PublishedView> with SingleTickerProviderStateMixin {
-  late final AnimationController _check = AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
+class _PublishedViewState extends ConsumerState<_PublishedView>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _check = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 700),
+  );
 
   @override
   void didChangeDependencies() {
@@ -353,29 +442,42 @@ class _PublishedViewState extends ConsumerState<_PublishedView> with SingleTicke
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.xxl),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: AppBreakpoints.formMaxWidth),
+              constraints: const BoxConstraints(
+                maxWidth: AppBreakpoints.formMaxWidth,
+              ),
               child: Column(
                 children: [
                   ScaleTransition(
-                    scale: CurvedAnimation(parent: _check, curve: Curves.elasticOut),
+                    scale: CurvedAnimation(
+                      parent: _check,
+                      curve: Curves.elasticOut,
+                    ),
                     child: Container(
                       width: 108,
                       height: 108,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: pending ? palette.warningSoft : palette.successSoft,
+                        color: pending
+                            ? palette.warningSoft
+                            : palette.successSoft,
                       ),
                       child: Icon(
-                        pending ? Icons.hourglass_top_rounded : Icons.check_rounded,
+                        pending
+                            ? Icons.hourglass_top_rounded
+                            : Icons.check_rounded,
                         size: 56,
                         color: color,
-                        semanticLabel: pending ? 'Tekshiruvga yuborildi' : 'Joylandi',
+                        semanticLabel: pending
+                            ? 'Tekshiruvga yuborildi'
+                            : 'Joylandi',
                       ),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xxl),
                   Text(
-                    pending ? 'E’lon tekshiruvga yuborildi' : 'E’loningiz joylandi!',
+                    pending
+                        ? 'E’lon tekshiruvga yuborildi'
+                        : 'E’loningiz joylandi!',
                     style: text.headlineSmall,
                     textAlign: TextAlign.center,
                   ),
@@ -384,14 +486,18 @@ class _PublishedViewState extends ConsumerState<_PublishedView> with SingleTicke
                     pending
                         ? 'Moderator tekshiruvidan so‘ng e’lon hammaga ko‘rinadi. Sizga bildirishnoma yuboramiz.'
                         : 'Ko‘proq xaridor topish uchun e’lonni Telegram guruhlaringizda ulashing.',
-                    style: text.bodyMedium?.copyWith(color: palette.textSecondary),
+                    style: text.bodyMedium?.copyWith(
+                      color: palette.textSecondary,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppSpacing.xxxl),
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
-                      style: FilledButton.styleFrom(backgroundColor: const Color(0xFF229ED9)),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF229ED9),
+                      ),
                       onPressed: () => showShareSheet(
                         context,
                         SharePayload(
@@ -401,7 +507,9 @@ class _PublishedViewState extends ConsumerState<_PublishedView> with SingleTicke
                           subtitle: item.subtitle?.replaceAll('\u00A0', ' '),
                           location: item.place.shortLabel,
                           image: item.image,
-                          url: ref.read(deepLinksProvider).web(item.target, item.id),
+                          url: ref
+                              .read(deepLinksProvider)
+                              .web(item.target, item.id),
                         ),
                       ),
                       icon: const Icon(Icons.send_rounded),
@@ -413,13 +521,22 @@ class _PublishedViewState extends ConsumerState<_PublishedView> with SingleTicke
                     width: double.infinity,
                     child: OutlinedButton(
                       onPressed: () => context.pushReplacement(
-                        item.target == ShareTarget.job ? AppRoutes.job(item.id) : AppRoutes.listing(item.id),
+                        item.target == ShareTarget.job
+                            ? AppRoutes.job(item.id)
+                            : AppRoutes.listing(item.id),
                       ),
-                      child: Text(item.target == ShareTarget.job ? 'Vakansiyani ko‘rish' : 'E’lonni ko‘rish'),
+                      child: Text(
+                        item.target == ShareTarget.job
+                            ? 'Vakansiyani ko‘rish'
+                            : 'E’lonni ko‘rish',
+                      ),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
-                  TextButton(onPressed: () => context.go(AppRoutes.home), child: const Text('Bosh sahifaga qaytish')),
+                  TextButton(
+                    onPressed: () => context.go(AppRoutes.home),
+                    child: const Text('Bosh sahifaga qaytish'),
+                  ),
                 ],
               ),
             ),

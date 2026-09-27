@@ -9,6 +9,7 @@ import '../../../app/router/routes.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/domain/media_image.dart';
+import '../../../core/errors/app_failure.dart';
 import '../../../core/utils/clock.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_image.dart';
@@ -19,6 +20,8 @@ import '../../../core/widgets/state_views.dart';
 import '../../auth/application/session_controller.dart';
 import '../../create_listing/data/media_services.dart';
 import '../../jobs/application/job_providers.dart';
+import '../../listings/application/listing_providers.dart';
+import '../../services/application/services_providers.dart';
 import '../../trust_safety/application/trust_safety_providers.dart';
 import '../../trust_safety/domain/trust_safety.dart';
 import '../../trust_safety/presentation/report_sheet.dart';
@@ -37,19 +40,76 @@ class ConversationScreen extends ConsumerStatefulWidget {
 class _ConversationScreenState extends ConsumerState<ConversationScreen> {
   final _input = TextEditingController();
   bool _safetyDismissed = false;
+  bool _loadingOlder = false;
+  bool _hasOlder = true;
+  DateTime? _typingSentAt;
 
   @override
   void initState() {
     super.initState();
+    _input.addListener(_onInputChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) ref.read(chatRepositoryProvider).markRead(widget.conversationId);
+      if (mounted)
+        ref
+            .read(chatRepositoryProvider)
+            .markRead(widget.conversationId)
+            .ignore();
     });
   }
 
   @override
   void dispose() {
-    _input.dispose();
+    _input
+      ..removeListener(_onInputChanged)
+      ..dispose();
     super.dispose();
+  }
+
+  /// Throttled typing signal: at most one event every 3 s while composing.
+  void _onInputChanged() {
+    final repository = ref.read(chatRepositoryProvider);
+    if (_input.text.isEmpty) {
+      if (_typingSentAt != null)
+        repository.sendTyping(widget.conversationId, isTyping: false);
+      _typingSentAt = null;
+      return;
+    }
+    final now = DateTime.now();
+    if (_typingSentAt == null ||
+        now.difference(_typingSentAt!) > const Duration(seconds: 3)) {
+      _typingSentAt = now;
+      repository.sendTyping(widget.conversationId, isTyping: true);
+    }
+  }
+
+  Future<void> _loadOlder() async {
+    if (_loadingOlder || !_hasOlder) return;
+    setState(() => _loadingOlder = true);
+    try {
+      final more = await ref
+          .read(chatRepositoryProvider)
+          .loadOlder(widget.conversationId);
+      if (mounted) setState(() => _hasOlder = more);
+    } on Object {
+      // Offline: the user can scroll again to retry.
+    } finally {
+      if (mounted) setState(() => _loadingOlder = false);
+    }
+  }
+
+  Future<void> _retry(ChatMessage message) async {
+    try {
+      await ref
+          .read(chatRepositoryProvider)
+          .retry(widget.conversationId, message);
+    } on Object catch (error) {
+      if (mounted)
+        showAppSnack(
+          context,
+          error.asFailure().message,
+          icon: Icons.error_outline_rounded,
+        );
+    }
   }
 
   Future<void> _send() async {
@@ -75,23 +135,34 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     _input.clear();
     unawaited(HapticFeedback.lightImpact());
     try {
-      await ref.read(chatRepositoryProvider).sendText(widget.conversationId, text);
+      await ref
+          .read(chatRepositoryProvider)
+          .sendText(widget.conversationId, text);
     } on Object {
       if (!mounted) return;
       _input.text = text;
-      showAppSnack(context, 'Xabar yuborilmadi. Qayta urinib ko‘ring.', icon: Icons.error_outline_rounded);
+      showAppSnack(
+        context,
+        'Xabar yuborilmadi. Qayta urinib ko‘ring.',
+        icon: Icons.error_outline_rounded,
+      );
     }
   }
 
   Future<void> _sendPhoto() async {
     try {
-      final paths = await ref.read(photoPickerProvider).pickFromGallery(limit: 1);
+      final paths = await ref
+          .read(photoPickerProvider)
+          .pickFromGallery(limit: 1);
       if (paths.isEmpty) return;
       await ref
           .read(chatRepositoryProvider)
           .sendImage(
             widget.conversationId,
-            MediaImage.local('chat_${DateTime.now().microsecondsSinceEpoch}', paths.first),
+            MediaImage.local(
+              'chat_${DateTime.now().microsecondsSinceEpoch}',
+              paths.first,
+            ),
           );
     } on Object {
       if (mounted) showAppSnack(context, 'Rasm yuborilmadi');
@@ -102,21 +173,55 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     final route = switch (subject.subject) {
       ConversationSubject.listing => AppRoutes.listing(subject.refId),
       ConversationSubject.job =>
-        subject.refId.startsWith('cv_') ? AppRoutes.candidate(subject.refId) : AppRoutes.job(subject.refId),
+        subject.refId.startsWith('cv_')
+            ? AppRoutes.candidate(subject.refId)
+            : AppRoutes.job(subject.refId),
+      ConversationSubject.candidate => AppRoutes.candidate(subject.refId),
       ConversationSubject.service => AppRoutes.provider(subject.refId),
       ConversationSubject.direct => null,
     };
     if (route != null) context.push(route);
   }
 
+  /// Phone numbers are released per context (the peer's own privacy setting
+  /// is enforced server-side); there is no generic "user phone" endpoint.
+  Future<String> _revealPeerPhone(Conversation conversation) {
+    final subject = conversation.context;
+    return switch (subject?.subject) {
+      ConversationSubject.listing =>
+        ref.read(listingRepositoryProvider).revealPhone(subject!.refId),
+      ConversationSubject.job =>
+        ref.read(jobRepositoryProvider).revealJobPhone(subject!.refId),
+      ConversationSubject.candidate =>
+        ref.read(jobRepositoryProvider).revealCandidatePhone(subject!.refId),
+      ConversationSubject.service =>
+        ref.read(servicesRepositoryProvider).revealPhone(subject!.refId),
+      _ => Future.error(
+        const NotFoundFailure('Raqam yashirilgan. Chat orqali yozing.'),
+      ),
+    };
+  }
+
   Future<void> _toggleBlock(Conversation conversation) async {
     if (conversation.isBlocked) {
-      await ref.read(chatRepositoryProvider).setBlocked(conversation.id, blocked: false);
-      await ref.read(blockedUsersProvider.notifier).unblock(conversation.peer.id);
+      await ref
+          .read(chatRepositoryProvider)
+          .setBlocked(conversation.id, blocked: false);
+      await ref
+          .read(blockedUsersProvider.notifier)
+          .unblock(conversation.peer.id);
       return;
     }
-    final blocked = await confirmAndBlock(context, ref, userId: conversation.peer.id, name: conversation.peer.name);
-    if (blocked) await ref.read(chatRepositoryProvider).setBlocked(conversation.id, blocked: true);
+    final blocked = await confirmAndBlock(
+      context,
+      ref,
+      userId: conversation.peer.id,
+      name: conversation.peer.name,
+    );
+    if (blocked)
+      await ref
+          .read(chatRepositoryProvider)
+          .setBlocked(conversation.id, blocked: true);
   }
 
   @override
@@ -139,12 +244,17 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     final palette = context.palette;
     final text = Theme.of(context).textTheme;
     final now = ref.watch(clockProvider)();
-    final typing = ref.watch(peerTypingProvider(conversation.id)).value ?? false;
+    final typing =
+        ref.watch(peerTypingProvider(conversation.id)).value ?? false;
     final messages = ref.watch(messagesProvider(conversation.id));
     final peer = conversation.peer;
     final status = typing
         ? 'yozmoqda…'
-        : Formatters.presence(isOnline: peer.isOnline, lastActiveAt: peer.lastActiveAt, now: now);
+        : Formatters.presence(
+            isOnline: peer.isOnline,
+            lastActiveAt: peer.lastActiveAt,
+            now: now,
+          );
 
     return Scaffold(
       appBar: AppBar(
@@ -155,18 +265,32 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
           onTap: () => context.push(AppRoutes.seller(peer.id)),
           child: Row(
             children: [
-              AppAvatar(name: peer.name, image: peer.avatar, size: 40, isOnline: peer.isOnline),
+              AppAvatar(
+                name: peer.name,
+                image: peer.avatar,
+                size: 40,
+                isOnline: peer.isOnline,
+              ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(peer.name, style: text.titleSmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(
+                      peer.name,
+                      style: text.titleSmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     Semantics(
                       liveRegion: true,
                       child: Text(
                         status,
-                        style: text.bodySmall?.copyWith(color: typing || peer.isOnline ? palette.success : null),
+                        style: text.bodySmall?.copyWith(
+                          color: typing || peer.isOnline
+                              ? palette.success
+                              : null,
+                        ),
                       ),
                     ),
                   ],
@@ -182,7 +306,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
             onPressed: () => showContactSheet(
               context,
               person: peer,
-              loadPhone: () => ref.read(jobRepositoryProvider).revealPhone(peer.id),
+              loadPhone: () => _revealPeerPhone(conversation),
             ),
           ),
           PopupMenuButton<String>(
@@ -194,31 +318,53 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                 case 'block':
                   _toggleBlock(conversation);
                 case 'report':
-                  showReportSheet(context, type: ReportTargetType.conversation, targetId: conversation.id);
+                  showReportSheet(
+                    context,
+                    type: ReportTargetType.conversation,
+                    targetId: conversation.id,
+                  );
               }
             },
             itemBuilder: (_) => [
-              const PopupMenuItem(value: 'profile', child: Text('Profilni ko‘rish')),
-              PopupMenuItem(value: 'block', child: Text(conversation.isBlocked ? 'Blokdan chiqarish' : 'Bloklash')),
-              const PopupMenuItem(value: 'report', child: Text('Shikoyat qilish')),
+              const PopupMenuItem(
+                value: 'profile',
+                child: Text('Profilni ko‘rish'),
+              ),
+              PopupMenuItem(
+                value: 'block',
+                child: Text(
+                  conversation.isBlocked ? 'Blokdan chiqarish' : 'Bloklash',
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'report',
+                child: Text('Shikoyat qilish'),
+              ),
             ],
           ),
         ],
       ),
       body: Column(
         children: [
-          if (conversation.context != null) _ContextCard(subject: conversation.context!, onTap: _openContext),
+          if (conversation.context != null)
+            _ContextCard(subject: conversation.context!, onTap: _openContext),
           Expanded(
             child: messages.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) =>
-                  FailureView(error: error, onRetry: () => ref.invalidate(messagesProvider(conversation.id))),
+              error: (error, _) => FailureView(
+                error: error,
+                onRetry: () =>
+                    ref.invalidate(messagesProvider(conversation.id)),
+              ),
               data: (items) => _MessageList(
                 messages: items,
                 myId: ref.watch(sessionProvider)?.id ?? '',
                 typing: typing,
                 showSafety: !_safetyDismissed && items.length < 8,
                 onDismissSafety: () => setState(() => _safetyDismissed = true),
+                loadingOlder: _loadingOlder,
+                onLoadOlder: _loadOlder,
+                onRetry: _retry,
               ),
             ),
           ),
@@ -247,7 +393,10 @@ class _ContextCard extends StatelessWidget {
       child: InkWell(
         onTap: () => onTap(subject),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm + 2),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.sm + 2,
+          ),
           decoration: BoxDecoration(
             border: Border(bottom: BorderSide(color: palette.border)),
           ),
@@ -270,11 +419,19 @@ class _ContextCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(subject.title, style: text.titleSmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(
+                      subject.title,
+                      style: text.titleSmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     if (subject.subtitle != null)
                       Text(
                         subject.subtitle!,
-                        style: text.labelMedium?.copyWith(color: palette.price, fontWeight: FontWeight.w800),
+                        style: text.labelMedium?.copyWith(
+                          color: palette.price,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                   ],
                 ),
@@ -297,7 +454,11 @@ class _DayRow extends _Row {
 }
 
 class _MessageRow extends _Row {
-  _MessageRow(this.message, {required this.isMine, required this.groupedWithNext});
+  _MessageRow(
+    this.message, {
+    required this.isMine,
+    required this.groupedWithNext,
+  });
 
   final ChatMessage message;
   final bool isMine;
@@ -311,6 +472,9 @@ class _MessageList extends ConsumerWidget {
     required this.typing,
     required this.showSafety,
     required this.onDismissSafety,
+    required this.loadingOlder,
+    required this.onLoadOlder,
+    required this.onRetry,
   });
 
   final List<ChatMessage> messages;
@@ -318,13 +482,20 @@ class _MessageList extends ConsumerWidget {
   final bool typing;
   final bool showSafety;
   final VoidCallback onDismissSafety;
+  final bool loadingOlder;
+  final VoidCallback onLoadOlder;
+  final ValueChanged<ChatMessage> onRetry;
 
   List<_Row> _rows(DateTime now) {
     final rows = <_Row>[];
     DateTime? day;
     for (var i = 0; i < messages.length; i++) {
       final message = messages[i];
-      final messageDay = DateTime(message.sentAt.year, message.sentAt.month, message.sentAt.day);
+      final messageDay = DateTime(
+        message.sentAt.year,
+        message.sentAt.month,
+        message.sentAt.day,
+      );
       if (day != messageDay) {
         rows.add(_DayRow(Formatters.dayLabel(message.sentAt, now)));
         day = messageDay;
@@ -335,7 +506,9 @@ class _MessageList extends ConsumerWidget {
           message,
           isMine: message.senderId == myId,
           groupedWithNext:
-              next != null && next.senderId == message.senderId && next.sentAt.difference(message.sentAt).inMinutes < 3,
+              next != null &&
+              next.senderId == message.senderId &&
+              next.sentAt.difference(message.sentAt).inMinutes < 3,
         ),
       );
     }
@@ -349,20 +522,58 @@ class _MessageList extends ConsumerWidget {
     final gutter = AppBreakpoints.pagePadding(context);
     final extra = (typing ? 1 : 0);
 
-    return ListView.builder(
-      reverse: true,
-      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      padding: EdgeInsets.fromLTRB(gutter, AppSpacing.md, gutter, AppSpacing.md),
-      itemCount: rows.length + extra + (showSafety ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (typing && index == 0) return const _TypingBubble();
-        final rowIndex = index - extra;
-        if (rowIndex == rows.length) return _SafetyBanner(onDismiss: onDismissSafety);
-        return switch (rows[rowIndex]) {
-          _DayRow(:final label) => _DaySeparator(label: label),
-          final _MessageRow row => _Bubble(message: row.message, isMine: row.isMine, grouped: row.groupedWithNext),
-        };
+    // Reverse list: the oldest message is at the far end; nearing it loads
+    // the previous page from the server.
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification.metrics.extentAfter < 400) onLoadOlder();
+        return false;
       },
+      child: ListView.builder(
+        reverse: true,
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        padding: EdgeInsets.fromLTRB(
+          gutter,
+          AppSpacing.md,
+          gutter,
+          AppSpacing.md,
+        ),
+        itemCount:
+            rows.length + extra + (showSafety ? 1 : 0) + (loadingOlder ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (typing && index == 0) return const _TypingBubble();
+          final rowIndex = index - extra;
+          if (rowIndex == rows.length) {
+            if (loadingOlder) {
+              return const Padding(
+                padding: EdgeInsets.all(AppSpacing.md),
+                child: Center(
+                  child: SizedBox.square(
+                    dimension: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              );
+            }
+            return _SafetyBanner(onDismiss: onDismissSafety);
+          }
+          if (rowIndex > rows.length)
+            return _SafetyBanner(onDismiss: onDismissSafety);
+          return switch (rows[rowIndex]) {
+            _DayRow(:final label) => _DaySeparator(label: label),
+            final _MessageRow row => GestureDetector(
+              onTap: row.isMine && row.message.delivery == DeliveryState.failed
+                  ? () => onRetry(row.message)
+                  : null,
+              child: _Bubble(
+                message: row.message,
+                isMine: row.isMine,
+                grouped: row.groupedWithNext,
+              ),
+            ),
+          };
+        },
+      ),
     );
   }
 }
@@ -377,11 +588,18 @@ class _DaySeparator extends StatelessWidget {
     padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
     child: Center(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
-        decoration: BoxDecoration(color: context.palette.surfaceMuted, borderRadius: AppRadii.pillAll),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          color: context.palette.surfaceMuted,
+          borderRadius: AppRadii.pillAll,
+        ),
         child: Text(
           label,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: context.palette.textSecondary),
+          style: Theme.of(context).textTheme.labelSmall
+              ?.copyWith(color: context.palette.textSecondary),
         ),
       ),
     ),
@@ -398,16 +616,29 @@ class _SafetyBanner extends StatelessWidget {
     final palette = context.palette;
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, 0, AppSpacing.sm),
-      decoration: BoxDecoration(color: palette.warningSoft, borderRadius: AppRadii.mdAll),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.sm,
+        0,
+        AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: palette.warningSoft,
+        borderRadius: AppRadii.mdAll,
+      ),
       child: Row(
         children: [
-          Icon(Icons.shield_outlined, color: palette.warning, size: AppIconSize.md),
+          Icon(
+            Icons.shield_outlined,
+            color: palette.warning,
+            size: AppIconSize.md,
+          ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               'Oldindan to‘lov qilmang va karta ma’lumotlarini yubormang. Shubhali xabarlar haqida xabar bering.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: palette.textPrimary),
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: palette.textPrimary),
             ),
           ),
           IconButton(
@@ -422,7 +653,11 @@ class _SafetyBanner extends StatelessWidget {
 }
 
 class _Bubble extends StatelessWidget {
-  const _Bubble({required this.message, required this.isMine, required this.grouped});
+  const _Bubble({
+    required this.message,
+    required this.isMine,
+    required this.grouped,
+  });
 
   final ChatMessage message;
   final bool isMine;
@@ -434,7 +669,9 @@ class _Bubble extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final background = isMine ? palette.primary : palette.surface;
     final foreground = isMine ? palette.onPrimary : palette.textPrimary;
-    final meta = isMine ? palette.onPrimary.withValues(alpha: 0.75) : palette.textTertiary;
+    final meta = isMine
+        ? palette.onPrimary.withValues(alpha: 0.75)
+        : palette.textTertiary;
     const radius = Radius.circular(AppRadii.lg);
     const tail = Radius.circular(AppRadii.xs);
     final maxWidth = MediaQuery.sizeOf(context).width * 0.76;
@@ -452,11 +689,21 @@ class _Bubble extends StatelessWidget {
       children: [
         Text(
           Formatters.clock(message.sentAt),
-          style: text.labelSmall?.copyWith(color: meta, fontWeight: FontWeight.w500, fontSize: 10.5),
+          style: text.labelSmall?.copyWith(
+            color: meta,
+            fontWeight: FontWeight.w500,
+            fontSize: 10.5,
+          ),
         ),
         if (isMine) ...[
           const SizedBox(width: 3),
-          Icon(tickIcon, size: 14, color: message.delivery == DeliveryState.read ? const Color(0xFF7DD3FC) : meta),
+          Icon(
+            tickIcon,
+            size: 14,
+            color: message.delivery == DeliveryState.read
+                ? const Color(0xFF7DD3FC)
+                : meta,
+          ),
         ],
       ],
     );
@@ -466,13 +713,20 @@ class _Bubble extends StatelessWidget {
           '${isMine ? 'Siz' : 'Suhbatdosh'}: ${message.preview}, ${Formatters.clock(message.sentAt)}${isMine ? ', $tickLabel' : ''}',
       excludeSemantics: true,
       child: Align(
-        alignment: isMine ? AlignmentDirectional.centerEnd : AlignmentDirectional.centerStart,
+        alignment: isMine
+            ? AlignmentDirectional.centerEnd
+            : AlignmentDirectional.centerStart,
         child: Container(
           margin: EdgeInsets.only(bottom: grouped ? 3 : AppSpacing.sm),
           constraints: BoxConstraints(maxWidth: maxWidth),
           padding: message.kind == MessageKind.image
               ? const EdgeInsets.all(AppSpacing.xs)
-              : const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.sm - 2),
+              : const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.sm,
+                  AppSpacing.md,
+                  AppSpacing.sm - 2,
+                ),
           decoration: BoxDecoration(
             color: background,
             border: isMine ? null : Border.all(color: palette.border),
@@ -490,9 +744,15 @@ class _Bubble extends StatelessWidget {
                     SizedBox(
                       width: 220,
                       height: 220,
-                      child: AppImage(image: message.image, borderRadius: BorderRadius.circular(AppRadii.md)),
+                      child: AppImage(
+                        image: message.image,
+                        borderRadius: BorderRadius.circular(AppRadii.md),
+                      ),
                     ),
-                    Padding(padding: const EdgeInsets.fromLTRB(0, 4, 6, 2), child: footer),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 4, 6, 2),
+                      child: footer,
+                    ),
                   ],
                 )
               : Wrap(
@@ -500,8 +760,14 @@ class _Bubble extends StatelessWidget {
                   crossAxisAlignment: WrapCrossAlignment.end,
                   spacing: AppSpacing.sm,
                   children: [
-                    Text(message.text ?? '', style: text.bodyMedium?.copyWith(color: foreground)),
-                    Padding(padding: const EdgeInsets.only(top: 4), child: footer),
+                    Text(
+                      message.text ?? '',
+                      style: text.bodyMedium?.copyWith(color: foreground),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: footer,
+                    ),
                   ],
                 ),
         ),
@@ -517,7 +783,8 @@ class _TypingBubble extends StatefulWidget {
   State<_TypingBubble> createState() => _TypingBubbleState();
 }
 
-class _TypingBubbleState extends State<_TypingBubble> with SingleTickerProviderStateMixin {
+class _TypingBubbleState extends State<_TypingBubble>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 1100),
@@ -526,7 +793,8 @@ class _TypingBubbleState extends State<_TypingBubble> with SingleTickerProviderS
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!AppMotion.reduced(context) && !_controller.isAnimating) _controller.repeat();
+    if (!AppMotion.reduced(context) && !_controller.isAnimating)
+      _controller.repeat();
   }
 
   @override
@@ -544,7 +812,10 @@ class _TypingBubbleState extends State<_TypingBubble> with SingleTickerProviderS
         alignment: AlignmentDirectional.centerStart,
         child: Container(
           margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.md,
+          ),
           decoration: BoxDecoration(
             color: palette.surface,
             border: Border.all(color: palette.border),
@@ -563,7 +834,13 @@ class _TypingBubbleState extends State<_TypingBubble> with SingleTickerProviderS
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: palette.textTertiary.withValues(
-                        alpha: 0.35 + 0.65 * (1 - ((_controller.value * 3 - i) % 3 - 0.5).abs().clamp(0.0, 1.0)),
+                        alpha:
+                            0.35 +
+                            0.65 *
+                                (1 -
+                                    ((_controller.value * 3 - i) % 3 - 0.5)
+                                        .abs()
+                                        .clamp(0.0, 1.0)),
                       ),
                     ),
                   ),
@@ -577,7 +854,11 @@ class _TypingBubbleState extends State<_TypingBubble> with SingleTickerProviderS
 }
 
 class _Composer extends StatelessWidget {
-  const _Composer({required this.controller, required this.onSend, required this.onAttach});
+  const _Composer({
+    required this.controller,
+    required this.onSend,
+    required this.onAttach,
+  });
 
   final TextEditingController controller;
   final VoidCallback onSend;
@@ -594,25 +875,48 @@ class _Composer extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(AppSpacing.xs, AppSpacing.sm, AppSpacing.md, AppSpacing.sm),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xs,
+            AppSpacing.sm,
+            AppSpacing.md,
+            AppSpacing.sm,
+          ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              IconButton(tooltip: 'Rasm yuborish', onPressed: onAttach, icon: const Icon(Icons.attach_file_rounded)),
+              IconButton(
+                tooltip: 'Rasm yuborish',
+                onPressed: onAttach,
+                icon: const Icon(Icons.attach_file_rounded),
+              ),
               Expanded(
                 child: TextField(
                   controller: controller,
                   minLines: 1,
                   maxLines: 5,
                   maxLength: 2000,
-                  buildCounter: (_, {required currentLength, required isFocused, maxLength}) => null,
+                  buildCounter: (
+                    _, {
+                    required currentLength,
+                    required isFocused,
+                    maxLength,
+                  }) => null,
                   textCapitalization: TextCapitalization.sentences,
                   keyboardType: TextInputType.multiline,
                   decoration: const InputDecoration(
                     hintText: 'Xabar yozing...',
-                    border: OutlineInputBorder(borderRadius: AppRadii.xlAll, borderSide: BorderSide.none),
-                    enabledBorder: OutlineInputBorder(borderRadius: AppRadii.xlAll, borderSide: BorderSide.none),
-                    contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+                    border: OutlineInputBorder(
+                      borderRadius: AppRadii.xlAll,
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: AppRadii.xlAll,
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.md,
+                    ),
                   ),
                 ),
               ),
@@ -630,9 +934,17 @@ class _Composer extends StatelessWidget {
                       style: IconButton.styleFrom(
                         backgroundColor: palette.primary,
                         disabledBackgroundColor: palette.border,
-                        minimumSize: const Size(AppTouch.minTarget, AppTouch.minTarget),
+                        minimumSize: const Size(
+                          AppTouch.minTarget,
+                          AppTouch.minTarget,
+                        ),
                       ),
-                      icon: Icon(Icons.send_rounded, color: enabled ? palette.onPrimary : palette.textTertiary),
+                      icon: Icon(
+                        Icons.send_rounded,
+                        color: enabled
+                            ? palette.onPrimary
+                            : palette.textTertiary,
+                      ),
                     ),
                   );
                 },
@@ -666,8 +978,13 @@ class _BlockedBar extends StatelessWidget {
             children: [
               Icon(Icons.block_rounded, color: palette.danger),
               const SizedBox(width: AppSpacing.sm),
-              const Expanded(child: Text('Siz bu foydalanuvchini bloklagansiz')),
-              TextButton(onPressed: onUnblock, child: const Text('Blokdan chiqarish')),
+              const Expanded(
+                child: Text('Siz bu foydalanuvchini bloklagansiz'),
+              ),
+              TextButton(
+                onPressed: onUnblock,
+                child: const Text('Blokdan chiqarish'),
+              ),
             ],
           ),
         ),

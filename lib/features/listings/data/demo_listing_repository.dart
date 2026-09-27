@@ -19,7 +19,8 @@ class DemoListingRepository implements ListingRepository {
 
   GeoPoint? _origin(ListingQuery query) {
     const tree = UzbekistanLocations.tree;
-    return tree.district(query.regionId, query.districtId)?.center ?? tree.region(query.regionId)?.center;
+    return tree.district(query.regionId, query.districtId)?.center ??
+        tree.region(query.regionId)?.center;
   }
 
   double? _distance(Listing listing, GeoPoint? origin) {
@@ -34,24 +35,35 @@ class DemoListingRepository implements ListingRepository {
     final origin = _origin(query);
     final results = <Listing>[];
     for (final listing in _db.listings) {
-      if (listing.status != ListingStatus.active && query.sellerId == null) continue;
+      if (listing.status != ListingStatus.active && query.sellerId == null)
+        continue;
       if (_db.blockedUserIds.contains(listing.seller.id)) continue;
-      if (query.sellerId != null && listing.seller.id != query.sellerId) continue;
-      if (query.categoryId != null && !_categories.isWithin(listing.categoryId, query.categoryId!)) continue;
-      if (query.condition != null && listing.condition != query.condition) continue;
+      if (query.sellerId != null && listing.seller.id != query.sellerId)
+        continue;
+      if (query.categoryId != null &&
+          !_categories.isWithin(listing.categoryId, query.categoryId!))
+        continue;
+      if (query.condition != null && listing.condition != query.condition)
+        continue;
       final price = listing.price?.approxUzs;
-      if (query.minPrice != null && (price == null || price < query.minPrice!)) continue;
-      if (query.maxPrice != null && (price == null || price > query.maxPrice!)) continue;
+      if (query.minPrice != null && (price == null || price < query.minPrice!))
+        continue;
+      if (query.maxPrice != null && (price == null || price > query.maxPrice!))
+        continue;
       if (tokens.isNotEmpty) {
-        final haystack = '${listing.title} ${listing.description} ${_categories.byId(listing.categoryId)?.name ?? ''}';
+        final haystack =
+            '${listing.title} ${listing.description} ${_categories.byId(listing.categoryId)?.name ?? ''}';
         if (!SearchNormalizer.matches(tokens, haystack)) continue;
       }
       final distance = _distance(listing, origin);
       if (query.radiusKm != null) {
         if (distance == null || distance > query.radiusKm!) continue;
       } else {
-        if (query.regionId != null && listing.place.regionId != query.regionId) continue;
-        if (query.districtId != null && listing.place.districtId != query.districtId) continue;
+        if (query.regionId != null && listing.place.regionId != query.regionId)
+          continue;
+        if (query.districtId != null &&
+            listing.place.districtId != query.districtId)
+          continue;
       }
       results.add(listing.copyWith(distanceKm: distance));
     }
@@ -61,38 +73,65 @@ class DemoListingRepository implements ListingRepository {
       case ListingSort.newest:
         results.sort((a, b) {
           final byPromotion = promoted(b).compareTo(promoted(a));
-          return byPromotion != 0 ? byPromotion : b.publishedAt.compareTo(a.publishedAt);
+          return byPromotion != 0
+              ? byPromotion
+              : b.publishedAt.compareTo(a.publishedAt);
         });
       case ListingSort.priceAsc:
-        results.sort((a, b) => (a.price?.approxUzs ?? 1 << 62).compareTo(b.price?.approxUzs ?? 1 << 62));
+        results.sort(
+          (a, b) => (a.price?.approxUzs ?? 1 << 62).compareTo(
+            b.price?.approxUzs ?? 1 << 62,
+          ),
+        );
       case ListingSort.priceDesc:
-        results.sort((a, b) => (b.price?.approxUzs ?? -1).compareTo(a.price?.approxUzs ?? -1));
+        results.sort(
+          (a, b) =>
+              (b.price?.approxUzs ?? -1).compareTo(a.price?.approxUzs ?? -1),
+        );
       case ListingSort.popular:
-        results.sort((a, b) => (b.views + b.favorites * 20).compareTo(a.views + a.favorites * 20));
+        results.sort(
+          (a, b) => (b.views + b.favorites * 20).compareTo(
+            a.views + a.favorites * 20,
+          ),
+        );
       case ListingSort.nearest:
         results.sort((a, b) {
-          final byDistance = (a.distanceKm ?? double.infinity).compareTo(b.distanceKm ?? double.infinity);
-          return byDistance != 0 ? byDistance : b.publishedAt.compareTo(a.publishedAt);
+          final byDistance = (a.distanceKm ?? double.infinity).compareTo(
+            b.distanceKm ?? double.infinity,
+          );
+          return byDistance != 0
+              ? byDistance
+              : b.publishedAt.compareTo(a.publishedAt);
         });
     }
     return results;
   }
 
   @override
-  Future<PageResult<Listing>> search(ListingQuery query, {String? cursor}) async {
+  Future<PageResult<Listing>> search(
+    ListingQuery query, {
+    String? cursor,
+  }) async {
     await _db.roundTrip();
     final all = _filter(query);
     final offset = int.tryParse(cursor ?? '') ?? 0;
     final end = (offset + query.pageSize).clamp(0, all.length);
-    final page = offset >= all.length ? const <Listing>[] : all.sublist(offset, end);
-    return PageResult(items: page, nextCursor: end < all.length ? '$end' : null, total: all.length);
+    final page = offset >= all.length
+        ? const <Listing>[]
+        : all.sublist(offset, end);
+    return PageResult(
+      items: page,
+      nextCursor: end < all.length ? '$end' : null,
+      total: all.length,
+    );
   }
 
   @override
   Future<Listing> getById(String id) async {
     await _db.roundTrip(0.6);
     final listing = _db.listings.where((l) => l.id == id).firstOrNull;
-    if (listing == null) throw const NotFoundFailure('E’lon topilmadi yoki o‘chirilgan');
+    if (listing == null)
+      throw const NotFoundFailure('E’lon topilmadi yoki o‘chirilgan');
     return listing;
   }
 
@@ -106,13 +145,24 @@ class DemoListingRepository implements ListingRepository {
   @override
   Future<List<Listing>> similar(Listing listing, {int limit = 8}) async {
     await _db.roundTrip(0.8);
-    final root = _categories.parentOf(listing.categoryId)?.id ?? listing.categoryId;
+    final root =
+        _categories.parentOf(listing.categoryId)?.id ?? listing.categoryId;
     return _db.listings
         .where(
-          (l) => l.id != listing.id && l.status == ListingStatus.active && _categories.isWithin(l.categoryId, root),
+          (l) =>
+              l.id != listing.id &&
+              l.status == ListingStatus.active &&
+              _categories.isWithin(l.categoryId, root),
         )
         .take(limit)
         .toList();
+  }
+
+  @override
+  Future<List<Listing>> mine() async {
+    final user = _db.currentUser;
+    if (user == null) throw const UnauthorizedFailure();
+    return bySeller(user.id);
   }
 
   @override
@@ -125,7 +175,10 @@ class DemoListingRepository implements ListingRepository {
   @override
   Future<void> recordView(String id) async {
     final index = _db.listings.indexWhere((l) => l.id == id);
-    if (index >= 0) _db.listings[index] = _db.listings[index].copyWith(views: _db.listings[index].views + 1);
+    if (index >= 0)
+      _db.listings[index] = _db.listings[index].copyWith(
+        views: _db.listings[index].views + 1,
+      );
   }
 
   @override
@@ -133,7 +186,10 @@ class DemoListingRepository implements ListingRepository {
     await _db.roundTrip(0.4);
     final listing = await getById(listingId);
     final phone = _db.seed.phoneBook[listing.seller.id];
-    if (phone == null) throw const NotFoundFailure('Sotuvchi raqamini yashirgan. Chat orqali yozing.');
+    if (phone == null)
+      throw const NotFoundFailure(
+        'Sotuvchi raqamini yashirgan. Chat orqali yozing.',
+      );
     return phone;
   }
 
@@ -149,7 +205,8 @@ class DemoListingRepository implements ListingRepository {
       categoryId: input.categoryId,
       images: [
         for (final id in input.imageIds)
-          if (id.startsWith('local:')) MediaImage.local(id, id.substring('local:'.length)),
+          if (id.startsWith('local:'))
+            MediaImage.local(id, id.substring('local:'.length)),
       ],
       place: input.place,
       publishedAt: _clock(),

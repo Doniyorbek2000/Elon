@@ -66,9 +66,12 @@ abstract final class AppMotion {
 
   /// Honors the OS "reduce motion" setting.
   static Duration of(BuildContext context, Duration duration) =>
-      MediaQuery.maybeDisableAnimationsOf(context) ?? false ? Duration.zero : duration;
+      MediaQuery.maybeDisableAnimationsOf(context) ?? false
+      ? Duration.zero
+      : duration;
 
-  static bool reduced(BuildContext context) => MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+  static bool reduced(BuildContext context) =>
+      MediaQuery.maybeDisableAnimationsOf(context) ?? false;
 }
 
 enum WindowClass { compact, medium, expanded }
@@ -87,7 +90,8 @@ abstract final class AppBreakpoints {
     return WindowClass.compact;
   }
 
-  static WindowClass of(BuildContext context) => classify(MediaQuery.sizeOf(context).width);
+  static WindowClass of(BuildContext context) =>
+      classify(MediaQuery.sizeOf(context).width);
 
   static double pagePadding(BuildContext context) => switch (of(context)) {
     WindowClass.compact => AppSpacing.lg,
@@ -96,7 +100,12 @@ abstract final class AppBreakpoints {
   };
 
   /// Column count for a grid whose tiles should be roughly [minTileWidth] wide.
-  static int columnsFor(double availableWidth, {double minTileWidth = 164, int min = 2, int max = 6}) {
+  static int columnsFor(
+    double availableWidth, {
+    double minTileWidth = 164,
+    int min = 2,
+    int max = 6,
+  }) {
     final columns = (availableWidth / minTileWidth).floor();
     return columns.clamp(min, max);
   }
@@ -106,15 +115,34 @@ abstract final class AppShadows {
   static List<BoxShadow> card(AppPalette palette, {bool dark = false}) => dark
       ? const []
       : [
-          BoxShadow(color: palette.shadow, blurRadius: 18, offset: const Offset(0, 6), spreadRadius: -6),
-          BoxShadow(color: palette.shadow.withValues(alpha: 0.05), blurRadius: 2, offset: const Offset(0, 1)),
+          BoxShadow(
+            color: palette.shadow,
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+            spreadRadius: -6,
+          ),
+          BoxShadow(
+            color: palette.shadow.withValues(alpha: 0.05),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
         ];
 
   static List<BoxShadow> floating(AppPalette palette) => [
-    BoxShadow(color: palette.shadow, blurRadius: 24, offset: const Offset(0, 10), spreadRadius: -4),
+    BoxShadow(
+      color: palette.shadow,
+      blurRadius: 24,
+      offset: const Offset(0, 10),
+      spreadRadius: -4,
+    ),
   ];
 
   static List<BoxShadow> primaryGlow(Color color) => [
-    BoxShadow(color: color.withValues(alpha: 0.35), blurRadius: 18, offset: const Offset(0, 8), spreadRadius: -4),
+    BoxShadow(
+      color: color.withValues(alpha: 0.35),
+      blurRadius: 18,
+      offset: const Offset(0, 8),
+      spreadRadius: -4,
+    ),
   ];
 }

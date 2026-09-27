@@ -11,26 +11,35 @@ import '../domain/job.dart';
 
 final jobRepositoryProvider = Provider<JobRepository>((ref) {
   if (ref.watch(appConfigProvider).useDemoData) {
-    return DemoJobRepository(ref.watch(demoDatabaseProvider), clock: ref.watch(clockProvider));
+    return DemoJobRepository(
+      ref.watch(demoDatabaseProvider),
+      clock: ref.watch(clockProvider),
+    );
   }
   return RemoteJobRepository(ref.watch(apiClientProvider));
 });
 
-final jobSearchProvider = FutureProvider.autoDispose.family<List<Job>, JobQuery>((ref, query) {
-  return ref.watch(jobRepositoryProvider).searchJobs(query);
-});
+final jobSearchProvider = FutureProvider.autoDispose
+    .family<List<Job>, JobQuery>((ref, query) {
+      return ref.watch(jobRepositoryProvider).searchJobs(query);
+    });
 
-final candidateSearchProvider = FutureProvider.autoDispose.family<List<CandidateProfile>, JobQuery>((ref, query) {
-  return ref.watch(jobRepositoryProvider).searchCandidates(query);
-});
+final candidateSearchProvider = FutureProvider.autoDispose
+    .family<List<CandidateProfile>, JobQuery>((ref, query) {
+      return ref.watch(jobRepositoryProvider).searchCandidates(query);
+    });
 
-final jobDetailProvider = FutureProvider.autoDispose.family<Job, String>((ref, id) {
+final jobDetailProvider = FutureProvider.autoDispose.family<Job, String>((
+  ref,
+  id,
+) {
   return ref.watch(jobRepositoryProvider).getJob(id);
 });
 
-final candidateDetailProvider = FutureProvider.autoDispose.family<CandidateProfile, String>((ref, id) {
-  return ref.watch(jobRepositoryProvider).getCandidate(id);
-});
+final candidateDetailProvider = FutureProvider.autoDispose
+    .family<CandidateProfile, String>((ref, id) {
+      return ref.watch(jobRepositoryProvider).getCandidate(id);
+    });
 
 /// The signed-in user's applications; also the source of "already applied".
 class MyApplicationsController extends AsyncNotifier<List<JobApplication>> {
@@ -53,11 +62,13 @@ class MyApplicationsController extends AsyncNotifier<List<JobApplication>> {
   }
 }
 
-final myApplicationsProvider = AsyncNotifierProvider<MyApplicationsController, List<JobApplication>>(
-  MyApplicationsController.new,
-);
+final myApplicationsProvider =
+    AsyncNotifierProvider<MyApplicationsController, List<JobApplication>>(
+      MyApplicationsController.new,
+    );
 
-final applicationForJobProvider = Provider.autoDispose.family<JobApplication?, String>((ref, jobId) {
-  final applications = ref.watch(myApplicationsProvider).value ?? const [];
-  return applications.where((a) => a.job.id == jobId).firstOrNull;
-});
+final applicationForJobProvider = Provider.autoDispose
+    .family<JobApplication?, String>((ref, jobId) {
+      final applications = ref.watch(myApplicationsProvider).value ?? const [];
+      return applications.where((a) => a.job.id == jobId).firstOrNull;
+    });

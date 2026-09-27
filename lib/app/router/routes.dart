@@ -32,20 +32,34 @@ abstract final class AppRoutes {
   static String serviceCategory(String id) => '/services/category/$id';
 
   static String listingsFor({String? categoryId, String? sort, String? text}) =>
-      Uri(path: listings, queryParameters: {'category': ?categoryId, 'sort': ?sort, 'q': ?text}).toString();
+      Uri(
+        path: listings,
+        queryParameters: {'category': ?categoryId, 'sort': ?sort, 'q': ?text},
+      ).toString();
 
-  static String searchFor(String query) => Uri(path: search, queryParameters: {'q': query}).toString();
+  static String searchFor(String query) =>
+      Uri(path: search, queryParameters: {'q': query}).toString();
 
-  static String createIn(String categoryId) => Uri(path: create, queryParameters: {'category': categoryId}).toString();
+  static String createIn(String categoryId) =>
+      Uri(path: create, queryParameters: {'category': categoryId}).toString();
 
-  static String verifyThen(String next) => Uri(path: verifyPhone, queryParameters: {'next': next}).toString();
+  static String verifyThen(String next) =>
+      Uri(path: verifyPhone, queryParameters: {'next': next}).toString();
 
-  static String locationPicker({bool onboarding = false}) =>
-      onboarding ? Uri(path: location, queryParameters: {'onboarding': '1'}).toString() : location;
+  static String locationPicker({bool onboarding = false}) => onboarding
+      ? Uri(path: location, queryParameters: {'onboarding': '1'}).toString()
+      : location;
 
-  static String jobsFor({bool hiring = false}) =>
-      hiring ? Uri(path: jobs, queryParameters: {'mode': 'hire'}).toString() : jobs;
+  static String jobsFor({bool hiring = false}) => hiring
+      ? Uri(path: jobs, queryParameters: {'mode': 'hire'}).toString()
+      : jobs;
 
   /// Routes that require a signed-in account.
-  static const protectedPrefixes = [create, myListings, applications, editProfile, '/chat/'];
+  static const protectedPrefixes = [
+    create,
+    myListings,
+    applications,
+    editProfile,
+    '/chat/',
+  ];
 }

@@ -40,7 +40,11 @@ class _ServicesScreenState extends ConsumerState<ServicesScreen> {
     final regionId = ref.watch(locationProvider).regionId;
     final categories = ref.watch(serviceCategoriesProvider);
     final gutter = adaptiveGutter(context);
-    final query = ProviderQuery(text: _text, filter: _filter, regionId: regionId);
+    final query = ProviderQuery(
+      text: _text,
+      filter: _filter,
+      regionId: regionId,
+    );
     final searching = _text.isNotEmpty;
 
     return Scaffold(
@@ -53,7 +57,12 @@ class _ServicesScreenState extends ConsumerState<ServicesScreen> {
         child: CustomScrollView(
           slivers: [
             SliverPadding(
-              padding: EdgeInsets.fromLTRB(gutter, AppSpacing.sm, gutter, AppSpacing.lg),
+              padding: EdgeInsets.fromLTRB(
+                gutter,
+                AppSpacing.sm,
+                gutter,
+                AppSpacing.lg,
+              ),
               sliver: SliverToBoxAdapter(
                 child: AppSearchField(
                   controller: _search,
@@ -69,9 +78,16 @@ class _ServicesScreenState extends ConsumerState<ServicesScreen> {
                 sliver: SliverToBoxAdapter(
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      final largeText = MediaQuery.textScalerOf(context).scale(10) > 14;
-                      final columns = constraints.maxWidth >= AppBreakpoints.medium ? 6 : (largeText ? 3 : 4);
-                      final width = (constraints.maxWidth - AppSpacing.sm * (columns - 1)) / columns;
+                      final largeText =
+                          MediaQuery.textScalerOf(context).scale(10) > 14;
+                      final columns =
+                          constraints.maxWidth >= AppBreakpoints.medium
+                          ? 6
+                          : (largeText ? 3 : 4);
+                      final width =
+                          (constraints.maxWidth -
+                              AppSpacing.sm * (columns - 1)) /
+                          columns;
                       return Wrap(
                         spacing: AppSpacing.sm,
                         runSpacing: AppSpacing.md,
@@ -81,7 +97,9 @@ class _ServicesScreenState extends ConsumerState<ServicesScreen> {
                               width: width,
                               child: Pressable(
                                 semanticLabel: category.name,
-                                onTap: () => context.push(AppRoutes.serviceCategory(category.id)),
+                                onTap: () => context.push(
+                                  AppRoutes.serviceCategory(category.id),
+                                ),
                                 child: Column(
                                   children: [
                                     ToneIcon(
@@ -96,8 +114,12 @@ class _ServicesScreenState extends ConsumerState<ServicesScreen> {
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(context).textTheme.labelSmall
-                                          ?.copyWith(fontWeight: FontWeight.w500),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w500,
+                                          ),
                                     ),
                                   ],
                                 ),
@@ -110,15 +132,29 @@ class _ServicesScreenState extends ConsumerState<ServicesScreen> {
                 ),
               ),
               SliverPadding(
-                padding: EdgeInsets.fromLTRB(gutter, AppSpacing.xl, gutter - AppSpacing.sm, AppSpacing.sm),
-                sliver: const SliverToBoxAdapter(child: SectionHeader(title: 'Tavsiya etilgan ustalar')),
+                padding: EdgeInsets.fromLTRB(
+                  gutter,
+                  AppSpacing.xl,
+                  gutter - AppSpacing.sm,
+                  AppSpacing.sm,
+                ),
+                sliver: const SliverToBoxAdapter(
+                  child: SectionHeader(title: 'Tavsiya etilgan ustalar'),
+                ),
               ),
               SliverToBoxAdapter(
                 child: _RecommendedCarousel(regionId: regionId, gutter: gutter),
               ),
               SliverPadding(
-                padding: EdgeInsets.fromLTRB(gutter, AppSpacing.xl, gutter, AppSpacing.sm),
-                sliver: const SliverToBoxAdapter(child: SectionHeader(title: 'Barcha ustalar')),
+                padding: EdgeInsets.fromLTRB(
+                  gutter,
+                  AppSpacing.xl,
+                  gutter,
+                  AppSpacing.sm,
+                ),
+                sliver: const SliverToBoxAdapter(
+                  child: SectionHeader(title: 'Barcha ustalar'),
+                ),
               ),
             ],
             SliverToBoxAdapter(
@@ -131,7 +167,12 @@ class _ServicesScreenState extends ConsumerState<ServicesScreen> {
               ),
             ),
             SliverPadding(
-              padding: EdgeInsets.fromLTRB(gutter, AppSpacing.md, gutter, AppSpacing.xxxl),
+              padding: EdgeInsets.fromLTRB(
+                gutter,
+                AppSpacing.md,
+                gutter,
+                AppSpacing.xxxl,
+              ),
               sliver: ProviderResultsSliver(query: query),
             ),
           ],
@@ -150,7 +191,10 @@ class _RecommendedCarousel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final recommended = ref.watch(recommendedProvidersProvider(regionId));
-    final textScale = (MediaQuery.textScalerOf(context).scale(14) / 14).clamp(1.0, 2.0);
+    final textScale = (MediaQuery.textScalerOf(context).scale(14) / 14).clamp(
+      1.0,
+      2.0,
+    );
     final height = 196 + 60 * textScale;
     return SizedBox(
       height: height,
@@ -161,7 +205,10 @@ class _RecommendedCarousel extends ConsumerWidget {
             padding: EdgeInsets.symmetric(horizontal: gutter),
             itemCount: 3,
             separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.md),
-            itemBuilder: (_, _) => const SizedBox(width: 156, child: SkeletonBox(radius: AppRadii.lg)),
+            itemBuilder: (_, _) => const SizedBox(
+              width: 156,
+              child: SkeletonBox(radius: AppRadii.lg),
+            ),
           ),
         ),
         error: (error, _) => FailureView(
@@ -174,7 +221,10 @@ class _RecommendedCarousel extends ConsumerWidget {
           padding: EdgeInsets.symmetric(horizontal: gutter),
           itemCount: providers.length,
           separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.md),
-          itemBuilder: (_, index) => SizedBox(width: 156, child: ProviderCard(provider: providers[index])),
+          itemBuilder: (_, index) => SizedBox(
+            width: 156,
+            child: ProviderCard(provider: providers[index]),
+          ),
         ),
       ),
     );
@@ -223,9 +273,12 @@ class ProviderResultsSliver extends ConsumerWidget {
                 )
               : SliverList.separated(
                   itemCount: providers.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
-                  itemBuilder: (_, index) =>
-                      ProviderTile(key: ValueKey(providers[index].id), provider: providers[index]),
+                  separatorBuilder: (_, _) =>
+                      const SizedBox(height: AppSpacing.md),
+                  itemBuilder: (_, index) => ProviderTile(
+                    key: ValueKey(providers[index].id),
+                    provider: providers[index],
+                  ),
                 ),
         );
   }
@@ -237,7 +290,8 @@ class ServiceCategoryScreen extends ConsumerStatefulWidget {
   final String categoryId;
 
   @override
-  ConsumerState<ServiceCategoryScreen> createState() => _ServiceCategoryScreenState();
+  ConsumerState<ServiceCategoryScreen> createState() =>
+      _ServiceCategoryScreenState();
 }
 
 class _ServiceCategoryScreenState extends ConsumerState<ServiceCategoryScreen> {
@@ -247,8 +301,15 @@ class _ServiceCategoryScreenState extends ConsumerState<ServiceCategoryScreen> {
   Widget build(BuildContext context) {
     final category = BundledServiceCategories.byId(widget.categoryId);
     final regionId = ref.watch(locationProvider).regionId;
-    final query = ProviderQuery(categoryId: widget.categoryId, filter: _filter, regionId: regionId);
-    final gutter = adaptiveGutter(context, maxWidth: AppBreakpoints.contentMaxWidth);
+    final query = ProviderQuery(
+      categoryId: widget.categoryId,
+      filter: _filter,
+      regionId: regionId,
+    );
+    final gutter = adaptiveGutter(
+      context,
+      maxWidth: AppBreakpoints.contentMaxWidth,
+    );
     return Scaffold(
       appBar: AppBar(title: Text(category?.name ?? 'Xizmatlar')),
       body: RefreshIndicator.adaptive(
@@ -268,7 +329,12 @@ class _ServiceCategoryScreenState extends ConsumerState<ServiceCategoryScreen> {
               ),
             ),
             SliverPadding(
-              padding: EdgeInsets.fromLTRB(gutter, AppSpacing.md, gutter, AppSpacing.md),
+              padding: EdgeInsets.fromLTRB(
+                gutter,
+                AppSpacing.md,
+                gutter,
+                AppSpacing.md,
+              ),
               sliver: ProviderResultsSliver(query: query),
             ),
             SliverPadding(
@@ -277,7 +343,8 @@ class _ServiceCategoryScreenState extends ConsumerState<ServiceCategoryScreen> {
                 top: false,
                 sliver: SliverToBoxAdapter(
                   child: OutlinedButton.icon(
-                    onPressed: () => context.push(AppRoutes.createIn('services')),
+                    onPressed: () =>
+                        context.push(AppRoutes.createIn('services')),
                     icon: const Icon(Icons.add_business_rounded),
                     label: const Text('O‘z xizmatingizni joylang'),
                   ),
