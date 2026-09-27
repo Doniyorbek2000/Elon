@@ -23,7 +23,15 @@ export type ErrorCode =
   | 'UNSUPPORTED_MEDIA'
   | 'NOT_ELIGIBLE'
   | 'SERVICE_UNAVAILABLE'
-  | 'INTERNAL';
+  | 'INTERNAL'
+  | 'FEATURE_DISABLED'
+  | 'LIMIT_REACHED'
+  | 'PAYMENT_ROUTE_UNAVAILABLE'
+  | 'PROVIDER_NOT_CONFIGURED'
+  | 'COUPON_INVALID'
+  | 'INSUFFICIENT_CREDITS'
+  | 'SIGNATURE_INVALID'
+  | 'PRICE_UNAVAILABLE';
 
 export class AppError extends HttpException {
   constructor(
@@ -57,6 +65,16 @@ export class AppError extends HttpException {
 
   static invalidState(message: string): AppError {
     return new AppError('INVALID_STATE', message, HttpStatus.CONFLICT);
+  }
+
+  /** A monetization feature switched off by configuration. */
+  static featureDisabled(feature: string): AppError {
+    return new AppError('FEATURE_DISABLED', 'This feature is not available', HttpStatus.FORBIDDEN, { feature });
+  }
+
+  /** Plan limit reached; `details` tells the client which limit and the value. */
+  static limitReached(limit: string, max: number): AppError {
+    return new AppError('LIMIT_REACHED', 'Plan limit reached', HttpStatus.FORBIDDEN, { limit, max });
   }
 
   static rateLimited(retryAfterSeconds: number, code: ErrorCode = 'RATE_LIMITED'): AppError {

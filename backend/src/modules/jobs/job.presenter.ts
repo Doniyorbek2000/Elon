@@ -1,3 +1,4 @@
+import { BadgeOptions, presentBadges } from '../../common/badges';
 import { AccountType, Prisma, VerificationLevel } from '@prisma/client';
 
 import { presentPlace, presentUser, publicUserSelect } from '../../common/presenters';
@@ -21,8 +22,8 @@ export const jobCardSelect = {
   publishedAt: true,
   createdAt: true,
   viewCount: true,
-  promotionType: true,
-  promotedUntil: true,
+  boostTier: true,
+  boostUntil: true,
   regionId: true,
   districtId: true,
   lat: true,
@@ -63,9 +64,8 @@ function company(row: CardRow) {
 
 export function presentJobCard(
   row: CardRow,
-  options: { isFavorite?: boolean; distanceKm?: number | null } = {},
+  options: { isFavorite?: boolean; distanceKm?: number | null } & BadgeOptions = {},
 ) {
-  const promoted = row.promotionType && (!row.promotedUntil || row.promotedUntil > new Date());
   return {
     id: row.id,
     title: row.title,
@@ -82,7 +82,7 @@ export function presentJobCard(
     currency: apiEnum(row.salaryCurrency),
     salaryNegotiable: row.salaryNegotiable,
     status: apiEnum(row.status),
-    promotion: promoted ? apiEnum(row.promotionType) : null,
+    ...presentBadges(row, options),
     views: row.viewCount,
     employer: presentUser(row.employer),
     description: '',
@@ -96,7 +96,7 @@ export function presentJobCard(
 export function presentJobDetail(
   row: DetailRow,
   webBaseUrl: string,
-  options: { isFavorite?: boolean; isOwner?: boolean; myApplication?: unknown } = {},
+  options: { isFavorite?: boolean; isOwner?: boolean; myApplication?: unknown } & BadgeOptions = {},
 ) {
   return {
     ...presentJobCard(row, options),

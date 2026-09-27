@@ -1,3 +1,4 @@
+import { BadgeOptions, presentBadges } from '../../common/badges';
 import { Prisma } from '@prisma/client';
 
 import { env } from '../../config/env';
@@ -35,8 +36,8 @@ export const providerCardSelect = {
   availability: true,
   ratingAvg: true,
   reviewCount: true,
-  promotionType: true,
-  promotedUntil: true,
+  boostTier: true,
+  boostUntil: true,
   regionId: true,
   districtId: true,
   lat: true,
@@ -90,9 +91,8 @@ export function presentOffering(o: OfferingRow) {
 
 export function presentProviderCard(
   row: CardRow,
-  options: { isFavorite?: boolean; isOnline?: boolean; distanceKm?: number | null } = {},
+  options: { isFavorite?: boolean; isOnline?: boolean; distanceKm?: number | null } & BadgeOptions = {},
 ) {
-  const promoted = row.promotionType && (!row.promotedUntil || row.promotedUntil > new Date());
   const cheapest = row.offerings[0];
   const profile = presentUser(row.user, { isOnline: options.isOnline });
   return {
@@ -114,7 +114,7 @@ export function presentProviderCard(
     availability: apiEnum(row.availability),
     priceFrom: cheapest ? presentMoney(cheapest.priceFrom, cheapest.currency) : null,
     priceUnit: cheapest?.priceUnit ?? null,
-    promotion: promoted ? apiEnum(row.promotionType) : null,
+    ...presentBadges(row, options),
     isFavorite: options.isFavorite ?? false,
     distanceKm: options.distanceKm ?? null,
     description: '',
@@ -126,7 +126,7 @@ export function presentProviderCard(
 
 export function presentProviderDetail(
   row: DetailRow,
-  options: { isFavorite?: boolean; isOnline?: boolean; isOwner?: boolean } = {},
+  options: { isFavorite?: boolean; isOnline?: boolean; isOwner?: boolean } & BadgeOptions = {},
 ) {
   return {
     ...presentProviderCard(row, options),

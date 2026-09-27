@@ -28,6 +28,7 @@ import { PrismaService } from '../../infra/prisma.service';
 import { QueueService } from '../../infra/queues';
 import { RateLimiterService } from '../../infra/rate-limiter.service';
 import { RedisService } from '../../infra/redis.service';
+import { AnalyticsService } from '../business/analytics.service';
 import { MediaService } from '../media/media.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { SafetyService } from '../safety/safety.module';
@@ -87,6 +88,7 @@ export class ChatService {
     private readonly limiter: RateLimiterService,
     private readonly redis: RedisService,
     private readonly queues: QueueService,
+    private readonly analytics: AnalyticsService,
   ) {}
 
   // ──────────────────────────────────────────────────────────── opening
@@ -112,6 +114,7 @@ export class ChatService {
             participants: { create: [{ userId: user.userId }, { userId: peerId }] },
           },
         });
+        if ('listingId' in context && context.listingId) await this.analytics.bump(context.listingId, 'chats');
       } catch (error) {
         // Concurrent open by the other side: the unique key already exists.
         if (!(error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002')) throw error;

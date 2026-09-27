@@ -21,6 +21,11 @@ import { StorageService } from './infra/storage.service';
 import { JobsService } from './modules/jobs/jobs.service';
 import { ListingsService } from './modules/listings/listings.service';
 import { MediaService } from './modules/media/media.service';
+import { AdsService } from './modules/business/ads.service';
+import { CreditsService } from './modules/monetization/credits.service';
+import { PaymentsService } from './modules/monetization/payments.service';
+import { PromotionService } from './modules/monetization/promotion.service';
+import { SubscriptionsService } from './modules/monetization/subscriptions.service';
 import { NotificationsService } from './modules/notifications/notifications.service';
 
 /** Errors that retrying cannot fix (corrupt/unsupported image input). */
@@ -33,6 +38,16 @@ function isPermanentImageError(error: unknown): boolean {
 
 function isFinalAttempt(job: Job): boolean {
   return job.attemptsMade + 1 >= (job.opts.attempts ?? 1);
+}
+
+/** Every step is idempotent (conditional updates), safe to overlap or retry. */
+export async function runMonetizationTick(app: INestApplicationContext, now = new Date()) {
+  const promotions = await app.get(PromotionService).sweep(now);
+  const subscriptions = await app.get(SubscriptionsService).sweep(now);
+  const creditsExpired = await app.get(CreditsService).sweepExpired(now);
+  const ads = await app.get(AdsService).sweep(now);
+  const reconciliation = await app.get(PaymentsService).reconcile(now);
+  return { promotions, subscriptions, creditsExpired, ads, reconciliation };
 }
 
 /**
@@ -95,6 +110,8 @@ export function startWorkers(app: INestApplicationContext): Worker[] {
         }
         case 'orphan-media':
           return { orphans: await media.cleanupOrphans() };
+        case 'monetization-tick':
+          return runMonetizationTick(app);
         default:
           throw new UnrecoverableError(`Unknown maintenance job ${job.name}`);
       }

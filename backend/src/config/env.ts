@@ -58,14 +58,20 @@ const schema = z
     LISTING_TTL_DAYS: z.coerce.number().int().positive().default(30),
     JOB_TTL_DAYS: z.coerce.number().int().positive().default(30),
 
-    FEATURE_MONETIZATION: bool.default('false'),
-    FEATURE_PAID_PROMOTIONS: bool.default('false'),
-    FEATURE_BUSINESS_ACCOUNTS: bool.default('false'),
+    /**
+     * Development/test payment provider (simulated checkout + HMAC-signed
+     * webhooks). Never available in production.
+     */
+    PAYMENT_DEV_ENABLED: bool.default('false'),
+    PAYMENT_DEV_SECRET: z.string().min(32).optional(),
 
     SWAGGER_ENABLED: bool.default('true'),
     WEB_BASE_URL: z.string().url().default('https://bozor.uz'),
   })
   .superRefine((env, ctx) => {
+    if (env.PAYMENT_DEV_ENABLED && !env.PAYMENT_DEV_SECRET) {
+      ctx.addIssue({ code: 'custom', message: 'PAYMENT_DEV_SECRET is required when PAYMENT_DEV_ENABLED=true', path: ['PAYMENT_DEV_SECRET'] });
+    }
     if (env.NODE_ENV !== 'production') return;
     if (env.OTP_PROVIDER === 'dev' || env.OTP_DEV_ECHO) {
       ctx.addIssue({
@@ -87,6 +93,9 @@ const schema = z
         message: 'FCM_PROJECT_ID and FCM_SERVICE_ACCOUNT are required',
         path: ['FCM_PROJECT_ID'],
       });
+    }
+    if (env.PAYMENT_DEV_ENABLED) {
+      ctx.addIssue({ code: 'custom', message: 'The dev payment provider is forbidden in production', path: ['PAYMENT_DEV_ENABLED'] });
     }
     if (!env.CORS_ORIGINS) {
       ctx.addIssue({

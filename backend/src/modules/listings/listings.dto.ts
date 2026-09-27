@@ -156,6 +156,22 @@ export class ChangeStatusDto {
 export const LISTING_SORTS = ['newest', 'priceAsc', 'priceDesc', 'popular', 'nearest'] as const;
 export type ListingSort = (typeof LISTING_SORTS)[number];
 
+/** Featured placement block (paid, labeled). */
+export class FeaturedQuery {
+  @IsIn(['home', 'category', 'region'])
+  placement!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  region?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  category?: string;
+}
+
 export class FeedQuery extends CursorQuery {
   @IsOptional()
   @IsString()

@@ -13,6 +13,9 @@ import { AuthGuard } from './modules/auth/auth.guard';
 import { AuthModule } from './modules/auth/auth.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { MonetizationModule } from './modules/monetization/monetization.module';
+import { BusinessModule } from './modules/business/business.module';
+import { AdminModule } from './modules/admin/admin.module';
 import { FavoritesModule } from './modules/favorites/favorites.module';
 import { HealthModule } from './modules/health/health.module';
 import { JobsModule } from './modules/jobs/jobs.module';
@@ -43,6 +46,9 @@ export const domainModules = [
   ResumesModule,
   ServicesModule,
   ChatModule,
+  MonetizationModule,
+  BusinessModule,
+  AdminModule,
   HealthModule,
 ];
 

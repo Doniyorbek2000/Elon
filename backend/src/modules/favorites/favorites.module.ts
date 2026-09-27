@@ -7,6 +7,7 @@ import { AuthUser, CurrentUser } from '../../common/auth.decorators';
 import { AppError } from '../../common/errors';
 import { CursorQuery, Page, keysetPage, keysetWhere, pageSize } from '../../common/pagination';
 import { PrismaService } from '../../infra/prisma.service';
+import { AnalyticsService } from '../business/analytics.service';
 import { jobCardSelect, presentJobCard } from '../jobs/job.presenter';
 import { listingCardSelect, presentListingCard } from '../listings/listing.presenter';
 import { presentProviderCard, providerCardSelect } from '../services/provider.presenter';
@@ -32,7 +33,10 @@ const COLUMN: Record<Kind, 'listingId' | 'jobId' | 'providerId'> = {
 
 @Injectable()
 export class FavoritesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly analytics: AnalyticsService,
+  ) {}
 
   private async assertTarget(kind: Kind, id: string): Promise<void> {
     const count = await {
@@ -48,13 +52,15 @@ export class FavoritesService {
   async add(userId: string, kind: Kind, id: string): Promise<void> {
     await this.assertTarget(kind, id);
     const column = COLUMN[kind];
-    await this.prisma.$transaction(async (tx) => {
+    const added = await this.prisma.$transaction(async (tx) => {
       const existing = await tx.favorite.findFirst({ where: { userId, [column]: id } });
-      if (existing) return;
+      if (existing) return false;
       await tx.favorite.create({ data: { userId, [column]: id } });
       if (kind === 'listings')
         await tx.listing.update({ where: { id }, data: { favoriteCount: { increment: 1 } } });
+      return true;
     });
+    if (added && kind === 'listings') await this.analytics.bump(id, 'favorites');
   }
 
   async remove(userId: string, kind: Kind, id: string): Promise<void> {

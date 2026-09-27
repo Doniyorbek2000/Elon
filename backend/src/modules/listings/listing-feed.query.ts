@@ -19,6 +19,9 @@ export interface FeedFilters {
   sellerId?: string;
   viewerId?: string;
   excludeId?: string;
+  /** Only items with a live paid tier (the labeled TOP block). */
+  promotedOnly?: boolean;
+  onlyIds?: string[];
 }
 
 export interface FeedRow {
@@ -34,8 +37,10 @@ const MAX_OFFSET = 2000;
  * Prisma.sql — no string concatenation of input. Returns ids (+ distance);
  * hydration happens separately with Prisma includes (no N+1).
  *
- * Cursors: keyset on (publishedAt, id) for "newest" (the hot path); bounded
- * offset cursors for price/popularity/distance sorts.
+ * Cursors: keyset on (rankedAt, id) for "newest" (the hot path; rankedAt is
+ * publication time, moved only by a purchased bump); bounded offset cursors
+ * for price/popularity/distance sorts. Paid tiers never reorder organic
+ * results — they are served separately by `promotedOnly`.
  */
 export function buildFeedQuery(
   filters: FeedFilters,
@@ -62,6 +67,8 @@ export function buildFeedQuery(
   if (filters.condition) where.push(Prisma.sql`l."condition" = ${filters.condition}::"ItemCondition"`);
   if (filters.sellerId) where.push(Prisma.sql`l."sellerId" = ${filters.sellerId}::uuid`);
   if (filters.excludeId) where.push(Prisma.sql`l."id" <> ${filters.excludeId}::uuid`);
+  if (filters.promotedOnly) where.push(Prisma.sql`l."boostTier" > 0 AND l."boostUntil" > now()`);
+  if (filters.onlyIds) where.push(Prisma.sql`l."id" = ANY(${filters.onlyIds}::uuid[])`);
   if (filters.viewerId) {
     where.push(Prisma.sql`NOT EXISTS (
       SELECT 1 FROM "Block" b WHERE b."blockerId" = ${filters.viewerId}::uuid AND b."blockedId" = l."sellerId")`);
@@ -77,14 +84,16 @@ export function buildFeedQuery(
   let order: Prisma.Sql;
   let offset = 0;
 
-  if (sort === 'newest') {
+  if (filters.promotedOnly) {
+    order = Prisma.sql`l."boostTier" DESC, md5(l."id"::text || date_trunc('hour', now())::text)`;
+  } else if (sort === 'newest') {
     const keyset = decodeCursor<{ t: string; id: string }>(cursor);
     if (keyset) {
       const t = new Date(keyset.t);
       if (Number.isNaN(t.getTime())) throw AppError.validation('Invalid cursor');
-      where.push(Prisma.sql`(l."publishedAt", l."id") < (${t}, ${keyset.id}::uuid)`);
+      where.push(Prisma.sql`(l."rankedAt", l."id") < (${t}, ${keyset.id}::uuid)`);
     }
-    order = Prisma.sql`l."publishedAt" DESC, l."id" DESC`;
+    order = Prisma.sql`l."rankedAt" DESC, l."id" DESC`;
   } else {
     offset = Number(decodeCursor<{ o: number }>(cursor)?.o ?? 0);
     if (!Number.isInteger(offset) || offset < 0 || offset > MAX_OFFSET)
@@ -92,22 +101,22 @@ export function buildFeedQuery(
     order = {
       priceAsc: Prisma.sql`l."priceUzs" ASC NULLS LAST, l."id" ASC`,
       priceDesc: Prisma.sql`l."priceUzs" DESC NULLS LAST, l."id" ASC`,
-      popular: Prisma.sql`(l."viewCount" + 20 * l."favoriteCount") DESC, l."publishedAt" DESC`,
+      popular: Prisma.sql`(l."viewCount" + 20 * l."favoriteCount") DESC, l."rankedAt" DESC`,
       nearest: originPoint
         ? Prisma.sql`l."geo" <-> ${originPoint}, l."id"`
-        : Prisma.sql`l."publishedAt" DESC, l."id" DESC`,
+        : Prisma.sql`l."rankedAt" DESC, l."id" DESC`,
     }[sort];
   }
 
   const sql = Prisma.sql`
-    SELECT l."id", ${distance} AS distance_km, l."publishedAt" AS published_at
+    SELECT l."id", ${distance} AS distance_km, l."rankedAt" AS published_at
     FROM "Listing" l
     WHERE ${Prisma.join(where, ' AND ')}
     ORDER BY ${order}
     LIMIT ${take + 1} OFFSET ${offset}`;
 
   const nextCursor = (rows: Array<FeedRow & { published_at: Date }>): string | null => {
-    if (rows.length <= take) return null;
+    if (rows.length <= take || filters.promotedOnly) return null;
     if (sort === 'newest') {
       const last = rows[take - 1];
       return encodeCursor({ t: last.published_at.toISOString(), id: last.id });
