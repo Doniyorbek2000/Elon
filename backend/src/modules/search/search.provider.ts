@@ -31,9 +31,21 @@ export interface SearchProvider {
 export const SEARCH_PROVIDER = Symbol('SEARCH_PROVIDER');
 
 const TABLES: Record<SearchKind, { table: Prisma.Sql; active: Prisma.Sql; owner: Prisma.Sql }> = {
-  listings: { table: Prisma.sql`"Listing"`, active: Prisma.sql`t."status" = 'ACTIVE'`, owner: Prisma.sql`t."sellerId"` },
-  jobs: { table: Prisma.sql`"Job"`, active: Prisma.sql`t."status" = 'ACTIVE'`, owner: Prisma.sql`t."employerId"` },
-  providers: { table: Prisma.sql`"ServiceProvider"`, active: Prisma.sql`t."status" = 'ACTIVE'`, owner: Prisma.sql`t."userId"` },
+  listings: {
+    table: Prisma.sql`"Listing"`,
+    active: Prisma.sql`t."status" = 'ACTIVE'`,
+    owner: Prisma.sql`t."sellerId"`,
+  },
+  jobs: {
+    table: Prisma.sql`"Job"`,
+    active: Prisma.sql`t."status" = 'ACTIVE'`,
+    owner: Prisma.sql`t."employerId"`,
+  },
+  providers: {
+    table: Prisma.sql`"ServiceProvider"`,
+    active: Prisma.sql`t."status" = 'ACTIVE'`,
+    owner: Prisma.sql`t."userId"`,
+  },
 };
 
 /** pg_trgm word similarity over normalized text: typo tolerant, index-backed. */
@@ -53,9 +65,12 @@ export class PostgresSearchProvider implements SearchProvider {
       where.push(Prisma.sql`(t."searchText" LIKE ${`%${token}%`} OR ${token} <% t."searchText")`);
     }
     if (filters.regionId) where.push(Prisma.sql`t."regionId" = ${filters.regionId}`);
-    if (kind === 'listings' && filters.categoryIds?.length) where.push(Prisma.sql`t."categoryId" = ANY(${filters.categoryIds})`);
+    if (kind === 'listings' && filters.categoryIds?.length)
+      where.push(Prisma.sql`t."categoryId" = ANY(${filters.categoryIds})`);
     if (filters.viewerId) {
-      where.push(Prisma.sql`NOT EXISTS (SELECT 1 FROM "Block" b WHERE b."blockerId" = ${filters.viewerId}::uuid AND b."blockedId" = ${owner})`);
+      where.push(
+        Prisma.sql`NOT EXISTS (SELECT 1 FROM "Block" b WHERE b."blockerId" = ${filters.viewerId}::uuid AND b."blockedId" = ${owner})`,
+      );
     }
     const rows = await this.prisma.$queryRaw<Array<{ id: string; score: number }>>`
       SELECT t."id", word_similarity(${normalized}, t."searchText") AS score

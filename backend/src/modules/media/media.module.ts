@@ -72,7 +72,10 @@ class MediaController {
     const object = await this.media.open(id, variant as Variant, viewer);
     response.setHeader('Content-Type', object.contentType ?? 'image/webp');
     if (object.contentLength) response.setHeader('Content-Length', String(object.contentLength));
-    response.setHeader('Cache-Control', object.isPrivate ? 'private, max-age=3600' : 'public, max-age=31536000, immutable');
+    response.setHeader(
+      'Cache-Control',
+      object.isPrivate ? 'private, max-age=3600' : 'public, max-age=31536000, immutable',
+    );
     response.setHeader('X-Content-Type-Options', 'nosniff');
     object.stream.pipe(response);
   }

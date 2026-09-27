@@ -1,6 +1,13 @@
 import { Prisma } from '@prisma/client';
 
-import { mediaSelect, presentMedia, presentMoney, presentPlace, presentUser, publicUserSelect } from '../../common/presenters';
+import {
+  mediaSelect,
+  presentMedia,
+  presentMoney,
+  presentPlace,
+  presentUser,
+  publicUserSelect,
+} from '../../common/presenters';
 import { apiEnum } from '../../common/text';
 import { CategoriesService } from '../categories/categories.service';
 
@@ -65,7 +72,10 @@ export function presentListingCard(row: CardRow, options: PresentOptions = {}) {
     images: row.media.map((m) => presentMedia(m.media)),
     place: presentPlace(row),
     publishedAt: row.publishedAt ?? row.createdAt,
-    seller: presentUser(row.seller, { isOnline: options.sellerOnline, activeListings: options.sellerActiveListings }),
+    seller: presentUser(row.seller, {
+      isOnline: options.sellerOnline,
+      activeListings: options.sellerActiveListings,
+    }),
     price: presentMoney(row.priceAmount, row.currency),
     negotiable: row.negotiable,
     condition: apiEnum(row.condition),

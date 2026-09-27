@@ -1,5 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { AuthProvider, DevicePlatform, Prisma, UserRole, UserStatus, VerificationLevel } from '@prisma/client';
+import {
+  AuthProvider,
+  DevicePlatform,
+  Prisma,
+  UserRole,
+  UserStatus,
+  VerificationLevel,
+} from '@prisma/client';
 
 import { env } from '../../config/env';
 import { AppError } from '../../common/errors';
@@ -53,7 +60,10 @@ export class AuthService {
       const existing = await tx.user.findUnique({ where: { phone } });
       if (existing) {
         if (existing.status !== UserStatus.ACTIVE) throw AppError.forbidden('Account is not active');
-        const updated = await tx.user.update({ where: { id: existing.id }, data: { phoneVerifiedAt: now, lastSeenAt: now } });
+        const updated = await tx.user.update({
+          where: { id: existing.id },
+          data: { phoneVerifiedAt: now, lastSeenAt: now },
+        });
         return { user: updated, created: false };
       }
       const createdUser = await tx.user.create({
@@ -63,7 +73,10 @@ export class AuthService {
           lastSeenAt: now,
           identities: { create: { provider: AuthProvider.PHONE_OTP, providerUserId: phone } },
           profile: {
-            create: { displayName: `Foydalanuvchi ${phone.slice(-4)}`, verification: VerificationLevel.PHONE },
+            create: {
+              displayName: `Foydalanuvchi ${phone.slice(-4)}`,
+              verification: VerificationLevel.PHONE,
+            },
           },
         },
       });
@@ -115,7 +128,10 @@ export class AuthService {
    */
   async refresh(refreshToken: string, meta: RequestMeta): Promise<TokenPair> {
     const hash = TokenService.hash(refreshToken);
-    const session = await this.prisma.session.findUnique({ where: { refreshTokenHash: hash }, include: { user: true } });
+    const session = await this.prisma.session.findUnique({
+      where: { refreshTokenHash: hash },
+      include: { user: true },
+    });
 
     if (!session) {
       const reused = await this.prisma.session.findUnique({ where: { previousTokenHash: hash } });
@@ -124,7 +140,10 @@ export class AuthService {
           where: { id: reused.id },
           data: { revokedAt: new Date(), revokedReason: 'refresh_token_reuse' },
         });
-        this.logger.warn({ sessionId: reused.id, userId: reused.userId }, 'Refresh token reuse detected; session revoked');
+        this.logger.warn(
+          { sessionId: reused.id, userId: reused.userId },
+          'Refresh token reuse detected; session revoked',
+        );
       }
       throw AppError.unauthenticated('Session is no longer valid', 'SESSION_REVOKED');
     }
@@ -171,11 +190,17 @@ export class AuthService {
   }
 
   private async revoke(where: Prisma.SessionWhereInput, reason: string): Promise<number> {
-    const sessions = await this.prisma.session.findMany({ where: { ...where, revokedAt: null }, select: { id: true } });
+    const sessions = await this.prisma.session.findMany({
+      where: { ...where, revokedAt: null },
+      select: { id: true },
+    });
     if (sessions.length === 0) return 0;
     const ids = sessions.map((s) => s.id);
     await this.prisma.$transaction([
-      this.prisma.session.updateMany({ where: { id: { in: ids } }, data: { revokedAt: new Date(), revokedReason: reason } }),
+      this.prisma.session.updateMany({
+        where: { id: { in: ids } },
+        data: { revokedAt: new Date(), revokedReason: reason },
+      }),
       // Push tokens belong to a device session; stop notifying signed-out devices.
       this.prisma.pushDevice.deleteMany({ where: { sessionId: { in: ids } } }),
     ]);

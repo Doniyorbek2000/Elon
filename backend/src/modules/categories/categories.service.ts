@@ -103,7 +103,10 @@ export class CategoriesService {
    * Validates attribute input against the category schema and returns typed
    * rows. Unknown keys are rejected so clients can't smuggle arbitrary data.
    */
-  async validateAttributes(categoryId: string, input: Record<string, unknown>): Promise<NormalizedAttribute[]> {
+  async validateAttributes(
+    categoryId: string,
+    input: Record<string, unknown>,
+  ): Promise<NormalizedAttribute[]> {
     const fields = await this.effectiveAttributes(categoryId);
     const byKey = new Map(fields.map((f) => [f.key, f]));
     const errors: Record<string, string> = {};
@@ -117,10 +120,17 @@ export class CategoriesService {
         if (field.required) errors[field.key] = `${field.label} is required`;
         continue;
       }
-      const row: NormalizedAttribute = { attributeId: field.id, valueText: null, valueNumber: null, valueBool: null, valueList: [] };
+      const row: NormalizedAttribute = {
+        attributeId: field.id,
+        valueText: null,
+        valueNumber: null,
+        valueBool: null,
+        valueList: [],
+      };
       switch (field.type) {
         case AttributeType.NUMBER: {
-          const value = typeof raw === 'number' ? raw : Number(String(raw).replace(/\s/g, ''));
+          const value =
+            typeof raw === 'number' ? raw : typeof raw === 'string' ? Number(raw.replace(/\s/g, '')) : NaN;
           if (!Number.isFinite(value)) errors[field.key] = 'Must be a number';
           else if (field.min != null && value < field.min) errors[field.key] = `Minimum is ${field.min}`;
           else if (field.max != null && value > field.max) errors[field.key] = `Maximum is ${field.max}`;
@@ -128,24 +138,26 @@ export class CategoriesService {
           break;
         }
         case AttributeType.BOOLEAN: {
-          const value = raw === true || raw === 'true' ? true : raw === false || raw === 'false' ? false : null;
+          const value =
+            raw === true || raw === 'true' ? true : raw === false || raw === 'false' ? false : null;
           if (value === null) errors[field.key] = 'Must be true or false';
           row.valueBool = value;
           break;
         }
         case AttributeType.SELECT:
-          if (typeof raw !== 'string' || !field.options.includes(raw)) errors[field.key] = 'Choose one of the options';
-          row.valueText = String(raw);
+          if (typeof raw !== 'string' || !field.options.includes(raw))
+            errors[field.key] = 'Choose one of the options';
+          row.valueText = typeof raw === 'string' ? raw : null;
           break;
         case AttributeType.MULTI_SELECT:
           if (!Array.isArray(raw) || raw.some((v) => typeof v !== 'string' || !field.options.includes(v))) {
             errors[field.key] = 'Choose from the options';
           }
-          row.valueList = Array.isArray(raw) ? raw.map(String) : [];
+          row.valueList = Array.isArray(raw) ? raw.filter((v): v is string => typeof v === 'string') : [];
           break;
         case AttributeType.TEXT:
           if (typeof raw !== 'string' || raw.length > 200) errors[field.key] = 'Text up to 200 characters';
-          row.valueText = String(raw).trim();
+          row.valueText = typeof raw === 'string' ? raw.trim() : null;
           break;
       }
       result.push(row);

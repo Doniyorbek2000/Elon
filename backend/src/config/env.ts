@@ -2,9 +2,7 @@ import { existsSync } from 'node:fs';
 
 import { z } from 'zod';
 
-const bool = z
-  .enum(['true', 'false', '1', '0'])
-  .transform((value) => value === 'true' || value === '1');
+const bool = z.enum(['true', 'false', '1', '0']).transform((value) => value === 'true' || value === '1');
 
 /**
  * Every environment variable the service reads. Validated once at startup;
@@ -45,7 +43,11 @@ const schema = z
     S3_FORCE_PATH_STYLE: bool.default('true'),
     /** Optional CDN/public bucket base; when empty media is streamed via the API. */
     MEDIA_PUBLIC_BASE_URL: z.string().url().optional(),
-    MEDIA_MAX_UPLOAD_BYTES: z.coerce.number().int().positive().default(15 * 1024 * 1024),
+    MEDIA_MAX_UPLOAD_BYTES: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(15 * 1024 * 1024),
 
     PUSH_PROVIDER: z.enum(['fcm', 'log', 'none']).default('log'),
     FCM_PROJECT_ID: z.string().optional(),
@@ -66,16 +68,32 @@ const schema = z
   .superRefine((env, ctx) => {
     if (env.NODE_ENV !== 'production') return;
     if (env.OTP_PROVIDER === 'dev' || env.OTP_DEV_ECHO) {
-      ctx.addIssue({ code: 'custom', message: 'Dev OTP provider/echo is forbidden in production', path: ['OTP_PROVIDER'] });
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Dev OTP provider/echo is forbidden in production',
+        path: ['OTP_PROVIDER'],
+      });
     }
     if (env.OTP_PROVIDER === 'eskiz' && (!env.ESKIZ_EMAIL || !env.ESKIZ_PASSWORD)) {
-      ctx.addIssue({ code: 'custom', message: 'ESKIZ_EMAIL and ESKIZ_PASSWORD are required', path: ['ESKIZ_EMAIL'] });
+      ctx.addIssue({
+        code: 'custom',
+        message: 'ESKIZ_EMAIL and ESKIZ_PASSWORD are required',
+        path: ['ESKIZ_EMAIL'],
+      });
     }
     if (env.PUSH_PROVIDER === 'fcm' && (!env.FCM_PROJECT_ID || !env.FCM_SERVICE_ACCOUNT)) {
-      ctx.addIssue({ code: 'custom', message: 'FCM_PROJECT_ID and FCM_SERVICE_ACCOUNT are required', path: ['FCM_PROJECT_ID'] });
+      ctx.addIssue({
+        code: 'custom',
+        message: 'FCM_PROJECT_ID and FCM_SERVICE_ACCOUNT are required',
+        path: ['FCM_PROJECT_ID'],
+      });
     }
     if (!env.CORS_ORIGINS) {
-      ctx.addIssue({ code: 'custom', message: 'CORS_ORIGINS must be explicit in production', path: ['CORS_ORIGINS'] });
+      ctx.addIssue({
+        code: 'custom',
+        message: 'CORS_ORIGINS must be explicit in production',
+        path: ['CORS_ORIGINS'],
+      });
     }
   });
 
@@ -84,9 +102,15 @@ export type Env = z.infer<typeof schema>;
 let cached: Env | undefined;
 
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
-  const parsed = schema.safeParse(source);
+  // Blank values (`KEY=` in env files) mean "not set", so defaults apply.
+  const defined = Object.fromEntries(
+    Object.entries(source).filter(([, value]) => value !== undefined && value.trim() !== ''),
+  );
+  const parsed = schema.safeParse(defined);
   if (!parsed.success) {
-    const problems = parsed.error.issues.map((i) => `  - ${i.path.join('.') || 'env'}: ${i.message}`).join('\n');
+    const problems = parsed.error.issues
+      .map((i) => `  - ${i.path.join('.') || 'env'}: ${i.message}`)
+      .join('\n');
     throw new Error(`Invalid environment configuration:\n${problems}`);
   }
   return parsed.data;

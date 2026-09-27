@@ -46,9 +46,20 @@ export class StorageService implements OnModuleInit {
     }
   }
 
-  async put(key: string, body: Buffer, contentType: string, cacheControl = 'private, max-age=31536000, immutable') {
+  async put(
+    key: string,
+    body: Buffer,
+    contentType: string,
+    cacheControl = 'private, max-age=31536000, immutable',
+  ) {
     await this.client.send(
-      new PutObjectCommand({ Bucket: this.bucket, Key: key, Body: body, ContentType: contentType, CacheControl: cacheControl }),
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: body,
+        ContentType: contentType,
+        CacheControl: cacheControl,
+      }),
     );
   }
 
@@ -71,7 +82,9 @@ export class StorageService implements OnModuleInit {
   async deleteMany(keys: string[]): Promise<void> {
     const objects = keys.filter(Boolean).map((Key) => ({ Key }));
     if (objects.length === 0) return;
-    await this.client.send(new DeleteObjectsCommand({ Bucket: this.bucket, Delete: { Objects: objects, Quiet: true } }));
+    await this.client.send(
+      new DeleteObjectsCommand({ Bucket: this.bucket, Delete: { Objects: objects, Quiet: true } }),
+    );
   }
 
   async ping(): Promise<boolean> {

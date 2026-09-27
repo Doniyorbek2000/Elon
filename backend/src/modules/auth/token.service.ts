@@ -40,7 +40,8 @@ export class TokenService {
         algorithms: ['HS256'],
       });
     } catch (error) {
-      if (error instanceof TokenExpiredError) throw AppError.unauthenticated('Access token expired', 'TOKEN_EXPIRED');
+      if (error instanceof TokenExpiredError)
+        throw AppError.unauthenticated('Access token expired', 'TOKEN_EXPIRED');
       throw AppError.unauthenticated('Invalid access token');
     }
   }

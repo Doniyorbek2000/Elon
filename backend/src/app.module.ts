@@ -46,6 +46,17 @@ export const domainModules = [
   HealthModule,
 ];
 
+/** Human-readable logs in local development when pino-pretty is installed; JSON otherwise. */
+function prettyTransport() {
+  if (env().NODE_ENV !== 'development') return undefined;
+  try {
+    require.resolve('pino-pretty');
+    return { target: 'pino-pretty', options: { singleLine: true } };
+  } catch {
+    return undefined;
+  }
+}
+
 @Module({
   imports: [
     LoggerModule.forRoot({
@@ -70,13 +81,19 @@ export const domainModules = [
           censor: '[redacted]',
         },
         serializers: {
-          req: (req: { id: string; method: string; url: string }) => ({ id: req.id, method: req.method, url: req.url }),
+          req: (req: { id: string; method: string; url: string }) => ({
+            id: req.id,
+            method: req.method,
+            url: req.url,
+          }),
         },
         autoLogging: { ignore: (req) => req.url?.startsWith('/api/v1/health') ?? false },
-        transport: env().NODE_ENV === 'development' ? { target: 'pino-pretty', options: { singleLine: true } } : undefined,
+        transport: prettyTransport(),
       },
     }),
-    ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: env().NODE_ENV === 'test' ? 10_000 : 300 }]),
+    ThrottlerModule.forRoot([
+      { name: 'default', ttl: 60_000, limit: env().NODE_ENV === 'test' ? 10_000 : 300 },
+    ]),
     ...domainModules,
   ],
   providers: [

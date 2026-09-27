@@ -8,7 +8,14 @@ import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { env } from './config/env';
 import { PrismaService } from './infra/prisma.service';
-import { MediaCleanupJob, MediaProcessJob, ModerationJob, PushJob, QUEUE, QueueService } from './infra/queues';
+import {
+  MediaCleanupJob,
+  MediaProcessJob,
+  ModerationJob,
+  PushJob,
+  QUEUE,
+  QueueService,
+} from './infra/queues';
 import { RedisService } from './infra/redis.service';
 import { StorageService } from './infra/storage.service';
 import { JobsService } from './modules/jobs/jobs.service';
@@ -19,7 +26,9 @@ import { NotificationsService } from './modules/notifications/notifications.serv
 /** Errors that retrying cannot fix (corrupt/unsupported image input). */
 function isPermanentImageError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : '';
-  return /unsupported image format|Input buffer contains unsupported|corrupt|pixel limit|bad seek|VipsJpeg|premature end/i.test(message);
+  return /unsupported image format|Input buffer contains unsupported|corrupt|pixel limit|bad seek|VipsJpeg|premature end/i.test(
+    message,
+  );
 }
 
 function isFinalAttempt(job: Job): boolean {
@@ -104,7 +113,12 @@ export function startWorkers(app: INestApplicationContext): Worker[] {
       const data = job.data as ModerationJob;
       log.log(`moderation queued: ${data.targetType} ${data.targetId} (${data.reason})`);
       await prisma.moderationEvent.create({
-        data: { targetType: data.targetType, targetId: data.targetId, action: 'AUTO_FLAGGED', reason: data.reason.slice(0, 500) },
+        data: {
+          targetType: data.targetType,
+          targetId: data.targetId,
+          action: 'AUTO_FLAGGED',
+          reason: data.reason.slice(0, 500),
+        },
       });
     },
     { connection: connection(), concurrency: 2 },
@@ -112,7 +126,11 @@ export function startWorkers(app: INestApplicationContext): Worker[] {
 
   const workers = [mediaWorker, notificationWorker, maintenanceWorker, moderationWorker];
   for (const worker of workers) {
-    worker.on('failed', (job, error) => log.warn(`${worker.name}/${job?.name ?? '?'} failed (attempt ${job?.attemptsMade ?? 0}): ${error.message}`));
+    worker.on('failed', (job, error) =>
+      log.warn(
+        `${worker.name}/${job?.name ?? '?'} failed (attempt ${job?.attemptsMade ?? 0}): ${error.message}`,
+      ),
+    );
     worker.on('error', (error) => log.error(`${worker.name} worker error: ${error.message}`));
   }
   return workers;

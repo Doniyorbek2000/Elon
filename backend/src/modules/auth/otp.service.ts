@@ -34,7 +34,13 @@ export class OtpService {
   async request(phone: string, ip: string): Promise<OtpChallenge> {
     const config = env();
     const cooldownKey = `otp:cooldown:${phone}`;
-    const cooling = await this.redis.client.set(cooldownKey, '1', 'EX', config.OTP_RESEND_COOLDOWN_SECONDS, 'NX');
+    const cooling = await this.redis.client.set(
+      cooldownKey,
+      '1',
+      'EX',
+      config.OTP_RESEND_COOLDOWN_SECONDS,
+      'NX',
+    );
     if (cooling !== 'OK') {
       const ttl = await this.redis.client.ttl(cooldownKey);
       throw AppError.rateLimited(Math.max(ttl, 1), 'OTP_COOLDOWN');
@@ -65,13 +71,18 @@ export class OtpService {
   async verify(phone: string, code: string): Promise<void> {
     const config = env();
     const stored = await this.redis.client.get(`otp:code:${phone}`);
-    if (!stored) throw new AppError('OTP_EXPIRED', 'Code expired, request a new one', HttpStatus.UNPROCESSABLE_ENTITY);
+    if (!stored)
+      throw new AppError('OTP_EXPIRED', 'Code expired, request a new one', HttpStatus.UNPROCESSABLE_ENTITY);
 
     const attempts = await this.redis.client.incr(`otp:attempts:${phone}`);
     await this.redis.client.expire(`otp:attempts:${phone}`, config.OTP_TTL_SECONDS);
     if (attempts > config.OTP_MAX_ATTEMPTS) {
       await this.redis.client.del(`otp:code:${phone}`);
-      throw new AppError('OTP_TOO_MANY_ATTEMPTS', 'Too many attempts, request a new code', HttpStatus.TOO_MANY_REQUESTS);
+      throw new AppError(
+        'OTP_TOO_MANY_ATTEMPTS',
+        'Too many attempts, request a new code',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
     }
 
     const expected = Buffer.from(stored, 'hex');

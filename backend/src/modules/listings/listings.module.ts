@@ -1,10 +1,30 @@
-import { Body, Controller, Delete, Get, HttpCode, Module, Param, ParseUUIDPipe, Patch, Post, Query, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Module,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 
 import { AuthUser, CurrentUser, MaybeUser, OptionalAuth, Roles } from '../../common/auth.decorators';
 import { CursorQuery } from '../../common/pagination';
-import { ChangeStatusDto, CreateListingDto, FeedQuery, MyListingsQuery, RejectDto, UpdateListingDto } from './listings.dto';
+import {
+  ChangeStatusDto,
+  CreateListingDto,
+  FeedQuery,
+  MyListingsQuery,
+  RejectDto,
+  UpdateListingDto,
+} from './listings.dto';
 import { ListingsService } from './listings.service';
 
 @ApiTags('listings')
@@ -38,7 +58,11 @@ class ListingsController {
 
   @ApiBearerAuth()
   @Patch('listings/:id')
-  update(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateListingDto) {
+  update(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateListingDto,
+  ) {
     return this.listings.update(user, id, dto);
   }
 
@@ -52,7 +76,11 @@ class ListingsController {
   @ApiBearerAuth()
   @Post('listings/:id/status')
   @HttpCode(200)
-  status(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string, @Body() dto: ChangeStatusDto) {
+  status(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ChangeStatusDto,
+  ) {
     return this.listings.changeStatus(user, id, dto.status);
   }
 

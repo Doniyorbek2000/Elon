@@ -32,19 +32,36 @@ async function seedLocations(prisma: PrismaClient): Promise<void> {
   const regions = locations as RegionSeed[];
   for (const [regionIndex, region] of regions.entries()) {
     const regionData = { name: region.name, lat: region.lat, lng: region.lng, sortOrder: regionIndex };
-    await prisma.region.upsert({ where: { id: region.id }, create: { id: region.id, ...regionData }, update: regionData });
+    await prisma.region.upsert({
+      where: { id: region.id },
+      create: { id: region.id, ...regionData },
+      update: regionData,
+    });
     for (const district of region.districts) {
       const districtData = { regionId: region.id, name: district.name, lat: district.lat, lng: district.lng };
-      await prisma.district.upsert({ where: { id: district.id }, create: { id: district.id, ...districtData }, update: districtData });
+      await prisma.district.upsert({
+        where: { id: district.id },
+        create: { id: district.id, ...districtData },
+        update: districtData,
+      });
       for (const locality of district.localities) {
         const localityData = { districtId: district.id, name: locality.name };
-        await prisma.locality.upsert({ where: { id: locality.id }, create: { id: locality.id, ...localityData }, update: localityData });
+        await prisma.locality.upsert({
+          where: { id: locality.id },
+          create: { id: locality.id, ...localityData },
+          update: localityData,
+        });
       }
     }
   }
 }
 
-async function seedCategory(prisma: PrismaClient, category: CategorySeed, parentId: string | null, sortOrder: number): Promise<void> {
+async function seedCategory(
+  prisma: PrismaClient,
+  category: CategorySeed,
+  parentId: string | null,
+  sortOrder: number,
+): Promise<void> {
   const schema = category.schema ?? { attributes: [] };
   const data = {
     parentId,
@@ -62,7 +79,11 @@ async function seedCategory(prisma: PrismaClient, category: CategorySeed, parent
     homeShortcut: parentId === null && HOME_SHORTCUTS.includes(category.id),
     isActive: true,
   };
-  await prisma.category.upsert({ where: { id: category.id }, create: { id: category.id, ...data }, update: data });
+  await prisma.category.upsert({
+    where: { id: category.id },
+    create: { id: category.id, ...data },
+    update: data,
+  });
 
   for (const [index, attribute] of schema.attributes.entries()) {
     const attributeData = {
@@ -85,16 +106,31 @@ async function seedCategory(prisma: PrismaClient, category: CategorySeed, parent
   }
   // Drop attributes removed from the schema unless listings already use them.
   await prisma.categoryAttribute.deleteMany({
-    where: { categoryId: category.id, key: { notIn: schema.attributes.map((a) => a.key) }, values: { none: {} } },
+    where: {
+      categoryId: category.id,
+      key: { notIn: schema.attributes.map((a) => a.key) },
+      values: { none: {} },
+    },
   });
 
-  for (const [index, child] of (category.children ?? []).entries()) await seedCategory(prisma, child, category.id, index);
+  for (const [index, child] of (category.children ?? []).entries())
+    await seedCategory(prisma, child, category.id, index);
 }
 
 async function seedServiceCategories(prisma: PrismaClient): Promise<void> {
   for (const [index, category] of SERVICE_CATEGORIES.entries()) {
-    const data = { name: category.name, iconKey: category.iconKey, tone: category.tone, sortOrder: index, isActive: true };
-    await prisma.serviceCategory.upsert({ where: { id: category.id }, create: { id: category.id, ...data }, update: data });
+    const data = {
+      name: category.name,
+      iconKey: category.iconKey,
+      tone: category.tone,
+      sortOrder: index,
+      isActive: true,
+    };
+    await prisma.serviceCategory.upsert({
+      where: { id: category.id },
+      create: { id: category.id, ...data },
+      update: data,
+    });
   }
 }
 

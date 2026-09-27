@@ -1,6 +1,24 @@
-import { Body, Controller, Get, HttpCode, Injectable, Module, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Injectable,
+  Module,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { ApplicationMode, ApplicationStatus, JobStatus, NotificationType, ResumeVisibility } from '@prisma/client';
+import {
+  ApplicationMode,
+  ApplicationStatus,
+  JobStatus,
+  NotificationType,
+  ResumeVisibility,
+} from '@prisma/client';
 
 import { AuthUser, CurrentUser } from '../../common/auth.decorators';
 import { AppError } from '../../common/errors';
@@ -15,11 +33,20 @@ import { jobCardSelect, presentJobCard } from './job.presenter';
 import { ApplicantsQuery, ApplicationStatusDto, ApplyDto } from './jobs.dto';
 import { presentResume, resumeInclude } from './resume.presenter';
 
-const FINAL: ApplicationStatus[] = [ApplicationStatus.ACCEPTED, ApplicationStatus.REJECTED, ApplicationStatus.WITHDRAWN];
+const FINAL: ApplicationStatus[] = [
+  ApplicationStatus.ACCEPTED,
+  ApplicationStatus.REJECTED,
+  ApplicationStatus.WITHDRAWN,
+];
 
 /** Employer-side transitions. */
 const EMPLOYER_TRANSITIONS: Record<ApplicationStatus, ApplicationStatus[]> = {
-  SUBMITTED: [ApplicationStatus.VIEWED, ApplicationStatus.SHORTLISTED, ApplicationStatus.REJECTED, ApplicationStatus.ACCEPTED],
+  SUBMITTED: [
+    ApplicationStatus.VIEWED,
+    ApplicationStatus.SHORTLISTED,
+    ApplicationStatus.REJECTED,
+    ApplicationStatus.ACCEPTED,
+  ],
   VIEWED: [ApplicationStatus.SHORTLISTED, ApplicationStatus.REJECTED, ApplicationStatus.ACCEPTED],
   SHORTLISTED: [ApplicationStatus.REJECTED, ApplicationStatus.ACCEPTED],
   REJECTED: [],
@@ -64,24 +91,34 @@ export class ApplicationsService {
     const job = await this.prisma.job.findFirst({ where: { id: jobId, deletedAt: null } });
     if (!job || job.status !== JobStatus.ACTIVE) throw AppError.notFound('Job');
     if (job.employerId === user.userId) throw AppError.validation('You cannot apply to your own vacancy');
-    if (job.applicationMode === ApplicationMode.PHONE) throw AppError.invalidState('This vacancy accepts phone calls only');
+    if (job.applicationMode === ApplicationMode.PHONE)
+      throw AppError.invalidState('This vacancy accepts phone calls only');
     if (await this.safety.isBlockedBetween(user.userId, job.employerId)) {
       throw new AppError('BLOCKED', 'You cannot apply to this employer', 403);
     }
     const existing = await this.prisma.jobApplication.findUnique({
       where: { jobId_applicantId: { jobId, applicantId: user.userId } },
     });
-    if (existing && existing.status !== ApplicationStatus.WITHDRAWN) throw AppError.conflict('You have already applied');
+    if (existing && existing.status !== ApplicationStatus.WITHDRAWN)
+      throw AppError.conflict('You have already applied');
 
     const application = existing
       ? await this.prisma.jobApplication.update({
           where: { id: existing.id },
-          data: { status: ApplicationStatus.SUBMITTED, coverLetter: dto.coverLetter, statusChangedAt: new Date(), viewedAt: null },
+          data: {
+            status: ApplicationStatus.SUBMITTED,
+            coverLetter: dto.coverLetter,
+            statusChangedAt: new Date(),
+            viewedAt: null,
+          },
         })
       : await this.prisma.jobApplication.create({
           data: { jobId, applicantId: user.userId, coverLetter: dto.coverLetter },
         });
-    const applicant = await this.prisma.profile.findUnique({ where: { userId: user.userId }, select: { displayName: true } });
+    const applicant = await this.prisma.profile.findUnique({
+      where: { userId: user.userId },
+      select: { displayName: true },
+    });
     await this.notifications.notify(job.employerId, {
       type: NotificationType.APPLICATION_RECEIVED,
       title: 'Yangi ariza',
@@ -110,7 +147,8 @@ export class ApplicationsService {
   async withdraw(user: AuthUser, id: string) {
     const application = await this.prisma.jobApplication.findUnique({ where: { id } });
     if (!application || application.applicantId !== user.userId) throw AppError.notFound('Application');
-    if (FINAL.includes(application.status)) throw AppError.invalidState('Application can no longer be withdrawn');
+    if (FINAL.includes(application.status))
+      throw AppError.invalidState('Application can no longer be withdrawn');
     const updated = await this.prisma.jobApplication.update({
       where: { id },
       data: { status: ApplicationStatus.WITHDRAWN, statusChangedAt: new Date() },
@@ -151,7 +189,10 @@ export class ApplicationsService {
   }
 
   async setStatus(user: AuthUser, id: string, dto: ApplicationStatusDto) {
-    const application = await this.prisma.jobApplication.findUnique({ where: { id }, include: { job: true } });
+    const application = await this.prisma.jobApplication.findUnique({
+      where: { id },
+      include: { job: true },
+    });
     if (!application || application.job.employerId !== user.userId) throw AppError.notFound('Application');
     const next = dbEnum(dto.status) as ApplicationStatus;
     if (!EMPLOYER_TRANSITIONS[application.status].includes(next)) {
@@ -184,7 +225,11 @@ class ApplicationsController {
   }
 
   @Get('jobs/:id/applications')
-  applicants(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string, @Query() query: ApplicantsQuery) {
+  applicants(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: ApplicantsQuery,
+  ) {
     return this.applications.applicants(user, id, query);
   }
 
@@ -200,7 +245,11 @@ class ApplicationsController {
   }
 
   @Patch('applications/:id/status')
-  status(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string, @Body() dto: ApplicationStatusDto) {
+  status(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ApplicationStatusDto,
+  ) {
     return this.applications.setStatus(user, id, dto);
   }
 }

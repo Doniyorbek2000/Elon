@@ -56,14 +56,38 @@ const car: SchemaSeed = {
     { key: 'model', label: 'Model', type: 'TEXT', hint: 'Masalan: Cobalt' },
     { key: 'year', label: 'Yili', type: 'NUMBER', required: true, filterable: true, min: 1970, max: 2027 },
     { key: 'mileage', label: 'Probeg', type: 'NUMBER', unit: 'km', filterable: true, min: 0, max: 2000000 },
-    { key: 'transmission', label: 'Uzatma', type: 'SELECT', filterable: true, options: ['Avtomat', 'Mexanika', 'Robot', 'Variator'] },
-    { key: 'fuel', label: 'Yoqilg‘i', type: 'SELECT', filterable: true, options: ['Benzin', 'Metan', 'Propan', 'Dizel', 'Gibrid', 'Elektr'] },
-    { key: 'color', label: 'Rang', type: 'SELECT', options: ['Oq', 'Qora', 'Kumush', 'Kulrang', 'Ko‘k', 'Qizil', 'Boshqa'] },
+    {
+      key: 'transmission',
+      label: 'Uzatma',
+      type: 'SELECT',
+      filterable: true,
+      options: ['Avtomat', 'Mexanika', 'Robot', 'Variator'],
+    },
+    {
+      key: 'fuel',
+      label: 'Yoqilg‘i',
+      type: 'SELECT',
+      filterable: true,
+      options: ['Benzin', 'Metan', 'Propan', 'Dizel', 'Gibrid', 'Elektr'],
+    },
+    {
+      key: 'color',
+      label: 'Rang',
+      type: 'SELECT',
+      options: ['Oq', 'Qora', 'Kumush', 'Kulrang', 'Ko‘k', 'Qizil', 'Boshqa'],
+    },
     {
       key: 'options',
       label: 'Qo‘shimcha jihozlar',
       type: 'MULTI_SELECT',
-      options: ['Konditsioner', 'Lyuk', 'Orqa kamera', 'Charm salon', 'Multimediya', 'Isitiladigan o‘rindiqlar'],
+      options: [
+        'Konditsioner',
+        'Lyuk',
+        'Orqa kamera',
+        'Charm salon',
+        'Multimediya',
+        'Isitiladigan o‘rindiqlar',
+      ],
     },
     { key: 'credit', label: 'Kreditga beriladi', type: 'BOOLEAN' },
   ],
@@ -81,7 +105,13 @@ const phone: SchemaSeed = {
       options: ['Apple', 'Samsung', 'Xiaomi', 'Redmi', 'Honor', 'Vivo', 'Boshqa'],
     },
     { key: 'model', label: 'Model', type: 'TEXT', hint: 'Masalan: iPhone 14 Pro' },
-    { key: 'memory', label: 'Xotira', type: 'SELECT', filterable: true, options: ['64 GB', '128 GB', '256 GB', '512 GB', '1 TB'] },
+    {
+      key: 'memory',
+      label: 'Xotira',
+      type: 'SELECT',
+      filterable: true,
+      options: ['64 GB', '128 GB', '256 GB', '512 GB', '1 TB'],
+    },
     { key: 'color', label: 'Rang', type: 'TEXT', hint: 'Masalan: Deep Purple' },
     { key: 'warranty', label: 'Kafolat bor', type: 'BOOLEAN' },
   ],
@@ -94,14 +124,40 @@ const apartment: SchemaSeed = {
   allowUsd: true,
   titleHint: 'Masalan: 3 xonali kvartira, markazda',
   attributes: [
-    { key: 'dealType', label: 'Bitim turi', type: 'SELECT', required: true, filterable: true, options: ['Sotish', 'Ijara', 'Kunlik ijara'] },
+    {
+      key: 'dealType',
+      label: 'Bitim turi',
+      type: 'SELECT',
+      required: true,
+      filterable: true,
+      options: ['Sotish', 'Ijara', 'Kunlik ijara'],
+    },
     { key: 'propertyType', label: 'Mulk turi', type: 'SELECT', filterable: true, options: propertyType },
     { key: 'rooms', label: 'Xonalar', type: 'NUMBER', required: true, filterable: true, min: 1, max: 20 },
-    { key: 'area', label: 'Maydon', type: 'NUMBER', unit: 'm²', required: true, filterable: true, min: 5, max: 2000 },
+    {
+      key: 'area',
+      label: 'Maydon',
+      type: 'NUMBER',
+      unit: 'm²',
+      required: true,
+      filterable: true,
+      min: 5,
+      max: 2000,
+    },
     { key: 'floor', label: 'Qavat', type: 'NUMBER', min: 1, max: 60 },
     { key: 'floors', label: 'Qavatlar soni', type: 'NUMBER', min: 1, max: 60 },
-    { key: 'renovation', label: 'Ta’mir', type: 'SELECT', options: ['Yevro ta’mir', 'O‘rtacha', 'Ta’mirsiz', 'Qora suvoq'] },
-    { key: 'amenities', label: 'Qulayliklar', type: 'MULTI_SELECT', options: ['Gaz', 'Konditsioner', 'Internet', 'Mebel', 'Lift', 'Avtoturargoh'] },
+    {
+      key: 'renovation',
+      label: 'Ta’mir',
+      type: 'SELECT',
+      options: ['Yevro ta’mir', 'O‘rtacha', 'Ta’mirsiz', 'Qora suvoq'],
+    },
+    {
+      key: 'amenities',
+      label: 'Qulayliklar',
+      type: 'MULTI_SELECT',
+      options: ['Gaz', 'Konditsioner', 'Internet', 'Mebel', 'Lift', 'Avtoturargoh'],
+    },
   ],
 };
 
@@ -110,7 +166,14 @@ const house: SchemaSeed = {
   allowUsd: true,
   titleHint: 'Masalan: Hovli uy, 6 sotix',
   attributes: [
-    { key: 'dealType', label: 'Bitim turi', type: 'SELECT', required: true, filterable: true, options: ['Sotish', 'Ijara'] },
+    {
+      key: 'dealType',
+      label: 'Bitim turi',
+      type: 'SELECT',
+      required: true,
+      filterable: true,
+      options: ['Sotish', 'Ijara'],
+    },
     { key: 'rooms', label: 'Xonalar', type: 'NUMBER', required: true, filterable: true, min: 1, max: 40 },
     { key: 'land', label: 'Yer maydoni', type: 'NUMBER', unit: 'sotix', filterable: true, min: 1, max: 1000 },
     { key: 'area', label: 'Uy maydoni', type: 'NUMBER', unit: 'm²', min: 10, max: 5000 },
@@ -123,8 +186,23 @@ const land: SchemaSeed = {
   allowUsd: true,
   titleHint: 'Masalan: 8 sotix yer, yo‘l bo‘yida',
   attributes: [
-    { key: 'land', label: 'Maydon', type: 'NUMBER', unit: 'sotix', required: true, filterable: true, min: 1, max: 100000 },
-    { key: 'purpose', label: 'Maqsadi', type: 'SELECT', filterable: true, options: ['Uy-joy qurilishi', 'Tijorat', 'Qishloq xo‘jaligi', 'Bog‘'] },
+    {
+      key: 'land',
+      label: 'Maydon',
+      type: 'NUMBER',
+      unit: 'sotix',
+      required: true,
+      filterable: true,
+      min: 1,
+      max: 100000,
+    },
+    {
+      key: 'purpose',
+      label: 'Maqsadi',
+      type: 'SELECT',
+      filterable: true,
+      options: ['Uy-joy qurilishi', 'Tijorat', 'Qishloq xo‘jaligi', 'Bog‘'],
+    },
   ],
 };
 
@@ -138,7 +216,13 @@ const animal: SchemaSeed = {
 };
 
 /** Jobs and services have dedicated models; these roots only drive navigation. */
-const jobRoot: SchemaSeed = { attributes: [], priceMode: 'SALARY', supportsCondition: false, photosRequired: false, titleHint: 'Masalan: Sotuvchi kerak' };
+const jobRoot: SchemaSeed = {
+  attributes: [],
+  priceMode: 'SALARY',
+  supportsCondition: false,
+  photosRequired: false,
+  titleHint: 'Masalan: Sotuvchi kerak',
+};
 const serviceRoot: SchemaSeed = {
   attributes: [],
   priceMode: 'OPTIONAL',
@@ -263,7 +347,15 @@ export const CATEGORY_TREE: CategorySeed[] = [
       { id: 'buildings', name: 'Imoratlar', iconKey: 'building', tone: 'green', schema: house },
     ],
   },
-  { id: 'jobs', name: 'Ish', subtitle: 'Vakansiyalar, ish qidiraman', iconKey: 'work', tone: 'teal', kind: 'JOBS', schema: jobRoot },
+  {
+    id: 'jobs',
+    name: 'Ish',
+    subtitle: 'Vakansiyalar, ish qidiraman',
+    iconKey: 'work',
+    tone: 'teal',
+    kind: 'JOBS',
+    schema: jobRoot,
+  },
   {
     id: 'services',
     name: 'Xizmatlar',
@@ -273,10 +365,29 @@ export const CATEGORY_TREE: CategorySeed[] = [
     kind: 'SERVICES',
     schema: serviceRoot,
   },
-  { id: 'other', name: 'Boshqalar', subtitle: 'Boshqa e’lonlar', iconKey: 'grid', tone: 'blue', schema: generic },
+  {
+    id: 'other',
+    name: 'Boshqalar',
+    subtitle: 'Boshqa e’lonlar',
+    iconKey: 'grid',
+    tone: 'blue',
+    schema: generic,
+  },
 ];
 
-export const HOME_SHORTCUTS = ['transport', 'real_estate', 'electronics', 'appliances', 'clothing', 'home_goods', 'construction', 'animals', 'services', 'land', 'jobs'];
+export const HOME_SHORTCUTS = [
+  'transport',
+  'real_estate',
+  'electronics',
+  'appliances',
+  'clothing',
+  'home_goods',
+  'construction',
+  'animals',
+  'services',
+  'land',
+  'jobs',
+];
 
 export const SERVICE_CATEGORIES = [
   { id: 'repair', name: 'Ta’mirlash', iconKey: 'build', tone: 'blue' },

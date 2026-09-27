@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, Global, Injectable, Module, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Global,
+  Injectable,
+  Module,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ModerationAction, ReportReason, ReportTarget } from '@prisma/client';
 import { IsIn, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
@@ -65,7 +77,12 @@ export class SafetyService {
   /** True if either user blocked the other. */
   async isBlockedBetween(a: string, b: string): Promise<boolean> {
     const count = await this.prisma.block.count({
-      where: { OR: [{ blockerId: a, blockedId: b }, { blockerId: b, blockedId: a }] },
+      where: {
+        OR: [
+          { blockerId: a, blockedId: b },
+          { blockerId: b, blockedId: a },
+        ],
+      },
     });
     return count > 0;
   }
@@ -80,10 +97,17 @@ export class SafetyService {
       create: { reporterId, targetType, targetId: dto.targetId, reason, comment: dto.comment },
       update: { reason, comment: dto.comment },
     });
-    const open = await this.prisma.report.count({ where: { targetType, targetId: dto.targetId, status: 'OPEN' } });
+    const open = await this.prisma.report.count({
+      where: { targetType, targetId: dto.targetId, status: 'OPEN' },
+    });
     if (open >= ESCALATION_THRESHOLD) {
       await this.prisma.moderationEvent.create({
-        data: { targetType, targetId: dto.targetId, action: ModerationAction.AUTO_FLAGGED, reason: `${open} reports` },
+        data: {
+          targetType,
+          targetId: dto.targetId,
+          action: ModerationAction.AUTO_FLAGGED,
+          reason: `${open} reports`,
+        },
       });
       await this.queues.moderation({ targetType, targetId: dto.targetId, reason: 'report_threshold' });
     }
@@ -106,7 +130,9 @@ export class SafetyService {
           return this.prisma.review.count({ where: { id } });
         case ReportTarget.CONVERSATION:
           // Only participants can report a conversation.
-          return this.prisma.conversationParticipant.count({ where: { conversationId: id, userId: reporterId } });
+          return this.prisma.conversationParticipant.count({
+            where: { conversationId: id, userId: reporterId },
+          });
         case ReportTarget.MESSAGE:
           return this.prisma.message.count({
             where: { id, conversation: { participants: { some: { userId: reporterId } } } },

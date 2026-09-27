@@ -55,7 +55,10 @@ export class QueueService implements OnModuleDestroy {
   private queue(name: string): Queue {
     let queue = this.queues.get(name);
     if (!queue) {
-      queue = new Queue(name, { connection: this.redis.duplicate({ forBullMq: true }), defaultJobOptions: defaults });
+      queue = new Queue(name, {
+        connection: this.redis.duplicate({ forBullMq: true }),
+        defaultJobOptions: defaults,
+      });
       this.queues.set(name, queue);
     }
     return queue;
@@ -71,11 +74,16 @@ export class QueueService implements OnModuleDestroy {
   }
 
   async push(job: PushJob): Promise<void> {
-    await this.queue(QUEUE.notifications).add('push', job, { jobId: jobId('push', job.dedupeKey), attempts: 3 });
+    await this.queue(QUEUE.notifications).add('push', job, {
+      jobId: jobId('push', job.dedupeKey),
+      attempts: 3,
+    });
   }
 
   async moderation(job: ModerationJob): Promise<void> {
-    await this.queue(QUEUE.moderation).add('review', job, { jobId: jobId('moderation', job.targetType, job.targetId) });
+    await this.queue(QUEUE.moderation).add('review', job, {
+      jobId: jobId('moderation', job.targetType, job.targetId),
+    });
   }
 
   async scheduleMaintenance(): Promise<void> {

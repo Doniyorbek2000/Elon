@@ -10,7 +10,23 @@ import { StorageService } from './storage.service';
 
 @Global()
 @Module({
-  providers: [PrismaService, RedisService, StorageService, RateLimiterService, QueueService, PresenceService, ChatEmitter],
-  exports: [PrismaService, RedisService, StorageService, RateLimiterService, QueueService, PresenceService, ChatEmitter],
+  providers: [
+    PrismaService,
+    RedisService,
+    StorageService,
+    RateLimiterService,
+    QueueService,
+    PresenceService,
+    ChatEmitter,
+  ],
+  exports: [
+    PrismaService,
+    RedisService,
+    StorageService,
+    RateLimiterService,
+    QueueService,
+    PresenceService,
+    ChatEmitter,
+  ],
 })
 export class InfraModule {}

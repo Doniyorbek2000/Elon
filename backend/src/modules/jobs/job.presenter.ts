@@ -49,7 +49,8 @@ const TONES = ['blue', 'green', 'orange', 'purple', 'teal', 'amber', 'indigo', '
 function company(row: CardRow) {
   const profile = row.employer.profile;
   // Company is shown as verified only for server-verified business accounts.
-  const verified = profile?.accountType === AccountType.BUSINESS && profile.verification === VerificationLevel.BUSINESS;
+  const verified =
+    profile?.accountType === AccountType.BUSINESS && profile.verification === VerificationLevel.BUSINESS;
   const hash = [...row.companyName].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
   return {
     id: row.employerId,
@@ -60,7 +61,10 @@ function company(row: CardRow) {
   };
 }
 
-export function presentJobCard(row: CardRow, options: { isFavorite?: boolean; distanceKm?: number | null } = {}) {
+export function presentJobCard(
+  row: CardRow,
+  options: { isFavorite?: boolean; distanceKm?: number | null } = {},
+) {
   const promoted = row.promotionType && (!row.promotedUntil || row.promotedUntil > new Date());
   return {
     id: row.id,

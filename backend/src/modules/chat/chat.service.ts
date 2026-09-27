@@ -15,7 +15,13 @@ import { AuthUser } from '../../common/auth.decorators';
 import { isRiskyMessage } from '../../common/content-risk';
 import { AppError } from '../../common/errors';
 import { Page, decodeCursor, encodeCursor, pageSize } from '../../common/pagination';
-import { mediaSelect, presentMedia, presentMoney, presentUser, publicUserSelect } from '../../common/presenters';
+import {
+  mediaSelect,
+  presentMedia,
+  presentMoney,
+  presentUser,
+  publicUserSelect,
+} from '../../common/presenters';
 import { apiEnum } from '../../common/text';
 import { PresenceService } from '../../infra/presence.service';
 import { PrismaService } from '../../infra/prisma.service';
@@ -40,8 +46,24 @@ const conversationInclude = {
       media: { orderBy: { position: 'asc' }, take: 1, select: { media: { select: mediaSelect } } },
     },
   },
-  job: { select: { id: true, title: true, companyName: true, salaryMin: true, salaryMax: true, salaryCurrency: true } },
-  provider: { select: { id: true, displayName: true, profession: true, user: { select: { profile: { select: { avatar: { select: mediaSelect } } } } } } },
+  job: {
+    select: {
+      id: true,
+      title: true,
+      companyName: true,
+      salaryMin: true,
+      salaryMax: true,
+      salaryCurrency: true,
+    },
+  },
+  provider: {
+    select: {
+      id: true,
+      displayName: true,
+      profession: true,
+      user: { select: { profile: { select: { avatar: { select: mediaSelect } } } } },
+    },
+  },
 } satisfies Prisma.ConversationInclude;
 
 type ConversationRow = Prisma.ConversationGetPayload<{ include: typeof conversationInclude }>;
@@ -76,7 +98,10 @@ export class ChatService {
     if (await this.safety.isBlockedBetween(user.userId, peerId)) {
       throw new AppError('BLOCKED', 'You cannot message this user', HttpStatus.FORBIDDEN);
     }
-    const existing = await this.prisma.conversation.findUnique({ where: { contextKey: key }, select: { id: true } });
+    const existing = await this.prisma.conversation.findUnique({
+      where: { contextKey: key },
+      select: { id: true },
+    });
     if (!existing) {
       await this.limiter.consume(`conversation:new:${user.userId}`, 30, 3600);
       try {
@@ -92,7 +117,10 @@ export class ChatService {
         if (!(error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002')) throw error;
       }
     }
-    const conversation = await this.prisma.conversation.findUniqueOrThrow({ where: { contextKey: key }, include: conversationInclude });
+    const conversation = await this.prisma.conversation.findUniqueOrThrow({
+      where: { contextKey: key },
+      include: conversationInclude,
+    });
     return this.presentConversation(conversation, user.userId);
   }
 
@@ -101,7 +129,11 @@ export class ChatService {
     switch (dto.contextType) {
       case 'listing': {
         const listing = await this.prisma.listing.findFirst({
-          where: { id: dto.contextId, deletedAt: null, status: { in: [ListingStatus.ACTIVE, ListingStatus.RESERVED] } },
+          where: {
+            id: dto.contextId,
+            deletedAt: null,
+            status: { in: [ListingStatus.ACTIVE, ListingStatus.RESERVED] },
+          },
           select: { id: true, sellerId: true },
         });
         if (!listing) throw AppError.notFound('Listing');
@@ -137,10 +169,15 @@ export class ChatService {
       }
       case 'candidate': {
         // Employers may contact public candidates, or candidates who applied to them.
-        const resume = await this.prisma.resume.findUnique({ where: { id: dto.contextId }, select: { userId: true, visibility: true } });
+        const resume = await this.prisma.resume.findUnique({
+          where: { id: dto.contextId },
+          select: { userId: true, visibility: true },
+        });
         if (!resume || resume.visibility === ResumeVisibility.HIDDEN) throw AppError.notFound('Resume');
         if (resume.visibility === ResumeVisibility.APPLICATIONS_ONLY) {
-          const applied = await this.prisma.jobApplication.count({ where: { applicantId: resume.userId, job: { employerId: userId } } });
+          const applied = await this.prisma.jobApplication.count({
+            where: { applicantId: resume.userId, job: { employerId: userId } },
+          });
           if (!applied) throw AppError.notFound('Resume');
         }
         return {
@@ -176,11 +213,18 @@ export class ChatService {
       select: { id: true, type: true, text: true, senderId: true },
     });
     const byId = new Map(lastMessages.map((m) => [m.id, m]));
-    const peers = page.map((c) => c.participants.find((p) => p.userId !== userId)?.userId).filter((id): id is string => !!id);
+    const peers = page
+      .map((c) => c.participants.find((p) => p.userId !== userId)?.userId)
+      .filter((id): id is string => !!id);
     const [online, blocks] = await Promise.all([
       this.presence.onlineMany(peers),
       this.prisma.block.findMany({
-        where: { OR: [{ blockerId: userId, blockedId: { in: peers } }, { blockedId: userId, blockerId: { in: peers } }] },
+        where: {
+          OR: [
+            { blockerId: userId, blockedId: { in: peers } },
+            { blockedId: userId, blockerId: { in: peers } },
+          ],
+        },
         select: { blockerId: true, blockedId: true },
       }),
     ]);
@@ -194,18 +238,29 @@ export class ChatService {
       });
     });
     const lastRow = page[page.length - 1];
-    return new Page(items, rows.length > take && lastRow ? encodeCursor({ t: lastRow.updatedAt.toISOString(), id: lastRow.id }) : null);
+    return new Page(
+      items,
+      rows.length > take && lastRow
+        ? encodeCursor({ t: lastRow.updatedAt.toISOString(), id: lastRow.id })
+        : null,
+    );
   }
 
   async get(userId: string, conversationId: string) {
     await this.assertParticipant(userId, conversationId);
-    const conversation = await this.prisma.conversation.findUniqueOrThrow({ where: { id: conversationId }, include: conversationInclude });
+    const conversation = await this.prisma.conversation.findUniqueOrThrow({
+      where: { id: conversationId },
+      include: conversationInclude,
+    });
     const peer = conversation.participants.find((p) => p.userId !== userId)?.userId;
     const [online, blocked] = await Promise.all([
       this.presence.onlineMany(peer ? [peer] : []),
       peer ? this.safety.isBlockedBetween(userId, peer) : Promise.resolve(false),
     ]);
-    return this.presentConversation(conversation, userId, { online, blocked: new Set(blocked && peer ? [peer] : []) });
+    return this.presentConversation(conversation, userId, {
+      online,
+      blocked: new Set(blocked && peer ? [peer] : []),
+    });
   }
 
   /** Newest first; `cursor` walks back in time (scrolling up loads older). */
@@ -219,7 +274,12 @@ export class ChatService {
       where.OR = [{ createdAt: { lt: t } }, { createdAt: t, id: { lt: keyset.id } }];
     }
     const [rows, participants] = await Promise.all([
-      this.prisma.message.findMany({ where, include: messageInclude, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: take + 1 }),
+      this.prisma.message.findMany({
+        where,
+        include: messageInclude,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: take + 1,
+      }),
       this.prisma.conversationParticipant.findMany({ where: { conversationId } }),
     ]);
     const peer = participants.find((p) => p.userId !== userId);
@@ -250,16 +310,24 @@ export class ChatService {
     }
     await this.limiter.consume(`msg:${user.userId}`, 30, 60);
 
-    const type = { text: MessageType.TEXT, image: MessageType.IMAGE, listingShare: MessageType.LISTING_SHARE }[dto.type]!;
-    if (type === MessageType.TEXT && !dto.text) throw AppError.validation('Text is required', { field: 'text' });
+    const type = {
+      text: MessageType.TEXT,
+      image: MessageType.IMAGE,
+      listingShare: MessageType.LISTING_SHARE,
+    }[dto.type]!;
+    if (type === MessageType.TEXT && !dto.text)
+      throw AppError.validation('Text is required', { field: 'text' });
     let mediaIds: string[] = [];
     if (type === MessageType.IMAGE) {
-      if (!dto.mediaIds?.length) throw AppError.validation('Attach at least one image', { field: 'mediaIds' });
+      if (!dto.mediaIds?.length)
+        throw AppError.validation('Attach at least one image', { field: 'mediaIds' });
       mediaIds = await this.media.assertOwned(user.userId, dto.mediaIds, [MediaPurpose.CHAT]);
     }
     if (type === MessageType.LISTING_SHARE) {
       const shared = dto.sharedListingId
-        ? await this.prisma.listing.count({ where: { id: dto.sharedListingId, status: ListingStatus.ACTIVE, deletedAt: null } })
+        ? await this.prisma.listing.count({
+            where: { id: dto.sharedListingId, status: ListingStatus.ACTIVE, deletedAt: null },
+          })
         : 0;
       if (!shared) throw AppError.validation('Unknown listing', { field: 'sharedListingId' });
     }
@@ -281,7 +349,10 @@ export class ChatService {
         },
         include: messageInclude,
       });
-      await tx.conversation.update({ where: { id: conversationId }, data: { lastMessageAt: now, lastMessageId: created.id } });
+      await tx.conversation.update({
+        where: { id: conversationId },
+        data: { lastMessageAt: now, lastMessageId: created.id },
+      });
       await tx.conversationParticipant.updateMany({
         where: { conversationId, userId: { in: peerIds } },
         data: { unreadCount: { increment: 1 }, archivedAt: null },
@@ -295,19 +366,28 @@ export class ChatService {
 
     const presented = this.presentMessage(message, undefined);
     this.emitter.toUsers([user.userId, ...peerIds], 'message:new', { conversationId, message: presented });
-    if (flagged) await this.queues.moderation({ targetType: 'MESSAGE', targetId: message.id, reason: 'risky_content' });
+    if (flagged)
+      await this.queues.moderation({ targetType: 'MESSAGE', targetId: message.id, reason: 'risky_content' });
     await this.notifyOffline(user.userId, peerIds, conversationId, message);
     return presented;
   }
 
   /** Push only to recipients without a live socket. Preview respects privacy. */
-  private async notifyOffline(senderId: string, peerIds: string[], conversationId: string, message: MessageRow) {
+  private async notifyOffline(
+    senderId: string,
+    peerIds: string[],
+    conversationId: string,
+    message: MessageRow,
+  ) {
     const online = await this.presence.onlineMany(peerIds);
     const offline = peerIds.filter((id) => !online.has(id));
     if (!offline.length) return;
     const [sender, recipients] = await Promise.all([
       this.prisma.profile.findUnique({ where: { userId: senderId }, select: { displayName: true } }),
-      this.prisma.profile.findMany({ where: { userId: { in: offline } }, select: { userId: true, messagePreviews: true } }),
+      this.prisma.profile.findMany({
+        where: { userId: { in: offline } },
+        select: { userId: true, messagePreviews: true },
+      }),
     ]);
     for (const recipient of recipients) {
       await this.notifications.notify(
@@ -315,7 +395,9 @@ export class ChatService {
         {
           type: NotificationType.MESSAGE,
           title: sender?.displayName ?? 'Yangi xabar',
-          body: recipient.messagePreviews ? this.preview(message.type, message.text) : 'Sizga yangi xabar keldi',
+          body: recipient.messagePreviews
+            ? this.preview(message.type, message.text)
+            : 'Sizga yangi xabar keldi',
           route: `/chat/${conversationId}`,
           data: { conversationId, messageId: message.id },
         },
@@ -385,7 +467,10 @@ export class ChatService {
   }
 
   async otherParticipants(conversationId: string, userId: string): Promise<string[]> {
-    const rows = await this.prisma.conversationParticipant.findMany({ where: { conversationId, userId: { not: userId } }, select: { userId: true } });
+    const rows = await this.prisma.conversationParticipant.findMany({
+      where: { conversationId, userId: { not: userId } },
+      select: { userId: true },
+    });
     return rows.map((r) => r.userId);
   }
 
@@ -471,7 +556,11 @@ export class ChatService {
       text: m.text,
       images: m.attachments.map((a) => presentMedia(a.media)),
       sharedListing: m.sharedListing
-        ? { id: m.sharedListing.id, title: m.sharedListing.title, price: presentMoney(m.sharedListing.priceAmount, m.sharedListing.currency) }
+        ? {
+            id: m.sharedListing.id,
+            title: m.sharedListing.title,
+            price: presentMoney(m.sharedListing.priceAmount, m.sharedListing.currency),
+          }
         : null,
       flagged: m.flagged,
       createdAt: m.createdAt,

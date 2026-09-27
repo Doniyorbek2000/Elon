@@ -7,7 +7,10 @@ import { AuthUser, CurrentUser, Public } from '../../common/auth.decorators';
 import { RefreshDto, RequestOtpDto, VerifyOtpDto } from './auth.dto';
 import { AuthService, RequestMeta } from './auth.service';
 
-const meta = (request: Request): RequestMeta => ({ ip: request.ip, userAgent: request.headers['user-agent'] });
+const meta = (request: Request): RequestMeta => ({
+  ip: request.ip,
+  userAgent: request.headers['user-agent'],
+});
 
 @ApiTags('auth')
 @Controller('auth')

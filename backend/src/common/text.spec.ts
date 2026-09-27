@@ -1,5 +1,14 @@
+import { $Enums } from '@prisma/client';
 import { assessPrice, assessText, hasBlocking, isRiskyMessage, requiresModeration } from './content-risk';
-import { apiEnum, buildSearchText, dbEnum, maskPhone, normalizeQuery, normalizeText, normalizeUzPhone } from './text';
+import {
+  apiEnum,
+  buildSearchText,
+  dbEnum,
+  maskPhone,
+  normalizeQuery,
+  normalizeText,
+  normalizeUzPhone,
+} from './text';
 
 describe('text normalization', () => {
   it('folds case, apostrophes and Cyrillic', () => {
@@ -36,6 +45,16 @@ describe('api enums', () => {
     expect(apiEnum('UP_TO_1')).toBe('upTo1');
     expect(dbEnum('pendingReview')).toBe('PENDING_REVIEW');
     expect(dbEnum('active')).toBe('ACTIVE');
+    expect(dbEnum('upTo1')).toBe('UP_TO_1');
+    expect(apiEnum('ONE_TO_3')).toBe('oneTo3');
+  });
+
+  it('round-trips every database enum value', () => {
+    for (const values of Object.values($Enums)) {
+      for (const value of Object.values(values as Record<string, string>)) {
+        expect(dbEnum(apiEnum(value))).toBe(value);
+      }
+    }
     expect(apiEnum(null)).toBeNull();
   });
 });
@@ -43,7 +62,9 @@ describe('api enums', () => {
 describe('content risk', () => {
   it('blocks card numbers and flags prepayment/phones', () => {
     const signals = assessText('iPhone', 'Kartaga tashlang 8600 1234 5678 9012, tel +998 90 123 45 67');
-    expect(signals.map((s) => s.code)).toEqual(expect.arrayContaining(['card_number', 'phone_in_text', 'prepayment']));
+    expect(signals.map((s) => s.code)).toEqual(
+      expect.arrayContaining(['card_number', 'phone_in_text', 'prepayment']),
+    );
     expect(hasBlocking(signals)).toBe(true);
   });
 

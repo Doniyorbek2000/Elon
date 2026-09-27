@@ -1,7 +1,17 @@
 import request from 'supertest';
 
 import { DevOtpSender } from '../src/modules/auth/otp-sender';
-import { as, clearOtpCooldown, connectSocket, nextIp, nextPhone, signIn, startTestApp, stopTestApp, TestContext } from './helpers';
+import {
+  as,
+  clearOtpCooldown,
+  connectSocket,
+  nextIp,
+  nextPhone,
+  signIn,
+  startTestApp,
+  stopTestApp,
+  TestContext,
+} from './helpers';
 
 describe('Auth (phone OTP, sessions, refresh rotation)', () => {
   let ctx: TestContext;
@@ -16,14 +26,22 @@ describe('Auth (phone OTP, sessions, refresh rotation)', () => {
 
   it('normalizes phone formats and never echoes the code outside development', async () => {
     const ip = nextIp();
-    const res = await request(ctx.http).post('/api/v1/auth/otp/request').set('X-Forwarded-For', ip).send({ phone: '+998 (90) 555-44-33' }).expect(200);
+    const res = await request(ctx.http)
+      .post('/api/v1/auth/otp/request')
+      .set('X-Forwarded-For', ip)
+      .send({ phone: '+998 (90) 555-44-33' })
+      .expect(200);
     expect(res.body.data).toEqual(expect.objectContaining({ expiresInSeconds: 300, resendInSeconds: 60 }));
     expect(res.body.data.devCode).toBeUndefined();
     expect(DevOtpSender.outbox.get('998905554433')).toMatch(/^\d{6}$/);
   });
 
   it('rejects invalid phone numbers with 422', async () => {
-    const res = await request(ctx.http).post('/api/v1/auth/otp/request').set('X-Forwarded-For', nextIp()).send({ phone: '12345' }).expect(422);
+    const res = await request(ctx.http)
+      .post('/api/v1/auth/otp/request')
+      .set('X-Forwarded-For', nextIp())
+      .send({ phone: '12345' })
+      .expect(422);
     expect(res.body.error.code).toBe('VALIDATION_FAILED');
     expect(res.body.error.requestId).toBeTruthy();
   });
@@ -31,8 +49,16 @@ describe('Auth (phone OTP, sessions, refresh rotation)', () => {
   it('enforces resend cooldown with 429 + retryAfter', async () => {
     const phone = nextPhone();
     const ip = nextIp();
-    await request(ctx.http).post('/api/v1/auth/otp/request').set('X-Forwarded-For', ip).send({ phone }).expect(200);
-    const res = await request(ctx.http).post('/api/v1/auth/otp/request').set('X-Forwarded-For', ip).send({ phone }).expect(429);
+    await request(ctx.http)
+      .post('/api/v1/auth/otp/request')
+      .set('X-Forwarded-For', ip)
+      .send({ phone })
+      .expect(200);
+    const res = await request(ctx.http)
+      .post('/api/v1/auth/otp/request')
+      .set('X-Forwarded-For', ip)
+      .send({ phone })
+      .expect(429);
     expect(res.body.error.code).toBe('OTP_COOLDOWN');
     expect(res.body.error.details.retryAfterSeconds).toBeGreaterThan(0);
   });
@@ -40,18 +66,32 @@ describe('Auth (phone OTP, sessions, refresh rotation)', () => {
   it('locks the challenge after too many wrong codes', async () => {
     const phone = nextPhone();
     const ip = nextIp();
-    await request(ctx.http).post('/api/v1/auth/otp/request').set('X-Forwarded-For', ip).send({ phone }).expect(200);
+    await request(ctx.http)
+      .post('/api/v1/auth/otp/request')
+      .set('X-Forwarded-For', ip)
+      .send({ phone })
+      .expect(200);
     const real = DevOtpSender.outbox.get(phone)!;
     const wrong = real === '000000' ? '111111' : '000000';
     const device = { id: 'device-lockout', platform: 'ios' };
     for (let i = 0; i < 4; i++) {
-      const res = await request(ctx.http).post('/api/v1/auth/otp/verify').set('X-Forwarded-For', ip).send({ phone, code: wrong, device }).expect(422);
+      const res = await request(ctx.http)
+        .post('/api/v1/auth/otp/verify')
+        .set('X-Forwarded-For', ip)
+        .send({ phone, code: wrong, device })
+        .expect(422);
       expect(res.body.error.code).toBe('OTP_INVALID');
     }
-    const fifth = await request(ctx.http).post('/api/v1/auth/otp/verify').set('X-Forwarded-For', ip).send({ phone, code: wrong, device });
+    const fifth = await request(ctx.http)
+      .post('/api/v1/auth/otp/verify')
+      .set('X-Forwarded-For', ip)
+      .send({ phone, code: wrong, device });
     expect([422, 429]).toContain(fifth.status);
     // Even the correct code no longer works once attempts are exhausted.
-    const after = await request(ctx.http).post('/api/v1/auth/otp/verify').set('X-Forwarded-For', ip).send({ phone, code: real, device });
+    const after = await request(ctx.http)
+      .post('/api/v1/auth/otp/verify')
+      .set('X-Forwarded-For', ip)
+      .send({ phone, code: real, device });
     expect(after.status).not.toBe(200);
   });
 
@@ -61,14 +101,29 @@ describe('Auth (phone OTP, sessions, refresh rotation)', () => {
     expect(me.body.data.id).toBe(user.userId);
     expect(me.body.data.verification).not.toBe('business'); // no fake verification
 
-    const rotated = await request(ctx.http).post('/api/v1/auth/refresh').set('X-Forwarded-For', user.ip).send({ refreshToken: user.refreshToken }).expect(200);
+    const rotated = await request(ctx.http)
+      .post('/api/v1/auth/refresh')
+      .set('X-Forwarded-For', user.ip)
+      .send({ refreshToken: user.refreshToken })
+      .expect(200);
     expect(rotated.body.data.refreshToken).not.toBe(user.refreshToken);
 
     // Replaying the old token is treated as theft: the whole session is revoked.
-    const replay = await request(ctx.http).post('/api/v1/auth/refresh').set('X-Forwarded-For', user.ip).send({ refreshToken: user.refreshToken }).expect(401);
+    const replay = await request(ctx.http)
+      .post('/api/v1/auth/refresh')
+      .set('X-Forwarded-For', user.ip)
+      .send({ refreshToken: user.refreshToken })
+      .expect(401);
     expect(replay.body.error.code).toBe('SESSION_REVOKED');
-    await request(ctx.http).post('/api/v1/auth/refresh').set('X-Forwarded-For', user.ip).send({ refreshToken: rotated.body.data.refreshToken }).expect(401);
-    await request(ctx.http).get('/api/v1/me').set('Authorization', `Bearer ${rotated.body.data.accessToken}`).expect(401);
+    await request(ctx.http)
+      .post('/api/v1/auth/refresh')
+      .set('X-Forwarded-For', user.ip)
+      .send({ refreshToken: rotated.body.data.refreshToken })
+      .expect(401);
+    await request(ctx.http)
+      .get('/api/v1/me')
+      .set('Authorization', `Bearer ${rotated.body.data.accessToken}`)
+      .expect(401);
   });
 
   it('logout revokes the current session only; logout-all revokes every device', async () => {

@@ -51,11 +51,18 @@ export class NotificationsService {
 
   /** Worker: fan out to all active devices; disable dead tokens. Idempotent per job. */
   async deliverPush(job: PushJob): Promise<{ sent: number; disabled: number }> {
-    const devices = await this.prisma.pushDevice.findMany({ where: { userId: job.userId, disabledAt: null } });
+    const devices = await this.prisma.pushDevice.findMany({
+      where: { userId: job.userId, disabledAt: null },
+    });
     let sent = 0;
     let disabled = 0;
     for (const device of devices) {
-      const result = await this.push.send({ token: device.token, title: job.title, body: job.body, data: job.data });
+      const result = await this.push.send({
+        token: device.token,
+        title: job.title,
+        body: job.body,
+        data: job.data,
+      });
       if (result === 'sent') sent++;
       if (result === 'invalid_token') {
         disabled++;
@@ -95,13 +102,20 @@ export class NotificationsService {
   }
 
   async markRead(userId: string, id: string): Promise<void> {
-    const result = await this.prisma.notification.updateMany({ where: { id, userId }, data: { readAt: new Date() } });
+    const result = await this.prisma.notification.updateMany({
+      where: { id, userId },
+      data: { readAt: new Date() },
+    });
     if (result.count === 0) throw AppError.notFound('Notification');
   }
 
   async markAllRead(userId: string): Promise<number> {
-    return (await this.prisma.notification.updateMany({ where: { userId, readAt: null }, data: { readAt: new Date() } }))
-      .count;
+    return (
+      await this.prisma.notification.updateMany({
+        where: { userId, readAt: null },
+        data: { readAt: new Date() },
+      })
+    ).count;
   }
 
   /** Registers/moves an FCM token to the current user + session. */

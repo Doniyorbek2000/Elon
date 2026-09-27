@@ -14,7 +14,9 @@ Object.assign(process.env, {
   PUBLIC_API_URL: 'http://localhost:3000',
   LOG_LEVEL: 'error',
   // Set by global-setup to the per-run database.
-  DATABASE_URL: process.env.E2E_DATABASE_NAME ? databaseUrl(process.env.E2E_DATABASE_NAME) : process.env.DATABASE_URL,
+  DATABASE_URL: process.env.E2E_DATABASE_NAME
+    ? databaseUrl(process.env.E2E_DATABASE_NAME)
+    : process.env.DATABASE_URL,
   REDIS_URL: process.env.TEST_REDIS_URL ?? 'redis://localhost:6379/1',
   JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET_TEST ?? secret(),
   OTP_HASH_SECRET: process.env.OTP_HASH_SECRET_TEST ?? secret(),

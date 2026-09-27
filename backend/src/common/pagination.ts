@@ -11,7 +11,9 @@ export function encodeCursor(value: Record<string, string | number>): string {
   return Buffer.from(JSON.stringify(value)).toString('base64url');
 }
 
-export function decodeCursor<T extends Record<string, string | number>>(cursor: string | undefined): T | undefined {
+export function decodeCursor<T extends Record<string, string | number>>(
+  cursor: string | undefined,
+): T | undefined {
   if (!cursor) return undefined;
   try {
     const parsed: unknown = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8'));
@@ -63,11 +65,15 @@ export function keysetPage<T extends { id: string }>(
   };
 }
 
-export function keysetWhere(cursor: string | undefined, field = 'createdAt'): Record<string, unknown> | undefined {
+export function keysetWhere(
+  cursor: string | undefined,
+  field = 'createdAt',
+): Record<string, unknown> | undefined {
   const decoded = decodeCursor<{ t: string; id: string }>(cursor);
   if (!decoded) return undefined;
   const t = new Date(decoded.t);
-  if (Number.isNaN(t.getTime()) || typeof decoded.id !== 'string') throw AppError.validation('Invalid cursor');
+  if (Number.isNaN(t.getTime()) || typeof decoded.id !== 'string')
+    throw AppError.validation('Invalid cursor');
   return { OR: [{ [field]: { lt: t } }, { [field]: t, id: { lt: decoded.id } }] };
 }
 

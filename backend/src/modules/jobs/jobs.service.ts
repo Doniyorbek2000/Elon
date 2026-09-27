@@ -74,9 +74,15 @@ export class JobsService {
     if (query.experience) where.experience = dbEnum(query.experience) as ExperienceLevel;
     if (query.workFormat) where.workFormat = dbEnum(query.workFormat) as WorkFormat;
     if (query.salaryMin != null) {
-      and.push({ OR: [{ salaryMax: { gte: query.salaryMin } }, { salaryMax: null, salaryMin: { gte: query.salaryMin } }] });
+      and.push({
+        OR: [
+          { salaryMax: { gte: query.salaryMin } },
+          { salaryMax: null, salaryMin: { gte: query.salaryMin } },
+        ],
+      });
     }
-    for (const token of searchTokens(query.q ?? '').slice(0, 6)) and.push({ searchText: { contains: token } });
+    for (const token of searchTokens(query.q ?? '').slice(0, 6))
+      and.push({ searchText: { contains: token } });
     if (viewer) and.push({ employer: { blocksReceived: { none: { blockerId: viewer.userId } } } });
     if (and.length) where.AND = and;
 
@@ -84,11 +90,16 @@ export class JobsService {
     let nextCursor: string | null;
     if (query.sort === 'salary') {
       const offset = Number(decodeCursor<{ o: number }>(query.cursor)?.o ?? 0);
-      if (!Number.isInteger(offset) || offset < 0 || offset > 2000) throw AppError.validation('Invalid cursor');
+      if (!Number.isInteger(offset) || offset < 0 || offset > 2000)
+        throw AppError.validation('Invalid cursor');
       rows = await this.prisma.job.findMany({
         where,
         select: jobCardSelect,
-        orderBy: [{ salaryMax: { sort: 'desc', nulls: 'last' } }, { salaryMin: { sort: 'desc', nulls: 'last' } }, { id: 'asc' }],
+        orderBy: [
+          { salaryMax: { sort: 'desc', nulls: 'last' } },
+          { salaryMin: { sort: 'desc', nulls: 'last' } },
+          { id: 'asc' },
+        ],
         skip: offset,
         take: take + 1,
       });
@@ -116,17 +127,22 @@ export class JobsService {
           ).map((f) => f.jobId),
         )
       : new Set<string | null>();
-    return new Page(rows.map((r) => presentJobCard(r, { isFavorite: favorites.has(r.id) })), nextCursor);
+    return new Page(
+      rows.map((r) => presentJobCard(r, { isFavorite: favorites.has(r.id) })),
+      nextCursor,
+    );
   }
 
   async detail(id: string, viewer?: AuthUser, viewerKey?: string) {
     const job = await this.prisma.job.findFirst({ where: { id, deletedAt: null }, select: jobDetailSelect });
     if (!job) throw AppError.notFound('Job');
     const isOwner = viewer?.userId === job.employerId;
-    if (job.status !== JobStatus.ACTIVE && job.status !== JobStatus.FILLED && !isOwner) throw AppError.notFound('Job');
+    if (job.status !== JobStatus.ACTIVE && job.status !== JobStatus.FILLED && !isOwner)
+      throw AppError.notFound('Job');
     if (!isOwner && viewerKey && job.status === JobStatus.ACTIVE) {
       const fresh = await this.redis.client.set(`view:job:${id}:${viewerKey}`, '1', 'EX', 86400, 'NX');
-      if (fresh === 'OK') await this.prisma.job.update({ where: { id }, data: { viewCount: { increment: 1 } } });
+      if (fresh === 'OK')
+        await this.prisma.job.update({ where: { id }, data: { viewCount: { increment: 1 } } });
     }
     const [favorite, application] = viewer
       ? await Promise.all([
@@ -188,7 +204,9 @@ export class JobsService {
       workFormat: dto.workFormat ? (dbEnum(dto.workFormat) as WorkFormat) : WorkFormat.ON_SITE,
       experience: dto.experience ? (dbEnum(dto.experience) as ExperienceLevel) : ExperienceLevel.NONE,
       workSchedule: dto.workSchedule,
-      applicationMode: dto.applicationMode ? (dbEnum(dto.applicationMode) as ApplicationMode) : ApplicationMode.IN_APP,
+      applicationMode: dto.applicationMode
+        ? (dbEnum(dto.applicationMode) as ApplicationMode)
+        : ApplicationMode.IN_APP,
       regionId: place.regionId,
       districtId: place.districtId,
       lat: place.lat,
@@ -202,7 +220,12 @@ export class JobsService {
     const data = await this.data(dto);
     const publish = dto.publish !== false;
     const job = await this.prisma.job.create({
-      data: { ...data, employerId: user.userId, status: publish ? JobStatus.ACTIVE : JobStatus.DRAFT, ...(publish ? this.publication() : {}) },
+      data: {
+        ...data,
+        employerId: user.userId,
+        status: publish ? JobStatus.ACTIVE : JobStatus.DRAFT,
+        ...(publish ? this.publication() : {}),
+      },
     });
     await this.postModerate(job.id, dto);
     return this.detail(job.id, user);
@@ -219,15 +242,22 @@ export class JobsService {
   async changeStatus(user: AuthUser, id: string, status: string) {
     const job = await this.owned(user, id);
     const next = dbEnum(status) as JobStatus;
-    if (!OWNER_TRANSITIONS[job.status].includes(next)) throw AppError.invalidState(`Cannot move from ${job.status} to ${next}`);
+    if (!OWNER_TRANSITIONS[job.status].includes(next))
+      throw AppError.invalidState(`Cannot move from ${job.status} to ${next}`);
     const republish = next === JobStatus.ACTIVE && job.status !== JobStatus.PAUSED;
-    await this.prisma.job.update({ where: { id }, data: { status: next, ...(republish ? this.publication() : {}) } });
+    await this.prisma.job.update({
+      where: { id },
+      data: { status: next, ...(republish ? this.publication() : {}) },
+    });
     return this.detail(id, user);
   }
 
   async remove(user: AuthUser, id: string): Promise<void> {
     await this.owned(user, id);
-    await this.prisma.job.update({ where: { id }, data: { deletedAt: new Date(), status: JobStatus.ARCHIVED } });
+    await this.prisma.job.update({
+      where: { id },
+      data: { deletedAt: new Date(), status: JobStatus.ARCHIVED },
+    });
   }
 
   /** Employer phone for PHONE/BOTH application modes, honoring privacy settings. */
@@ -235,7 +265,10 @@ export class JobsService {
     await this.limiter.consume(`contact:${viewer.userId}`, 40, 3600);
     const job = await this.prisma.job.findFirst({
       where: { id, deletedAt: null, status: JobStatus.ACTIVE },
-      select: { applicationMode: true, employer: { select: { phone: true, profile: { select: { showPhone: true } } } } },
+      select: {
+        applicationMode: true,
+        employer: { select: { phone: true, profile: { select: { showPhone: true } } } },
+      },
     });
     if (!job) throw AppError.notFound('Job');
     if (job.applicationMode === ApplicationMode.IN_APP || !job.employer.profile?.showPhone) {

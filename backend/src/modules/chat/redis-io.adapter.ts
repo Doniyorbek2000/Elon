@@ -38,7 +38,7 @@ export class RedisIoAdapter extends IoAdapter {
       pingTimeout: 20_000,
       maxHttpBufferSize: 64 * 1024,
       cors: { origin: true, credentials: false },
-    } as ServerOptions) as Server;
+    }) as Server;
     if (this.adapterConstructor) server.adapter(this.adapterConstructor);
     return server;
   }

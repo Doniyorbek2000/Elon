@@ -1,4 +1,16 @@
-import { Body, Controller, Get, HttpCode, Injectable, Module, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Injectable,
+  Module,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Currency, EmploymentType, Prisma, ResumeVisibility } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
@@ -54,8 +66,16 @@ class ResumeDto {
   @IsOptional() @IsInt() @Min(0) @Max(1_000_000_000) salaryExpectation?: number | null;
   @IsOptional() @IsIn(['uzs', 'usd']) salaryCurrency?: string;
   @IsIn(['public', 'applicationsOnly', 'hidden']) visibility!: string;
-  @IsOptional() @ValidateNested({ each: true }) @Type(() => ExperienceDto) @ArrayMaxSize(15) experiences?: ExperienceDto[];
-  @IsOptional() @ValidateNested({ each: true }) @Type(() => EducationDto) @ArrayMaxSize(10) educations?: EducationDto[];
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => ExperienceDto)
+  @ArrayMaxSize(15)
+  experiences?: ExperienceDto[];
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => EducationDto)
+  @ArrayMaxSize(10)
+  educations?: EducationDto[];
 }
 
 class CandidatesQuery extends CursorQuery {
@@ -81,7 +101,9 @@ export class ResumesService {
   private async names(regionId: string | null, districtId: string | null) {
     const [region, district] = await Promise.all([
       regionId ? this.prisma.region.findUnique({ where: { id: regionId }, select: { name: true } }) : null,
-      districtId ? this.prisma.district.findUnique({ where: { id: districtId }, select: { name: true } }) : null,
+      districtId
+        ? this.prisma.district.findUnique({ where: { id: districtId }, select: { name: true } })
+        : null,
     ]);
     return { regionName: region?.name ?? null, districtName: district?.name ?? null };
   }
@@ -89,14 +111,21 @@ export class ResumesService {
   async mine(userId: string) {
     const resume = await this.prisma.resume.findUnique({ where: { userId }, include: candidateInclude });
     if (!resume) return null;
-    return presentResume(resume, resume.user, await this.names(resume.preferredRegionId, resume.preferredDistrictId));
+    return presentResume(
+      resume,
+      resume.user,
+      await this.names(resume.preferredRegionId, resume.preferredDistrictId),
+    );
   }
 
   async upsert(userId: string, dto: ResumeDto) {
     let regionId: string | null = null;
     let districtId: string | null = null;
     if (dto.preferredRegionId) {
-      const place = await this.locations.resolvePlace({ regionId: dto.preferredRegionId, districtId: dto.preferredDistrictId });
+      const place = await this.locations.resolvePlace({
+        regionId: dto.preferredRegionId,
+        districtId: dto.preferredDistrictId,
+      });
       regionId = place.regionId;
       districtId = place.districtId;
     }
@@ -133,9 +162,13 @@ export class ResumesService {
     const and: Prisma.ResumeWhereInput[] = [{ visibility: ResumeVisibility.PUBLIC }];
     if (query.region) and.push({ preferredRegionId: query.region });
     if (query.district) and.push({ preferredDistrictId: query.district });
-    const types = (query.types ?? '').split(',').filter(Boolean).map((t) => dbEnum(t.trim()) as EmploymentType);
+    const types = (query.types ?? '')
+      .split(',')
+      .filter(Boolean)
+      .map((t) => dbEnum(t.trim()) as EmploymentType);
     if (types.length) and.push({ employmentTypes: { hasSome: types } });
-    for (const token of searchTokens(query.q ?? '').slice(0, 6)) and.push({ searchText: { contains: token } });
+    for (const token of searchTokens(query.q ?? '').slice(0, 6))
+      and.push({ searchText: { contains: token } });
     if (viewer) and.push({ user: { blocksReceived: { none: { blockerId: viewer.userId } } } });
     const keyset = keysetWhere(query.cursor, 'updatedAt');
     if (keyset) and.push(keyset);
@@ -147,7 +180,9 @@ export class ResumesService {
     });
     const page = keysetPage(rows, take, (r) => r.updatedAt);
     const items = await Promise.all(
-      page.items.map(async (r) => presentResume(r, r.user, await this.names(r.preferredRegionId, r.preferredDistrictId))),
+      page.items.map(async (r) =>
+        presentResume(r, r.user, await this.names(r.preferredRegionId, r.preferredDistrictId)),
+      ),
     );
     return new Page(items, page.nextCursor);
   }
@@ -155,7 +190,11 @@ export class ResumesService {
   async get(id: string, viewer?: AuthUser) {
     const resume = await this.prisma.resume.findUnique({ where: { id }, include: candidateInclude });
     if (!resume || !(await this.canView(resume, viewer))) throw AppError.notFound('Resume');
-    return presentResume(resume, resume.user, await this.names(resume.preferredRegionId, resume.preferredDistrictId));
+    return presentResume(
+      resume,
+      resume.user,
+      await this.names(resume.preferredRegionId, resume.preferredDistrictId),
+    );
   }
 
   async contact(viewer: AuthUser, id: string) {
@@ -170,7 +209,10 @@ export class ResumesService {
   }
 
   /** Owner, anyone for PUBLIC, employers the candidate applied to for APPLICATIONS_ONLY. */
-  private async canView(resume: { userId: string; visibility: ResumeVisibility }, viewer?: AuthUser): Promise<boolean> {
+  private async canView(
+    resume: { userId: string; visibility: ResumeVisibility },
+    viewer?: AuthUser,
+  ): Promise<boolean> {
     if (viewer?.userId === resume.userId) return true;
     if (resume.visibility === ResumeVisibility.PUBLIC) return true;
     if (resume.visibility === ResumeVisibility.HIDDEN || !viewer) return false;

@@ -1,7 +1,14 @@
 import { Prisma } from '@prisma/client';
 
 import { env } from '../../config/env';
-import { mediaSelect, presentMedia, presentMoney, presentPlace, presentUser, publicUserSelect } from '../../common/presenters';
+import {
+  mediaSelect,
+  presentMedia,
+  presentMoney,
+  presentPlace,
+  presentUser,
+  publicUserSelect,
+} from '../../common/presenters';
 import { apiEnum } from '../../common/text';
 
 export const offeringSelect = {
@@ -50,7 +57,14 @@ export const providerCardSelect = {
 export const providerDetailSelect = {
   ...providerCardSelect,
   description: true,
-  areas: { select: { regionId: true, districtId: true, region: { select: { name: true } }, district: { select: { name: true } } } },
+  areas: {
+    select: {
+      regionId: true,
+      districtId: true,
+      region: { select: { name: true } },
+      district: { select: { name: true } },
+    },
+  },
   portfolio: { orderBy: { position: 'asc' }, select: { caption: true, media: { select: mediaSelect } } },
   offerings: { where: { deletedAt: null }, orderBy: { createdAt: 'asc' }, select: offeringSelect },
 } satisfies Prisma.ServiceProviderSelect;
@@ -110,7 +124,10 @@ export function presentProviderCard(
   };
 }
 
-export function presentProviderDetail(row: DetailRow, options: { isFavorite?: boolean; isOnline?: boolean; isOwner?: boolean } = {}) {
+export function presentProviderDetail(
+  row: DetailRow,
+  options: { isFavorite?: boolean; isOnline?: boolean; isOwner?: boolean } = {},
+) {
   return {
     ...presentProviderCard(row, options),
     description: row.description,

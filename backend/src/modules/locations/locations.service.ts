@@ -36,7 +36,9 @@ export class LocationsService {
       include: {
         districts: {
           orderBy: { name: 'asc' },
-          include: { localities: { orderBy: { name: 'asc' }, select: { id: true, name: true, lat: true, lng: true } } },
+          include: {
+            localities: { orderBy: { name: 'asc' }, select: { id: true, name: true, lat: true, lng: true } },
+          },
         },
       },
     });
@@ -45,7 +47,13 @@ export class LocationsService {
       name: r.name,
       lat: r.lat,
       lng: r.lng,
-      districts: r.districts.map((d) => ({ id: d.id, name: d.name, lat: d.lat, lng: d.lng, localities: d.localities })),
+      districts: r.districts.map((d) => ({
+        id: d.id,
+        name: d.name,
+        lat: d.lat,
+        lng: d.lng,
+        localities: d.localities,
+      })),
     }));
     this.treeCache = { at: Date.now(), value };
     return value;

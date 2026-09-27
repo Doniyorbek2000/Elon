@@ -37,7 +37,12 @@ const MAX_OFFSET = 2000;
  * Cursors: keyset on (publishedAt, id) for "newest" (the hot path); bounded
  * offset cursors for price/popularity/distance sorts.
  */
-export function buildFeedQuery(filters: FeedFilters, sort: ListingSort, cursor: string | undefined, take: number) {
+export function buildFeedQuery(
+  filters: FeedFilters,
+  sort: ListingSort,
+  cursor: string | undefined,
+  take: number,
+) {
   const where: Prisma.Sql[] = [Prisma.sql`l."status" = 'ACTIVE'`, Prisma.sql`l."deletedAt" IS NULL`];
   const origin = filters.origin;
   const originPoint = origin
@@ -66,7 +71,9 @@ export function buildFeedQuery(filters: FeedFilters, sort: ListingSort, cursor: 
     where.push(Prisma.sql`(l."searchText" LIKE ${`%${token}%`} OR ${token} <% l."searchText")`);
   }
 
-  const distance = originPoint ? Prisma.sql`ST_Distance(l."geo", ${originPoint}) / 1000.0` : Prisma.sql`NULL::float8`;
+  const distance = originPoint
+    ? Prisma.sql`ST_Distance(l."geo", ${originPoint}) / 1000.0`
+    : Prisma.sql`NULL::float8`;
   let order: Prisma.Sql;
   let offset = 0;
 
@@ -80,12 +87,15 @@ export function buildFeedQuery(filters: FeedFilters, sort: ListingSort, cursor: 
     order = Prisma.sql`l."publishedAt" DESC, l."id" DESC`;
   } else {
     offset = Number(decodeCursor<{ o: number }>(cursor)?.o ?? 0);
-    if (!Number.isInteger(offset) || offset < 0 || offset > MAX_OFFSET) throw AppError.validation('Invalid cursor');
+    if (!Number.isInteger(offset) || offset < 0 || offset > MAX_OFFSET)
+      throw AppError.validation('Invalid cursor');
     order = {
       priceAsc: Prisma.sql`l."priceUzs" ASC NULLS LAST, l."id" ASC`,
       priceDesc: Prisma.sql`l."priceUzs" DESC NULLS LAST, l."id" ASC`,
       popular: Prisma.sql`(l."viewCount" + 20 * l."favoriteCount") DESC, l."publishedAt" DESC`,
-      nearest: originPoint ? Prisma.sql`l."geo" <-> ${originPoint}, l."id"` : Prisma.sql`l."publishedAt" DESC, l."id" DESC`,
+      nearest: originPoint
+        ? Prisma.sql`l."geo" <-> ${originPoint}, l."id"`
+        : Prisma.sql`l."publishedAt" DESC, l."id" DESC`,
     }[sort];
   }
 
@@ -99,7 +109,7 @@ export function buildFeedQuery(filters: FeedFilters, sort: ListingSort, cursor: 
   const nextCursor = (rows: Array<FeedRow & { published_at: Date }>): string | null => {
     if (rows.length <= take) return null;
     if (sort === 'newest') {
-      const last = rows[take - 1]!;
+      const last = rows[take - 1];
       return encodeCursor({ t: last.published_at.toISOString(), id: last.id });
     }
     return offset + take > MAX_OFFSET ? null : encodeCursor({ o: offset + take });

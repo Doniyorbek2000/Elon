@@ -49,7 +49,12 @@ export class AuthGuard implements CanActivate {
     const claims = this.tokens.verifyAccess(token);
     const session = await this.prisma.session.findUnique({
       where: { id: claims.sid },
-      select: { userId: true, revokedAt: true, expiresAt: true, user: { select: { status: true, role: true } } },
+      select: {
+        userId: true,
+        revokedAt: true,
+        expiresAt: true,
+        user: { select: { status: true, role: true } },
+      },
     });
     if (!session || session.userId !== claims.sub || session.revokedAt || session.expiresAt < new Date()) {
       throw AppError.unauthenticated('Session is no longer valid', 'SESSION_REVOKED');

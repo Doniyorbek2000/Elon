@@ -23,7 +23,10 @@ export default async function globalSetup(): Promise<void> {
   process.env.E2E_DATABASE_NAME = name;
   process.env.DATABASE_URL = databaseUrl(name);
 
-  execSync('npx prisma migrate deploy', { stdio: 'pipe', env: { ...process.env, PRISMA_HIDE_UPDATE_MESSAGE: '1' } });
+  execSync('npx prisma migrate deploy', {
+    stdio: 'pipe',
+    env: { ...process.env, PRISMA_HIDE_UPDATE_MESSAGE: '1' },
+  });
   const prisma = new PrismaClient({ datasourceUrl: process.env.DATABASE_URL });
   try {
     await seedReferenceData(prisma);

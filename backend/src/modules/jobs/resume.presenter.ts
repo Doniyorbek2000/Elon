@@ -38,7 +38,11 @@ export function presentResume(
       endYear: e.endYear,
       description: e.description,
     })),
-    educations: resume.educations.map((e) => ({ institution: e.institution, degree: e.degree, endYear: e.endYear })),
+    educations: resume.educations.map((e) => ({
+      institution: e.institution,
+      degree: e.degree,
+      endYear: e.endYear,
+    })),
     updatedAt: resume.updatedAt,
   };
 }

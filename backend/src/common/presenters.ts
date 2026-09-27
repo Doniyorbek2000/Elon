@@ -28,10 +28,16 @@ export interface ApiMedia {
   variants: Partial<Record<'thumbnail' | 'feed' | 'detail' | 'original', string>>;
 }
 
-function variantUrl(media: MediaRow, variant: 'thumbnail' | 'feed' | 'detail', key: string | null): string | undefined {
+function variantUrl(
+  media: MediaRow,
+  variant: 'thumbnail' | 'feed' | 'detail',
+  key: string | null,
+): string | undefined {
   if (!key) return undefined;
   const cdn = env().MEDIA_PUBLIC_BASE_URL;
-  return cdn ? `${cdn.replace(/\/$/, '')}/${key}` : `${env().PUBLIC_API_URL}/api/v1/media/${media.id}/${variant}`;
+  return cdn
+    ? `${cdn.replace(/\/$/, '')}/${key}`
+    : `${env().PUBLIC_API_URL}/api/v1/media/${media.id}/${variant}`;
 }
 
 export function presentMedia(media: MediaRow): ApiMedia {
@@ -101,7 +107,10 @@ export const publicUserSelect = {
 
 export type PublicUserRow = Prisma.UserGetPayload<{ select: typeof publicUserSelect }>;
 
-export function presentUser(user: PublicUserRow, extra: { isOnline?: boolean; activeListings?: number } = {}) {
+export function presentUser(
+  user: PublicUserRow,
+  extra: { isOnline?: boolean; activeListings?: number } = {},
+) {
   const reviews = user.provider?.reviewCount ?? 0;
   return {
     id: user.id,

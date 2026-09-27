@@ -23,7 +23,14 @@ import { RateLimiterService } from '../../infra/rate-limiter.service';
 import { LocationsService } from '../locations/locations.service';
 import { MediaService } from '../media/media.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { offeringSelect, presentOffering, presentProviderCard, presentProviderDetail, providerCardSelect, providerDetailSelect } from './provider.presenter';
+import {
+  offeringSelect,
+  presentOffering,
+  presentProviderCard,
+  presentProviderDetail,
+  providerCardSelect,
+  providerDetailSelect,
+} from './provider.presenter';
 import { OfferingDto, PortfolioDto, ProviderDto, ProviderSearchQuery, ReviewDto } from './services.dto';
 
 @Injectable()
@@ -38,7 +45,10 @@ export class ServicesService {
   ) {}
 
   async categories() {
-    const rows = await this.prisma.serviceCategory.findMany({ where: { isActive: true }, orderBy: { sortOrder: 'asc' } });
+    const rows = await this.prisma.serviceCategory.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: 'asc' },
+    });
     return rows.map((c) => ({ id: c.id, name: c.name, iconKey: c.iconKey, tone: c.tone }));
   }
 
@@ -84,7 +94,11 @@ export class ServicesService {
       and.push({
         OR: [
           { searchText: { contains: token } },
-          { offerings: { some: { searchText: { contains: token }, status: OfferingStatus.ACTIVE, deletedAt: null } } },
+          {
+            offerings: {
+              some: { searchText: { contains: token }, status: OfferingStatus.ACTIVE, deletedAt: null },
+            },
+          },
         ],
       });
     }
@@ -105,17 +119,25 @@ export class ServicesService {
     });
     const nextCursor = rows.length > take ? encodeCursor({ o: offset + take }) : null;
     rows = rows.slice(0, take);
-    if (query.sort === 'nearest' && distanceById.size) rows.sort((a, b) => (distanceById.get(a.id) ?? 0) - (distanceById.get(b.id) ?? 0));
+    if (query.sort === 'nearest' && distanceById.size)
+      rows.sort((a, b) => (distanceById.get(a.id) ?? 0) - (distanceById.get(b.id) ?? 0));
 
     const [online, favorites] = await Promise.all([
       this.presence.onlineMany(rows.map((r) => r.userId)),
       viewer
-        ? this.prisma.favorite.findMany({ where: { userId: viewer.userId, providerId: { in: rows.map((r) => r.id) } }, select: { providerId: true } })
+        ? this.prisma.favorite.findMany({
+            where: { userId: viewer.userId, providerId: { in: rows.map((r) => r.id) } },
+            select: { providerId: true },
+          })
         : Promise.resolve([]),
     ]);
     const saved = new Set(favorites.map((f) => f.providerId));
     let items = rows.map((r) =>
-      presentProviderCard(r, { isOnline: online.has(r.userId), isFavorite: saved.has(r.id), distanceKm: distanceById.get(r.id) ?? null }),
+      presentProviderCard(r, {
+        isOnline: online.has(r.userId),
+        isFavorite: saved.has(r.id),
+        distanceKm: distanceById.get(r.id) ?? null,
+      }),
     );
     // Presence is ephemeral (Redis), so "online" narrows the current page.
     if (query.filter === 'online') items = items.filter((i) => i.profile.isOnline);
@@ -123,7 +145,10 @@ export class ServicesService {
   }
 
   async detail(id: string, viewer?: AuthUser) {
-    const provider = await this.prisma.serviceProvider.findFirst({ where: { id, deletedAt: null }, select: providerDetailSelect });
+    const provider = await this.prisma.serviceProvider.findFirst({
+      where: { id, deletedAt: null },
+      select: providerDetailSelect,
+    });
     if (!provider) throw AppError.notFound('Provider');
     const isOwner = viewer?.userId === provider.userId;
     if (provider.status !== ProviderStatus.ACTIVE && !isOwner) throw AppError.notFound('Provider');
@@ -132,7 +157,10 @@ export class ServicesService {
       viewer ? this.prisma.favorite.count({ where: { userId: viewer.userId, providerId: id } }) : 0,
       this.reviews(id, undefined, 5),
     ]);
-    return { ...presentProviderDetail(provider, { isOnline, isFavorite: favorite > 0, isOwner }), reviews: reviews.items };
+    return {
+      ...presentProviderDetail(provider, { isOnline, isFavorite: favorite > 0, isOwner }),
+      reviews: reviews.items,
+    };
   }
 
   async contact(viewer: AuthUser, id: string) {
@@ -155,18 +183,28 @@ export class ServicesService {
   }
 
   async mine(user: AuthUser) {
-    const provider = await this.prisma.serviceProvider.findFirst({ where: { userId: user.userId, deletedAt: null }, select: { id: true } });
+    const provider = await this.prisma.serviceProvider.findFirst({
+      where: { userId: user.userId, deletedAt: null },
+      select: { id: true },
+    });
     return provider ? this.detail(provider.id, user) : null;
   }
 
   async upsert(user: AuthUser, dto: ProviderDto) {
-    if (hasBlocking(assessText(dto.profession, dto.description))) throw AppError.validation('Remove card numbers from the description');
-    const categories = await this.prisma.serviceCategory.findMany({ where: { id: { in: dto.categoryIds }, isActive: true } });
-    if (categories.length !== new Set(dto.categoryIds).size) throw AppError.validation('Unknown service category', { field: 'categoryIds' });
+    if (hasBlocking(assessText(dto.profession, dto.description)))
+      throw AppError.validation('Remove card numbers from the description');
+    const categories = await this.prisma.serviceCategory.findMany({
+      where: { id: { in: dto.categoryIds }, isActive: true },
+    });
+    if (categories.length !== new Set(dto.categoryIds).size)
+      throw AppError.validation('Unknown service category', { field: 'categoryIds' });
     const place = await this.locations.resolvePlace(dto.place);
     const areas: Array<{ regionId: string; districtId: string | null }> = [];
     for (const area of dto.areas ?? []) {
-      const resolved = await this.locations.resolvePlace({ regionId: area.regionId, districtId: area.districtId });
+      const resolved = await this.locations.resolvePlace({
+        regionId: area.regionId,
+        districtId: area.districtId,
+      });
       areas.push({ regionId: resolved.regionId, districtId: resolved.districtId });
     }
     const data = {
@@ -179,7 +217,12 @@ export class ServicesService {
       districtId: place.districtId,
       lat: place.lat,
       lng: place.lng,
-      searchText: buildSearchText(dto.displayName, dto.profession, dto.description, categories.map((c) => c.name).join(' ')),
+      searchText: buildSearchText(
+        dto.displayName,
+        dto.profession,
+        dto.description,
+        categories.map((c) => c.name).join(' '),
+      ),
     };
     await this.prisma.$transaction(async (tx) => {
       const provider = await tx.serviceProvider.upsert({
@@ -188,18 +231,26 @@ export class ServicesService {
         update: { ...data, deletedAt: null },
       });
       await tx.serviceProviderCategory.deleteMany({ where: { providerId: provider.id } });
-      await tx.serviceProviderCategory.createMany({ data: dto.categoryIds.map((categoryId) => ({ providerId: provider.id, categoryId })) });
+      await tx.serviceProviderCategory.createMany({
+        data: dto.categoryIds.map((categoryId) => ({ providerId: provider.id, categoryId })),
+      });
       await tx.serviceArea.deleteMany({ where: { providerId: provider.id } });
       const unique = new Map(areas.map((a) => [`${a.regionId}:${a.districtId ?? ''}`, a]));
-      await tx.serviceArea.createMany({ data: [...unique.values()].map((a) => ({ ...a, providerId: provider.id })) });
+      await tx.serviceArea.createMany({
+        data: [...unique.values()].map((a) => ({ ...a, providerId: provider.id })),
+      });
     });
     return this.mine(user);
   }
 
   async setStatus(user: AuthUser, status: string) {
     const provider = await this.own(user.userId);
-    if (provider.status === ProviderStatus.SUSPENDED) throw AppError.forbidden('Provider profile is suspended');
-    await this.prisma.serviceProvider.update({ where: { id: provider.id }, data: { status: dbEnum(status) as ProviderStatus } });
+    if (provider.status === ProviderStatus.SUSPENDED)
+      throw AppError.forbidden('Provider profile is suspended');
+    await this.prisma.serviceProvider.update({
+      where: { id: provider.id },
+      data: { status: dbEnum(status) as ProviderStatus },
+    });
     return this.mine(user);
   }
 
@@ -208,19 +259,29 @@ export class ServicesService {
     const ids = await this.media.assertOwned(user.userId, dto.mediaIds, [MediaPurpose.PORTFOLIO]);
     await this.prisma.$transaction([
       this.prisma.portfolioItem.deleteMany({ where: { providerId: provider.id } }),
-      this.prisma.portfolioItem.createMany({ data: ids.map((mediaId, position) => ({ providerId: provider.id, mediaId, position })) }),
+      this.prisma.portfolioItem.createMany({
+        data: ids.map((mediaId, position) => ({ providerId: provider.id, mediaId, position })),
+      }),
     ]);
     return this.mine(user);
   }
 
   private async offeringData(user: AuthUser, dto: OfferingDto) {
-    const category = await this.prisma.serviceCategory.findFirst({ where: { id: dto.categoryId, isActive: true } });
+    const category = await this.prisma.serviceCategory.findFirst({
+      where: { id: dto.categoryId, isActive: true },
+    });
     if (!category) throw AppError.validation('Unknown service category', { field: 'categoryId' });
     if (dto.priceFrom != null && dto.priceTo != null && dto.priceTo < dto.priceFrom) {
       throw AppError.validation('priceTo must be ≥ priceFrom', { field: 'priceTo' });
     }
-    if (hasBlocking(assessText(dto.title, dto.description ?? ''))) throw AppError.validation('Remove card numbers from the offering');
-    const mediaIds = dto.mediaIds ? await this.media.assertOwned(user.userId, dto.mediaIds, [MediaPurpose.OFFERING, MediaPurpose.PORTFOLIO]) : undefined;
+    if (hasBlocking(assessText(dto.title, dto.description ?? '')))
+      throw AppError.validation('Remove card numbers from the offering');
+    const mediaIds = dto.mediaIds
+      ? await this.media.assertOwned(user.userId, dto.mediaIds, [
+          MediaPurpose.OFFERING,
+          MediaPurpose.PORTFOLIO,
+        ])
+      : undefined;
     return {
       data: {
         categoryId: dto.categoryId,
@@ -240,11 +301,17 @@ export class ServicesService {
 
   async createOffering(user: AuthUser, dto: OfferingDto) {
     const provider = await this.own(user.userId);
-    const count = await this.prisma.serviceOffering.count({ where: { providerId: provider.id, deletedAt: null } });
+    const count = await this.prisma.serviceOffering.count({
+      where: { providerId: provider.id, deletedAt: null },
+    });
     if (count >= 30) throw AppError.validation('At most 30 offerings');
     const { data, mediaIds } = await this.offeringData(user, dto);
     const offering = await this.prisma.serviceOffering.create({
-      data: { ...data, providerId: provider.id, media: { create: (mediaIds ?? []).map((mediaId, position) => ({ mediaId, position })) } },
+      data: {
+        ...data,
+        providerId: provider.id,
+        media: { create: (mediaIds ?? []).map((mediaId, position) => ({ mediaId, position })) },
+      },
       select: offeringSelect,
     });
     await this.linkCategory(provider.id, dto.categoryId);
@@ -253,13 +320,17 @@ export class ServicesService {
 
   async updateOffering(user: AuthUser, id: string, dto: OfferingDto) {
     const provider = await this.own(user.userId);
-    const existing = await this.prisma.serviceOffering.findFirst({ where: { id, providerId: provider.id, deletedAt: null } });
+    const existing = await this.prisma.serviceOffering.findFirst({
+      where: { id, providerId: provider.id, deletedAt: null },
+    });
     if (!existing) throw AppError.notFound('Offering');
     const { data, mediaIds } = await this.offeringData(user, dto);
     const offering = await this.prisma.$transaction(async (tx) => {
       if (mediaIds) {
         await tx.offeringMedia.deleteMany({ where: { offeringId: id } });
-        await tx.offeringMedia.createMany({ data: mediaIds.map((mediaId, position) => ({ offeringId: id, mediaId, position })) });
+        await tx.offeringMedia.createMany({
+          data: mediaIds.map((mediaId, position) => ({ offeringId: id, mediaId, position })),
+        });
       }
       return tx.serviceOffering.update({ where: { id }, data, select: offeringSelect });
     });
@@ -320,9 +391,12 @@ export class ServicesService {
    */
   async review(user: AuthUser, providerId: string, dto: ReviewDto) {
     await this.limiter.consume(`review:${user.userId}`, 20, 24 * 3600);
-    const provider = await this.prisma.serviceProvider.findFirst({ where: { id: providerId, deletedAt: null, status: ProviderStatus.ACTIVE } });
+    const provider = await this.prisma.serviceProvider.findFirst({
+      where: { id: providerId, deletedAt: null, status: ProviderStatus.ACTIVE },
+    });
     if (!provider) throw AppError.notFound('Provider');
-    if (provider.userId === user.userId) throw new AppError('NOT_ELIGIBLE', 'You cannot review yourself', 403);
+    if (provider.userId === user.userId)
+      throw new AppError('NOT_ELIGIBLE', 'You cannot review yourself', 403);
 
     const conversation = await this.prisma.conversation.findFirst({
       where: {

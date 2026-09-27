@@ -10,7 +10,13 @@ import { CategoriesService } from '../categories/categories.service';
 import { jobCardSelect, presentJobCard } from '../jobs/job.presenter';
 import { listingCardSelect, presentListingCard } from '../listings/listing.presenter';
 import { presentProviderCard, providerCardSelect } from '../services/provider.presenter';
-import { PostgresSearchProvider, SEARCH_PROVIDER, SearchFilters, SearchKind, SearchProvider } from './search.provider';
+import {
+  PostgresSearchProvider,
+  SEARCH_PROVIDER,
+  SearchFilters,
+  SearchKind,
+  SearchProvider,
+} from './search.provider';
 
 class SearchQuery {
   @IsString()
@@ -61,21 +67,43 @@ export class SearchService {
       viewerId: viewer?.userId,
     };
     const wants = (kind: string) => scope === 'all' || scope === kind;
-    const hits = async (kind: SearchKind) => (wants(kind === 'providers' ? 'services' : kind) ? this.provider.search(kind, query.q, filters, limit) : []);
-    const [listingHits, jobHits, providerHits] = await Promise.all([hits('listings'), hits('jobs'), hits('providers')]);
+    const hits = async (kind: SearchKind) =>
+      wants(kind === 'providers' ? 'services' : kind)
+        ? this.provider.search(kind, query.q, filters, limit)
+        : [];
+    const [listingHits, jobHits, providerHits] = await Promise.all([
+      hits('listings'),
+      hits('jobs'),
+      hits('providers'),
+    ]);
 
     const [listings, jobs, providers, users] = await Promise.all([
-      this.prisma.listing.findMany({ where: { id: { in: listingHits.map((h) => h.id) } }, select: listingCardSelect }),
+      this.prisma.listing.findMany({
+        where: { id: { in: listingHits.map((h) => h.id) } },
+        select: listingCardSelect,
+      }),
       this.prisma.job.findMany({ where: { id: { in: jobHits.map((h) => h.id) } }, select: jobCardSelect }),
-      this.prisma.serviceProvider.findMany({ where: { id: { in: providerHits.map((h) => h.id) } }, select: providerCardSelect }),
+      this.prisma.serviceProvider.findMany({
+        where: { id: { in: providerHits.map((h) => h.id) } },
+        select: providerCardSelect,
+      }),
       wants('users') ? this.users(query.q, limit, viewer) : Promise.resolve([]),
     ]);
     const normalized = normalizeText(query.q);
     const canonical = normalizeQuery(query.q);
     return {
-      listings: reorder(listings, listingHits.map((h) => h.id)).map((l) => presentListingCard(l)),
-      jobs: reorder(jobs, jobHits.map((h) => h.id)).map((j) => presentJobCard(j)),
-      providers: reorder(providers, providerHits.map((h) => h.id)).map((p) => presentProviderCard(p)),
+      listings: reorder(
+        listings,
+        listingHits.map((h) => h.id),
+      ).map((l) => presentListingCard(l)),
+      jobs: reorder(
+        jobs,
+        jobHits.map((h) => h.id),
+      ).map((j) => presentJobCard(j)),
+      providers: reorder(
+        providers,
+        providerHits.map((h) => h.id),
+      ).map((p) => presentProviderCard(p)),
       users,
       correctedQuery: canonical !== normalized ? canonical : null,
       engine: this.provider.name,
@@ -92,7 +120,11 @@ export class SearchService {
         AND: tokens.map((t) => ({ profile: { displayName: { contains: t, mode: 'insensitive' as const } } })),
         ...(viewer ? { blocksReceived: { none: { blockerId: viewer.userId } } } : {}),
         // Only people with public activity are discoverable.
-        OR: [{ listings: { some: { status: 'ACTIVE' } } }, { provider: { status: 'ACTIVE' } }, { jobs: { some: { status: 'ACTIVE' } } }],
+        OR: [
+          { listings: { some: { status: 'ACTIVE' } } },
+          { provider: { status: 'ACTIVE' } },
+          { jobs: { some: { status: 'ACTIVE' } } },
+        ],
       },
       select: { ...publicUserSelect, _count: { select: { listings: { where: { status: 'ACTIVE' } } } } },
       take: limit,
@@ -103,9 +135,16 @@ export class SearchService {
   async suggest(q: string) {
     const tokens = searchTokens(q);
     if (!tokens.length) return [];
-    const tree = (await this.categories.tree()) as Array<{ id: string; name: string; children: Array<{ id: string; name: string }> }>;
+    const tree = (await this.categories.tree()) as Array<{
+      id: string;
+      name: string;
+      children: Array<{ id: string; name: string }>;
+    }>;
     const categoryHits = tree
-      .flatMap((root) => [{ id: root.id, name: root.name, parent: null as string | null }, ...root.children.map((c) => ({ ...c, parent: root.name }))])
+      .flatMap((root) => [
+        { id: root.id, name: root.name, parent: null as string | null },
+        ...root.children.map((c) => ({ ...c, parent: root.name })),
+      ])
       .filter((c) => tokens.every((t) => normalizeText(c.name).includes(t)))
       .slice(0, 4)
       .map((c) => ({ text: c.name, kind: 'category', refId: c.id, subtitle: c.parent ?? 'Kategoriya' }));
@@ -114,13 +153,27 @@ export class SearchService {
       .filter((s) => tokens.every((t) => normalizeText(s.name).includes(t)))
       .slice(0, 3)
       .map((s) => ({ text: s.name, kind: 'serviceCategory', refId: s.id, subtitle: 'Xizmatlar' }));
-    const titles = (await this.provider.suggestTitles(q, 6)).map((t) => ({ text: t, kind: 'query', refId: null, subtitle: 'E’lonlar' }));
+    const titles = (await this.provider.suggestTitles(q, 6)).map((t) => ({
+      text: t,
+      kind: 'query',
+      refId: null,
+      subtitle: 'E’lonlar',
+    }));
     return [...categoryHits, ...serviceHits, ...titles].slice(0, 10);
   }
 
   /** Popular queries are curated until enough search analytics exist. */
   popular() {
-    return ['iPhone', 'Cobalt', 'Kvartira ijaraga', 'Santexnik', 'Haydovchi kerak', 'Konditsioner', 'Sement', 'Repetitor'];
+    return [
+      'iPhone',
+      'Cobalt',
+      'Kvartira ijaraga',
+      'Santexnik',
+      'Haydovchi kerak',
+      'Konditsioner',
+      'Sement',
+      'Repetitor',
+    ];
   }
 }
 

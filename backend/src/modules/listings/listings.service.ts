@@ -28,7 +28,12 @@ import { LocationsService } from '../locations/locations.service';
 import { MediaService } from '../media/media.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { FeedRow, buildFeedQuery } from './listing-feed.query';
-import { listingCardSelect, listingDetailSelect, presentListingCard, presentListingDetail } from './listing.presenter';
+import {
+  listingCardSelect,
+  listingDetailSelect,
+  presentListingCard,
+  presentListingDetail,
+} from './listing.presenter';
 import {
   CreateListingDto,
   FeedQuery,
@@ -74,8 +79,10 @@ export class ListingsService {
     const radiusKm = query.radius;
     let origin: { lat: number; lng: number } | undefined;
     if (query.lat != null && query.lng != null) origin = { lat: query.lat, lng: query.lng };
-    else if (radiusKm || sort === 'nearest') origin = await this.locations.origin(query.region, query.district);
-    if (radiusKm && !origin) throw AppError.validation('Radius search needs a region, district or coordinates');
+    else if (radiusKm || sort === 'nearest')
+      origin = await this.locations.origin(query.region, query.district);
+    if (radiusKm && !origin)
+      throw AppError.validation('Radius search needs a region, district or coordinates');
 
     const { sql, nextCursor } = buildFeedQuery(
       {
@@ -108,7 +115,10 @@ export class ListingsService {
     const [listings, favorites] = await Promise.all([
       this.prisma.listing.findMany({ where: { id: { in: ids } }, select: listingCardSelect }),
       viewer
-        ? this.prisma.favorite.findMany({ where: { userId: viewer.userId, listingId: { in: ids } }, select: { listingId: true } })
+        ? this.prisma.favorite.findMany({
+            where: { userId: viewer.userId, listingId: { in: ids } },
+            select: { listingId: true },
+          })
         : Promise.resolve([]),
     ]);
     const byId = new Map(listings.map((l) => [l.id, l]));
@@ -124,17 +134,25 @@ export class ListingsService {
   }
 
   async detail(id: string, viewer?: AuthUser, viewerKey?: string) {
-    const row = await this.prisma.listing.findFirst({ where: { id, deletedAt: null }, select: listingDetailSelect });
+    const row = await this.prisma.listing.findFirst({
+      where: { id, deletedAt: null },
+      select: listingDetailSelect,
+    });
     if (!row) throw AppError.notFound('Listing');
     const isOwner = viewer?.userId === row.sellerId;
-    const publiclyVisible = row.status === ListingStatus.ACTIVE || row.status === ListingStatus.RESERVED || row.status === ListingStatus.SOLD;
+    const publiclyVisible =
+      row.status === ListingStatus.ACTIVE ||
+      row.status === ListingStatus.RESERVED ||
+      row.status === ListingStatus.SOLD;
     if (!publiclyVisible && !isOwner && !this.isModerator(viewer)) throw AppError.notFound('Listing');
 
     if (!isOwner && viewerKey && row.status === ListingStatus.ACTIVE) await this.countView(id, viewerKey);
     const [favorite, sellerOnline, sellerActiveListings] = await Promise.all([
       viewer ? this.prisma.favorite.count({ where: { userId: viewer.userId, listingId: id } }) : 0,
       this.presence.isOnline(row.sellerId),
-      this.prisma.listing.count({ where: { sellerId: row.sellerId, status: ListingStatus.ACTIVE, deletedAt: null } }),
+      this.prisma.listing.count({
+        where: { sellerId: row.sellerId, status: ListingStatus.ACTIVE, deletedAt: null },
+      }),
     ]);
     return presentListingDetail(row, env().WEB_BASE_URL, {
       isFavorite: favorite > 0,
@@ -153,7 +171,10 @@ export class ListingsService {
   }
 
   async similar(id: string, viewer?: AuthUser) {
-    const listing = await this.prisma.listing.findFirst({ where: { id, deletedAt: null }, select: { categoryId: true, regionId: true } });
+    const listing = await this.prisma.listing.findFirst({
+      where: { id, deletedAt: null },
+      select: { categoryId: true, regionId: true },
+    });
     if (!listing) throw AppError.notFound('Listing');
     const root = await this.categories.root(listing.categoryId);
     const { sql } = buildFeedQuery(
@@ -185,7 +206,10 @@ export class ListingsService {
       select: { ...listingCardSelect, updatedAt: true },
     });
     const page = keysetPage(rows, take, (r) => r.updatedAt);
-    return new Page(page.items.map((row) => presentListingCard(row)), page.nextCursor);
+    return new Page(
+      page.items.map((row) => presentListingCard(row)),
+      page.nextCursor,
+    );
   }
 
   // ────────────────────────────────────────────────────────────── writes
@@ -226,7 +250,8 @@ export class ListingsService {
 
   async update(user: AuthUser, id: string, dto: UpdateListingDto) {
     const listing = await this.owned(user, id);
-    if (listing.status === ListingStatus.PENDING_REVIEW) throw AppError.invalidState('Listing is under review');
+    if (listing.status === ListingStatus.PENDING_REVIEW)
+      throw AppError.invalidState('Listing is under review');
     const categoryId = dto.categoryId ?? listing.categoryId;
     const category = await this.categories.get(categoryId);
     if (category.kind !== CategoryKind.MARKETPLACE || !(await this.categories.isLeaf(category.id))) {
@@ -239,7 +264,8 @@ export class ListingsService {
       description: dto.description,
       negotiable: dto.negotiable,
     };
-    if (dto.condition !== undefined) data.condition = dto.condition ? (dbEnum(dto.condition) as ItemCondition) : null;
+    if (dto.condition !== undefined)
+      data.condition = dto.condition ? (dbEnum(dto.condition) as ItemCondition) : null;
     if (dto.price !== undefined) {
       const price = this.normalizePrice(dto.price);
       Object.assign(data, { priceAmount: price.amount, currency: price.currency, priceUzs: price.uzs });
@@ -249,8 +275,14 @@ export class ListingsService {
       dto.attributes !== undefined || dto.categoryId !== undefined
         ? await this.categories.validateAttributes(categoryId, dto.attributes ?? {})
         : undefined;
-    const mediaIds = dto.mediaIds ? await this.media.assertOwned(user.userId, dto.mediaIds, [MediaPurpose.LISTING]) : undefined;
-    data.searchText = buildSearchText(dto.title ?? listing.title, dto.description ?? listing.description, category.name);
+    const mediaIds = dto.mediaIds
+      ? await this.media.assertOwned(user.userId, dto.mediaIds, [MediaPurpose.LISTING])
+      : undefined;
+    data.searchText = buildSearchText(
+      dto.title ?? listing.title,
+      dto.description ?? listing.description,
+      category.name,
+    );
 
     await this.prisma.$transaction(async (tx) => {
       await tx.listing.update({ where: { id }, data });
@@ -260,14 +292,20 @@ export class ListingsService {
       }
       if (mediaIds) {
         await tx.listingMedia.deleteMany({ where: { listingId: id } });
-        await tx.listingMedia.createMany({ data: mediaIds.map((mediaId, position) => ({ listingId: id, mediaId, position })) });
+        await tx.listingMedia.createMany({
+          data: mediaIds.map((mediaId, position) => ({ listingId: id, mediaId, position })),
+        });
       }
     });
 
     // Content edits on a live listing are re-screened.
     if (listing.status === ListingStatus.ACTIVE || listing.status === ListingStatus.RESERVED) {
       const signals = await this.screen(id);
-      if (requiresModeration(signals)) await this.sendToReview(id, signals.map((s) => s.code));
+      if (requiresModeration(signals))
+        await this.sendToReview(
+          id,
+          signals.map((s) => s.code),
+        );
     }
     return this.detail(id, user);
   }
@@ -281,10 +319,15 @@ export class ListingsService {
     await this.assertPublishable(id);
     const signals = await this.screen(id);
     if (hasBlocking(signals)) {
-      throw AppError.validation('Remove card numbers from the listing', { riskFlags: signals.map((s) => s.code) });
+      throw AppError.validation('Remove card numbers from the listing', {
+        riskFlags: signals.map((s) => s.code),
+      });
     }
     if (requiresModeration(signals)) {
-      await this.sendToReview(id, signals.map((s) => s.code));
+      await this.sendToReview(
+        id,
+        signals.map((s) => s.code),
+      );
     } else {
       await this.activate(id);
     }
@@ -302,7 +345,10 @@ export class ListingsService {
       await this.assertPublishable(id);
       const signals = await this.screen(id);
       if (requiresModeration(signals)) {
-        await this.sendToReview(id, signals.map((s) => s.code));
+        await this.sendToReview(
+          id,
+          signals.map((s) => s.code),
+        );
         return this.detail(id, user);
       }
       await this.activate(id);
@@ -317,7 +363,10 @@ export class ListingsService {
 
   async remove(user: AuthUser, id: string): Promise<void> {
     await this.owned(user, id);
-    await this.prisma.listing.update({ where: { id }, data: { deletedAt: new Date(), status: ListingStatus.ARCHIVED } });
+    await this.prisma.listing.update({
+      where: { id },
+      data: { deletedAt: new Date(), status: ListingStatus.ARCHIVED },
+    });
   }
 
   /** Seller phone on explicit request only; rate-limited and respecting privacy. */
@@ -343,16 +392,23 @@ export class ListingsService {
       select: { ...listingDetailSelect, updatedAt: true },
     });
     const page = keysetPage(rows, take, (r) => r.updatedAt);
-    return new Page(page.items.map((r) => presentListingDetail(r, env().WEB_BASE_URL, { isOwner: true })), page.nextCursor);
+    return new Page(
+      page.items.map((r) => presentListingDetail(r, env().WEB_BASE_URL, { isOwner: true })),
+      page.nextCursor,
+    );
   }
 
   async moderate(moderator: AuthUser, id: string, decision: 'approve' | 'reject', reason?: string) {
     const listing = await this.prisma.listing.findFirst({ where: { id, deletedAt: null } });
     if (!listing) throw AppError.notFound('Listing');
-    if (listing.status !== ListingStatus.PENDING_REVIEW) throw AppError.invalidState('Listing is not awaiting review');
+    if (listing.status !== ListingStatus.PENDING_REVIEW)
+      throw AppError.invalidState('Listing is not awaiting review');
     if (decision === 'approve') await this.activate(id);
     else {
-      await this.prisma.listing.update({ where: { id }, data: { status: ListingStatus.REJECTED, rejectReason: reason } });
+      await this.prisma.listing.update({
+        where: { id },
+        data: { status: ListingStatus.REJECTED, rejectReason: reason },
+      });
     }
     await this.prisma.moderationEvent.create({
       data: {
@@ -366,7 +422,10 @@ export class ListingsService {
     await this.notifications.notify(listing.sellerId, {
       type: NotificationType.LISTING_STATUS,
       title: decision === 'approve' ? 'E’loningiz faollashtirildi' : 'E’loningiz rad etildi',
-      body: decision === 'approve' ? `«${listing.title}» endi hammaga ko‘rinadi.` : `«${listing.title}»: ${reason ?? 'qoidalarga mos emas'}`,
+      body:
+        decision === 'approve'
+          ? `«${listing.title}» endi hammaga ko‘rinadi.`
+          : `«${listing.title}»: ${reason ?? 'qoidalarga mos emas'}`,
       route: `/listing/${id}`,
       data: { listingId: id },
     });
@@ -395,7 +454,11 @@ export class ListingsService {
     return listing;
   }
 
-  private normalizePrice(price: MoneyDto | null): { amount: bigint | null; currency: Currency; uzs: bigint | null } {
+  private normalizePrice(price: MoneyDto | null): {
+    amount: bigint | null;
+    currency: Currency;
+    uzs: bigint | null;
+  } {
     if (!price) return { amount: null, currency: Currency.UZS, uzs: null };
     const currency = price.currency === 'usd' ? Currency.USD : Currency.UZS;
     const amount = BigInt(price.amount);
@@ -410,12 +473,14 @@ export class ListingsService {
     });
     const schema = await this.categories.effectiveSchema(listing.categoryId);
     const errors: Record<string, string> = {};
-    if (schema.photosRequired && listing._count.media === 0) errors.mediaIds = 'At least one photo is required';
+    if (schema.photosRequired && listing._count.media === 0)
+      errors.mediaIds = 'At least one photo is required';
     if (listing._count.media > MAX_LISTING_PHOTOS) errors.mediaIds = `At most ${MAX_LISTING_PHOTOS} photos`;
     if (schema.priceMode === PriceMode.REQUIRED && listing.priceAmount == null && !listing.negotiable) {
       errors.price = 'Price is required unless negotiable';
     }
-    if (listing.currency === Currency.USD && !schema.allowUsd) errors.price = 'This category accepts so‘m only';
+    if (listing.currency === Currency.USD && !schema.allowUsd)
+      errors.price = 'This category accepts so‘m only';
     if (Object.keys(errors).length) throw AppError.validation('Listing is incomplete', { fields: errors });
   }
 
@@ -457,7 +522,12 @@ export class ListingsService {
       data: { status: ListingStatus.PENDING_REVIEW, flagged: true, riskFlags: flags },
     });
     await this.prisma.moderationEvent.create({
-      data: { targetType: ReportTarget.LISTING, targetId: id, action: ModerationAction.AUTO_FLAGGED, reason: flags.join(',') },
+      data: {
+        targetType: ReportTarget.LISTING,
+        targetId: id,
+        action: ModerationAction.AUTO_FLAGGED,
+        reason: flags.join(','),
+      },
     });
     await this.queues.moderation({ targetType: 'LISTING', targetId: id, reason: flags.join(',') });
     this.logger.log({ listingId: id, flags }, 'Listing sent to moderation');

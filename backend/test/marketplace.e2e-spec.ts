@@ -2,7 +2,19 @@ import request from 'supertest';
 
 import { StorageService } from '../src/infra/storage.service';
 import { PrismaService } from '../src/infra/prisma.service';
-import { as, clearOtpCooldown, NAMANGAN_CHUST, signIn, startTestApp, stopTestApp, TASHKENT_YUNUSOBOD, TestContext, TestUser, uploadReadyPhoto, waitFor } from './helpers';
+import {
+  as,
+  clearOtpCooldown,
+  NAMANGAN_CHUST,
+  signIn,
+  startTestApp,
+  stopTestApp,
+  TASHKENT_YUNUSOBOD,
+  TestContext,
+  TestUser,
+  uploadReadyPhoto,
+  waitFor,
+} from './helpers';
 
 describe('Marketplace: locations, listings, media, feed, favorites', () => {
   let ctx: TestContext;
@@ -22,13 +34,21 @@ describe('Marketplace: locations, listings, media, feed, favorites', () => {
   it('flow 1: login → choose location → feed respects the chosen area', async () => {
     const tree = await request(ctx.http).get('/api/v1/locations/tree').expect(200);
     expect(tree.body.data.length).toBe(14);
-    const resolved = await request(ctx.http).get('/api/v1/locations/resolve?lat=41.0034&lng=71.2372').expect(200);
-    expect(resolved.body.data).toEqual(expect.objectContaining({ regionId: 'namangan', districtId: 'chust' }));
+    const resolved = await request(ctx.http)
+      .get('/api/v1/locations/resolve?lat=41.0034&lng=71.2372')
+      .expect(200);
+    expect(resolved.body.data).toEqual(
+      expect.objectContaining({ regionId: 'namangan', districtId: 'chust' }),
+    );
 
-    const me = await as(ctx.http, buyer).patch('/me', { preferredRegionId: 'namangan', preferredDistrictId: 'chust' }).expect(200);
+    const me = await as(ctx.http, buyer)
+      .patch('/me', { preferredRegionId: 'namangan', preferredDistrictId: 'chust' })
+      .expect(200);
     expect(me.body.data.preferredLocation.districtId).toBe('chust');
     // Hierarchy is validated server-side.
-    await as(ctx.http, buyer).patch('/me', { preferredRegionId: 'namangan', preferredDistrictId: 'yunusobod' }).expect(422);
+    await as(ctx.http, buyer)
+      .patch('/me', { preferredRegionId: 'namangan', preferredDistrictId: 'yunusobod' })
+      .expect(422);
 
     const feed = await as(ctx.http, buyer).get('/listings?region=namangan&district=chust').expect(200);
     expect(Array.isArray(feed.body.data)).toBe(true);
@@ -39,13 +59,19 @@ describe('Marketplace: locations, listings, media, feed, favorites', () => {
     const transport = res.body.data.find((c: { id: string }) => c.id === 'transport');
     const cars = transport.children.find((c: { id: string }) => c.id === 'cars');
     const keys = cars.schema.fields.map((f: { key: string }) => f.key);
-    expect(keys).toEqual(expect.arrayContaining(['brand', 'model', 'year', 'mileage', 'transmission', 'fuel', 'color']));
+    expect(keys).toEqual(
+      expect.arrayContaining(['brand', 'model', 'year', 'mileage', 'transmission', 'fuel', 'color']),
+    );
     const types = new Set(cars.schema.fields.map((f: { type: string }) => f.type));
     expect(types).toEqual(new Set(['select', 'text', 'number', 'multiSelect', 'boolean']));
   });
 
   it('rejects unsupported uploads and strips metadata from renditions', async () => {
-    const bad = await as(ctx.http, seller).upload(Buffer.from('%PDF-1.4 not an image'), 'listing', 'file.jpg');
+    const bad = await as(ctx.http, seller).upload(
+      Buffer.from('%PDF-1.4 not an image'),
+      'listing',
+      'file.jpg',
+    );
     expect(bad.status).toBe(415);
     expect(bad.body.error.code).toBe('UNSUPPORTED_MEDIA');
 
@@ -87,7 +113,15 @@ describe('Marketplace: locations, listings, media, feed, favorites', () => {
         price: { amount: 11500, currency: 'usd' },
         negotiable: true,
         condition: 'used',
-        attributes: { brand: 'Chevrolet', model: 'Cobalt', year: 2021, mileage: 45000, transmission: 'Avtomat', options: ['Konditsioner'], credit: false },
+        attributes: {
+          brand: 'Chevrolet',
+          model: 'Cobalt',
+          year: 2021,
+          mileage: 45000,
+          transmission: 'Avtomat',
+          options: ['Konditsioner'],
+          credit: false,
+        },
         place: NAMANGAN_CHUST,
         mediaIds: photos,
       })
@@ -97,11 +131,15 @@ describe('Marketplace: locations, listings, media, feed, favorites', () => {
     expect(created.body.data.images).toHaveLength(2);
     expect(created.body.data.images[0].id).toBe(photos[0]);
 
-    const feed = await as(ctx.http, buyer).get('/listings?region=namangan&district=chust&category=transport').expect(200);
+    const feed = await as(ctx.http, buyer)
+      .get('/listings?region=namangan&district=chust&category=transport')
+      .expect(200);
     expect(feed.body.data.map((l: { id: string }) => l.id)).toContain(listingId);
 
     const detail = await as(ctx.http, buyer).get(`/listings/${listingId}`).expect(200);
-    expect(detail.body.data.attributes).toEqual(expect.arrayContaining([expect.objectContaining({ key: 'brand', value: 'Chevrolet' })]));
+    expect(detail.body.data.attributes).toEqual(
+      expect.arrayContaining([expect.objectContaining({ key: 'brand', value: 'Chevrolet' })]),
+    );
     expect(detail.body.data.seller.id).toBe(seller.userId);
     expect(detail.body.data.shareUrl).toContain(`/listing/${listingId}`);
     expect(detail.body.data.rejectReason).toBeUndefined();
@@ -120,7 +158,9 @@ describe('Marketplace: locations, listings, media, feed, favorites', () => {
         publish: false,
       })
       .expect(422);
-    expect(Object.keys(res.body.error.details.fields)).toEqual(expect.arrayContaining(['brand', 'year', 'hacker']));
+    expect(Object.keys(res.body.error.details.fields)).toEqual(
+      expect.arrayContaining(['brand', 'year', 'hacker']),
+    );
   });
 
   it('flow 8: feed respects area changes (Tashkent listing not in Chust feed)', async () => {
@@ -146,14 +186,18 @@ describe('Marketplace: locations, listings, media, feed, favorites', () => {
     expect(tashkentFeed.body.data.map((l: { id: string }) => l.id)).toEqual([tashkent.body.data.id]);
 
     // Nearby: 25 km around Chust centre includes Chust, excludes Tashkent.
-    const nearby = await as(ctx.http, buyer).get('/listings?lat=41.0034&lng=71.2372&radius=25&sort=nearest').expect(200);
+    const nearby = await as(ctx.http, buyer)
+      .get('/listings?lat=41.0034&lng=71.2372&radius=25&sort=nearest')
+      .expect(200);
     const nearbyIds = nearby.body.data.map((l: { id: string }) => l.id);
     expect(nearbyIds).toContain(listingId);
     expect(nearbyIds).not.toContain(tashkent.body.data.id);
   });
 
   it('search tolerates Cyrillic and typos', async () => {
-    const res = await as(ctx.http, buyer).get(`/search?q=${encodeURIComponent('кобалт')}&scope=listings`).expect(200);
+    const res = await as(ctx.http, buyer)
+      .get(`/search?q=${encodeURIComponent('кобалт')}&scope=listings`)
+      .expect(200);
     expect(res.body.data.listings.map((l: { id: string }) => l.id)).toContain(listingId);
     const typo = await as(ctx.http, buyer).get('/search?q=cobolt&scope=listings').expect(200);
     expect(typo.body.data.listings.map((l: { id: string }) => l.id)).toContain(listingId);
@@ -181,12 +225,17 @@ describe('Marketplace: locations, listings, media, feed, favorites', () => {
     await intruder.patch(`/listings/${listingId}`, { title: 'Hacked title here' }).expect(404);
     await intruder.post(`/listings/${listingId}/status`, { status: 'sold' }).expect(404);
     await intruder.delete(`/listings/${listingId}`).expect(404);
-    await request(ctx.http).patch(`/api/v1/listings/${listingId}`).send({ title: 'Anonymous edit' }).expect(401);
+    await request(ctx.http)
+      .patch(`/api/v1/listings/${listingId}`)
+      .send({ title: 'Anonymous edit' })
+      .expect(401);
     // Client-supplied owner fields are rejected, not trusted.
     await as(ctx.http, seller).patch(`/listings/${listingId}`, { sellerId: buyer.userId }).expect(422);
     // Media owned by someone else cannot be attached.
     const foreignPhoto = await uploadReadyPhoto(ctx.http, buyer);
-    await as(ctx.http, seller).patch(`/listings/${listingId}`, { mediaIds: [foreignPhoto] }).expect(422);
+    await as(ctx.http, seller)
+      .patch(`/listings/${listingId}`, { mediaIds: [foreignPhoto] })
+      .expect(422);
     // Regular users cannot reach moderation.
     await as(ctx.http, seller).get('/moderation/listings').expect(403);
   });
@@ -220,10 +269,14 @@ describe('Marketplace: locations, listings, media, feed, favorites', () => {
     const first = await as(ctx.http, buyer).get('/listings?category=home_goods&limit=2').expect(200);
     expect(first.body.data).toHaveLength(2);
     expect(first.body.meta.nextCursor).toBeTruthy();
-    const second = await as(ctx.http, buyer).get(`/listings?category=home_goods&limit=2&cursor=${first.body.meta.nextCursor}`).expect(200);
+    const second = await as(ctx.http, buyer)
+      .get(`/listings?category=home_goods&limit=2&cursor=${first.body.meta.nextCursor}`)
+      .expect(200);
     const ids = new Set([...first.body.data, ...second.body.data].map((l: { id: string }) => l.id));
     expect(ids.size).toBe(4);
-    const priceSorted = await as(ctx.http, buyer).get('/listings?category=home_goods&sort=priceAsc&limit=50').expect(200);
+    const priceSorted = await as(ctx.http, buyer)
+      .get('/listings?category=home_goods&sort=priceAsc&limit=50')
+      .expect(200);
     const prices = priceSorted.body.data.map((l: { price: { amount: number } }) => l.price.amount);
     expect(prices).toEqual([...prices].sort((a: number, b: number) => a - b));
     await as(ctx.http, buyer).get('/listings?cursor=not-a-real-cursor').expect(422);

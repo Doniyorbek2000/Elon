@@ -1,9 +1,30 @@
-import { Body, Controller, Delete, Get, Header, HttpCode, Module, Param, ParseUUIDPipe, Patch, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  HttpCode,
+  Module,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { AuthUser, CurrentUser, MaybeUser, OptionalAuth, Public } from '../../common/auth.decorators';
 import { CursorQuery } from '../../common/pagination';
-import { OfferingDto, PortfolioDto, ProviderDto, ProviderSearchQuery, ProviderStatusDto, ReviewDto } from './services.dto';
+import {
+  OfferingDto,
+  PortfolioDto,
+  ProviderDto,
+  ProviderSearchQuery,
+  ProviderStatusDto,
+  ReviewDto,
+} from './services.dto';
 import { ServicesService } from './services.service';
 
 @ApiTags('services')
@@ -89,7 +110,11 @@ class ServicesController {
 
   @ApiBearerAuth()
   @Patch('me/provider/offerings/:id')
-  updateOffering(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string, @Body() dto: OfferingDto) {
+  updateOffering(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: OfferingDto,
+  ) {
     return this.services.updateOffering(user, id, dto);
   }
 

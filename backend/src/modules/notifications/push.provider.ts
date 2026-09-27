@@ -52,7 +52,10 @@ export class FcmPushProvider implements PushProvider {
           token: message.token,
           notification: { title: message.title, body: message.body },
           data: message.data,
-          android: { priority: 'HIGH', notification: { channel_id: 'default', click_action: 'FLUTTER_NOTIFICATION_CLICK' } },
+          android: {
+            priority: 'HIGH',
+            notification: { channel_id: 'default', click_action: 'FLUTTER_NOTIFICATION_CLICK' },
+          },
           apns: { payload: { aps: { sound: 'default', 'mutable-content': 1 } } },
         },
       }),
@@ -72,7 +75,8 @@ export class LogPushProvider implements PushProvider {
 
   async send(message: PushMessage): Promise<PushResult> {
     LogPushProvider.outbox.push(message);
-    if (env().NODE_ENV === 'development') this.logger.log(`push → ${message.data.route ?? ''} "${message.title}"`);
+    if (env().NODE_ENV === 'development')
+      this.logger.log(`push → ${message.data.route ?? ''} "${message.title}"`);
     return 'sent';
   }
 }

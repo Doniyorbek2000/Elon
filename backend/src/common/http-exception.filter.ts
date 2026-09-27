@@ -59,20 +59,28 @@ export class HttpExceptionFilter implements ExceptionFilter {
         return { status: 404, body: { error: { code: 'NOT_FOUND', message: 'Resource not found' } } };
       }
       if (exception.code === 'P2003') {
-        return { status: 422, body: { error: { code: 'VALIDATION_FAILED', message: 'Referenced resource does not exist' } } };
+        return {
+          status: 422,
+          body: { error: { code: 'VALIDATION_FAILED', message: 'Referenced resource does not exist' } },
+        };
       }
     }
     if (exception instanceof HttpException) {
       const status = exception.getStatus();
       const raw = exception.getResponse();
-      const message = typeof raw === 'string' ? raw : ((raw as { message?: unknown }).message ?? exception.message);
+      const message =
+        typeof raw === 'string' ? raw : ((raw as { message?: unknown }).message ?? exception.message);
       const details = Array.isArray(message) ? { fields: message } : undefined;
       return {
         status,
         body: {
           error: {
             code: statusToCode[status] ?? (status >= 500 ? 'INTERNAL' : 'VALIDATION_FAILED'),
-            message: Array.isArray(message) ? 'Validation failed' : String(message),
+            message: Array.isArray(message)
+              ? 'Validation failed'
+              : typeof message === 'string'
+                ? message
+                : exception.message,
             details,
           },
         },

@@ -2,7 +2,18 @@ import { Body, Controller, Get, Injectable, Module, Param, ParseUUIDPipe, Patch 
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ListingStatus, MediaPurpose, MediaStatus, Prisma, UserStatus } from '@prisma/client';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsIn, IsInt, IsOptional, IsString, IsUUID, Length, Max, MaxLength, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Length,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 import { AuthUser, CurrentUser, OptionalAuth } from '../../common/auth.decorators';
 import { AppError } from '../../common/errors';
@@ -121,7 +132,8 @@ export class UsersService {
         const media = await this.prisma.media.findFirst({
           where: { id: dto.avatarId, ownerId: userId, purpose: MediaPurpose.AVATAR, deletedAt: null },
         });
-        if (!media || media.status === MediaStatus.FAILED) throw AppError.validation('Invalid avatar', { field: 'avatarId' });
+        if (!media || media.status === MediaStatus.FAILED)
+          throw AppError.validation('Invalid avatar', { field: 'avatarId' });
       }
       data.avatarId = dto.avatarId;
     }
@@ -147,7 +159,9 @@ export class UsersService {
     });
     if (!user) throw AppError.notFound('User');
     const [activeListings, isOnline] = await Promise.all([
-      this.prisma.listing.count({ where: { sellerId: userId, status: ListingStatus.ACTIVE, deletedAt: null } }),
+      this.prisma.listing.count({
+        where: { sellerId: userId, status: ListingStatus.ACTIVE, deletedAt: null },
+      }),
       this.presence.isOnline(userId),
     ]);
     return presentUser(user, { activeListings, isOnline });

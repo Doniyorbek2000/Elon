@@ -37,7 +37,11 @@ class ChatController {
   }
 
   @Get(':id/messages')
-  messages(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string, @Query() query: MessagesQuery) {
+  messages(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: MessagesQuery,
+  ) {
     return this.chat.messages(user.userId, id, query.cursor, query.limit);
   }
 

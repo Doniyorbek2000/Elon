@@ -43,7 +43,8 @@ export const nextIp = () => {
   return `10.${(n >> 16) & 255}.${(n >> 8) & 255}.${n & 255}`;
 };
 
-export const nextPhone = () => `99890${String(suiteSeed).padStart(3, '0')}${String(counter++).padStart(4, '0')}`;
+export const nextPhone = () =>
+  `99890${String(suiteSeed).padStart(3, '0')}${String(counter++).padStart(4, '0')}`;
 
 export interface TestUser {
   userId: string;
@@ -54,7 +55,11 @@ export interface TestUser {
   ip: string;
 }
 
-export async function signIn(http: App, phone = nextPhone(), deviceId = `device-${phone}`): Promise<TestUser> {
+export async function signIn(
+  http: App,
+  phone = nextPhone(),
+  deviceId = `device-${phone}`,
+): Promise<TestUser> {
   const ip = nextIp();
   await request(http).post('/api/v1/auth/otp/request').set('X-Forwarded-For', ip).send({ phone }).expect(200);
   const code = DevOtpSender.outbox.get(phone);
@@ -64,13 +69,19 @@ export async function signIn(http: App, phone = nextPhone(), deviceId = `device-
     .set('X-Forwarded-For', ip)
     .send({ phone, code, device: { id: deviceId, platform: 'android', name: 'Test device' } })
     .expect(200);
-  const data = res.body.data as { accessToken: string; refreshToken: string; sessionId: string; userId: string };
+  const data = res.body.data as {
+    accessToken: string;
+    refreshToken: string;
+    sessionId: string;
+    userId: string;
+  };
   return { ...data, phone, ip };
 }
 
 /** Authenticated request helpers bound to a user. */
 export function as(http: App, user: TestUser) {
-  const auth = (r: request.Test) => r.set('Authorization', `Bearer ${user.accessToken}`).set('X-Forwarded-For', user.ip);
+  const auth = (r: request.Test) =>
+    r.set('Authorization', `Bearer ${user.accessToken}`).set('X-Forwarded-For', user.ip);
   return {
     get: (url: string) => auth(request(http).get(`/api/v1${url}`)),
     post: (url: string, body?: object) => auth(request(http).post(`/api/v1${url}`)).send(body ?? {}),
@@ -89,7 +100,11 @@ export async function jpeg(width = 1600, height = 1200, color = { r: 200, g: 60,
     .toBuffer();
 }
 
-export async function waitFor<T>(probe: () => Promise<T | undefined | null | false>, timeoutMs = 15000, stepMs = 150): Promise<T> {
+export async function waitFor<T>(
+  probe: () => Promise<T | undefined | null | false>,
+  timeoutMs = 15000,
+  stepMs = 150,
+): Promise<T> {
   const deadline = Date.now() + timeoutMs;
   for (;;) {
     const value = await probe();
@@ -101,7 +116,9 @@ export async function waitFor<T>(probe: () => Promise<T | undefined | null | fal
 
 /** Uploads a photo and waits until the worker produced renditions. */
 export async function uploadReadyPhoto(http: App, user: TestUser, purpose = 'listing'): Promise<string> {
-  const res = await as(http, user).upload(await jpeg(), purpose).expect(201);
+  const res = await as(http, user)
+    .upload(await jpeg(), purpose)
+    .expect(201);
   const id = res.body.data.id as string;
   await waitFor(async () => {
     const media = await as(http, user).get(`/media/${id}`).expect(200);

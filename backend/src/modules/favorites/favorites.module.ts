@@ -1,6 +1,6 @@
 import { Controller, Delete, Get, Injectable, Module, Param, Put, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { JobStatus, ListingStatus, Prisma, ProviderStatus } from '@prisma/client';
+import { JobStatus, ListingStatus, ProviderStatus } from '@prisma/client';
 import { IsIn, IsUUID } from 'class-validator';
 
 import { AuthUser, CurrentUser } from '../../common/auth.decorators';
@@ -36,7 +36,8 @@ export class FavoritesService {
 
   private async assertTarget(kind: Kind, id: string): Promise<void> {
     const count = await {
-      listings: () => this.prisma.listing.count({ where: { id, deletedAt: null, status: { not: ListingStatus.DRAFT } } }),
+      listings: () =>
+        this.prisma.listing.count({ where: { id, deletedAt: null, status: { not: ListingStatus.DRAFT } } }),
       jobs: () => this.prisma.job.count({ where: { id, deletedAt: null } }),
       providers: () => this.prisma.serviceProvider.count({ where: { id, deletedAt: null } }),
     }[kind]();
@@ -50,8 +51,9 @@ export class FavoritesService {
     await this.prisma.$transaction(async (tx) => {
       const existing = await tx.favorite.findFirst({ where: { userId, [column]: id } });
       if (existing) return;
-      await tx.favorite.create({ data: { userId, [column]: id } as Prisma.FavoriteUncheckedCreateInput });
-      if (kind === 'listings') await tx.listing.update({ where: { id }, data: { favoriteCount: { increment: 1 } } });
+      await tx.favorite.create({ data: { userId, [column]: id } });
+      if (kind === 'listings')
+        await tx.listing.update({ where: { id }, data: { favoriteCount: { increment: 1 } } });
     });
   }
 
@@ -60,7 +62,10 @@ export class FavoritesService {
     await this.prisma.$transaction(async (tx) => {
       const { count } = await tx.favorite.deleteMany({ where: { userId, [column]: id } });
       if (count && kind === 'listings') {
-        await tx.listing.updateMany({ where: { id, favoriteCount: { gt: 0 } }, data: { favoriteCount: { decrement: 1 } } });
+        await tx.listing.updateMany({
+          where: { id, favoriteCount: { gt: 0 } },
+          data: { favoriteCount: { decrement: 1 } },
+        });
       }
     });
   }
@@ -109,7 +114,10 @@ export class FavoritesService {
       }
       case 'providers': {
         const rows = await this.prisma.favorite.findMany({
-          where: { ...base, provider: { is: { deletedAt: null, status: { not: ProviderStatus.SUSPENDED } } } },
+          where: {
+            ...base,
+            provider: { is: { deletedAt: null, status: { not: ProviderStatus.SUSPENDED } } },
+          },
           orderBy,
           take: take + 1,
           select: { id: true, createdAt: true, provider: { select: providerCardSelect } },

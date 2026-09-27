@@ -23,7 +23,11 @@ const MAX_PIXELS = 50_000_000;
 
 export type Variant = 'thumbnail' | 'feed' | 'detail';
 
-export const RENDITIONS: Array<{ variant: Variant; column: 'thumbKey' | 'feedKey' | 'detailKey'; width: number }> = [
+export const RENDITIONS: Array<{
+  variant: Variant;
+  column: 'thumbKey' | 'feedKey' | 'detailKey';
+  width: number;
+}> = [
   { variant: 'thumbnail', column: 'thumbKey', width: 240 },
   { variant: 'feed', column: 'feedKey', width: 480 },
   { variant: 'detail', column: 'detailKey', width: 1080 },
@@ -54,7 +58,12 @@ export class MediaService {
       throw new AppError('UNSUPPORTED_MEDIA', 'Not a supported image', HttpStatus.UNSUPPORTED_MEDIA_TYPE);
     }
     const mimeType = metadata.format ? ALLOWED_FORMATS[metadata.format] : undefined;
-    if (!mimeType) throw new AppError('UNSUPPORTED_MEDIA', 'Only JPEG, PNG, WebP or HEIF images', HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+    if (!mimeType)
+      throw new AppError(
+        'UNSUPPORTED_MEDIA',
+        'Only JPEG, PNG, WebP or HEIF images',
+        HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+      );
 
     const media = await this.prisma.media.create({
       data: {
@@ -74,9 +83,17 @@ export class MediaService {
     } catch (error) {
       await this.prisma.media.delete({ where: { id: media.id } });
       this.logger.error({ err: error, mediaId: media.id }, 'Storage write failed');
-      throw new AppError('SERVICE_UNAVAILABLE', 'Storage is temporarily unavailable', HttpStatus.SERVICE_UNAVAILABLE);
+      throw new AppError(
+        'SERVICE_UNAVAILABLE',
+        'Storage is temporarily unavailable',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
     }
-    const saved = await this.prisma.media.update({ where: { id: media.id }, data: { originalKey }, select: mediaSelect });
+    const saved = await this.prisma.media.update({
+      where: { id: media.id },
+      data: { originalKey },
+      select: mediaSelect,
+    });
     await this.queues.processMedia({ mediaId: media.id });
     return presentMedia(saved);
   }
@@ -89,7 +106,9 @@ export class MediaService {
     const media = await this.prisma.media.findUnique({ where: { id: mediaId } });
     if (!media || media.deletedAt || media.status === MediaStatus.READY) return;
     const original = await this.storage.getBuffer(media.originalKey);
-    const oriented = await sharp(original, { limitInputPixels: MAX_PIXELS }).rotate().toBuffer({ resolveWithObject: true });
+    const oriented = await sharp(original, { limitInputPixels: MAX_PIXELS })
+      .rotate()
+      .toBuffer({ resolveWithObject: true });
 
     const keys: Partial<Record<'thumbKey' | 'feedKey' | 'detailKey', string>> = {};
     for (const rendition of RENDITIONS) {
@@ -104,13 +123,22 @@ export class MediaService {
         .webp({ quality: rendition.variant === 'detail' ? 82 : 76 })
         .toBuffer();
       const key = `media/${media.id}/${rendition.variant}.webp`;
-      const cache = media.purpose === MediaPurpose.CHAT ? 'private, max-age=86400' : 'public, max-age=31536000, immutable';
+      const cache =
+        media.purpose === MediaPurpose.CHAT
+          ? 'private, max-age=86400'
+          : 'public, max-age=31536000, immutable';
       await this.storage.put(key, output, 'image/webp', cache);
       keys[rendition.column] = key;
     }
     await this.prisma.media.update({
       where: { id: media.id },
-      data: { ...keys, status: MediaStatus.READY, width: oriented.info.width, height: oriented.info.height, failureReason: null },
+      data: {
+        ...keys,
+        status: MediaStatus.READY,
+        width: oriented.info.width,
+        height: oriented.info.height,
+        failureReason: null,
+      },
     });
   }
 
@@ -124,9 +152,13 @@ export class MediaService {
   async retry(ownerId: string, id: string) {
     const media = await this.prisma.media.findFirst({ where: { id, ownerId, deletedAt: null } });
     if (!media) throw AppError.notFound('Media');
-    if (media.status !== MediaStatus.FAILED) throw AppError.invalidState('Only failed uploads can be retried');
+    if (media.status !== MediaStatus.FAILED)
+      throw AppError.invalidState('Only failed uploads can be retried');
     await this.limiter.consume(`upload:retry:${ownerId}`, 30, 3600);
-    const updated = await this.prisma.media.update({ where: { id }, data: { status: MediaStatus.PROCESSING, failureReason: null } });
+    const updated = await this.prisma.media.update({
+      where: { id },
+      data: { status: MediaStatus.PROCESSING, failureReason: null },
+    });
     await this.queues.processMedia({ mediaId: id }, `retry:${Date.now()}`);
     return presentMedia(updated);
   }
@@ -135,7 +167,11 @@ export class MediaService {
     const media = await this.prisma.media.findFirst({ where: { id, deletedAt: null } });
     if (!media) throw AppError.notFound('Media');
     await this.assertReadable(media, viewer);
-    return { ...presentMedia(media), purpose: media.purpose.toLowerCase(), failureReason: media.failureReason };
+    return {
+      ...presentMedia(media),
+      purpose: media.purpose.toLowerCase(),
+      failureReason: media.failureReason,
+    };
   }
 
   async open(id: string, variant: Variant, viewer?: AuthUser) {
@@ -150,12 +186,18 @@ export class MediaService {
   }
 
   /** Chat attachments are visible only to conversation participants (and the uploader). */
-  private async assertReadable(media: { id: string; purpose: MediaPurpose; ownerId: string }, viewer?: AuthUser) {
+  private async assertReadable(
+    media: { id: string; purpose: MediaPurpose; ownerId: string },
+    viewer?: AuthUser,
+  ) {
     if (media.purpose !== MediaPurpose.CHAT) return;
     if (!viewer) throw AppError.unauthenticated();
     if (viewer.userId === media.ownerId) return;
     const participant = await this.prisma.conversationParticipant.findFirst({
-      where: { userId: viewer.userId, conversation: { messages: { some: { attachments: { some: { mediaId: media.id } } } } } },
+      where: {
+        userId: viewer.userId,
+        conversation: { messages: { some: { attachments: { some: { mediaId: media.id } } } } },
+      },
       select: { userId: true },
     });
     if (!participant) throw AppError.notFound('Media');
@@ -171,9 +213,14 @@ export class MediaService {
       (l) => l.listing.status === ListingStatus.ACTIVE || l.listing.status === ListingStatus.PENDING_REVIEW,
     );
     if (inUse) throw AppError.invalidState('Remove the photo from the listing first');
-    await this.prisma.media.update({ where: { id }, data: { deletedAt: new Date(), status: MediaStatus.DELETED } });
+    await this.prisma.media.update({
+      where: { id },
+      data: { deletedAt: new Date(), status: MediaStatus.DELETED },
+    });
     await this.queues.cleanupMedia({
-      keys: [media.originalKey, media.thumbKey, media.feedKey, media.detailKey].filter((k): k is string => !!k),
+      keys: [media.originalKey, media.thumbKey, media.feedKey, media.detailKey].filter(
+        (k): k is string => !!k,
+      ),
     });
   }
 
@@ -186,10 +233,17 @@ export class MediaService {
     if (unique.length !== ids.length) throw AppError.validation('Duplicate media ids', { field: 'mediaIds' });
     if (unique.length === 0) return [];
     const rows = await this.prisma.media.findMany({
-      where: { id: { in: unique }, ownerId, deletedAt: null, purpose: { in: purposes }, status: { not: MediaStatus.FAILED } },
+      where: {
+        id: { in: unique },
+        ownerId,
+        deletedAt: null,
+        purpose: { in: purposes },
+        status: { not: MediaStatus.FAILED },
+      },
       select: { id: true },
     });
-    if (rows.length !== unique.length) throw AppError.validation('Unknown or unusable media', { field: 'mediaIds' });
+    if (rows.length !== unique.length)
+      throw AppError.validation('Unknown or unusable media', { field: 'mediaIds' });
     return ids;
   }
 
@@ -200,7 +254,9 @@ export class MediaService {
       where: {
         createdAt: { lt: cutoff },
         deletedAt: null,
-        purpose: { in: [MediaPurpose.LISTING, MediaPurpose.OFFERING, MediaPurpose.PORTFOLIO, MediaPurpose.CHAT] },
+        purpose: {
+          in: [MediaPurpose.LISTING, MediaPurpose.OFFERING, MediaPurpose.PORTFOLIO, MediaPurpose.CHAT],
+        },
         listingLinks: { none: {} },
         attachmentLinks: { none: {} },
         portfolioLinks: { none: {} },
@@ -209,9 +265,14 @@ export class MediaService {
       take: 500,
     });
     for (const media of orphans) {
-      await this.prisma.media.update({ where: { id: media.id }, data: { deletedAt: new Date(), status: MediaStatus.DELETED } });
+      await this.prisma.media.update({
+        where: { id: media.id },
+        data: { deletedAt: new Date(), status: MediaStatus.DELETED },
+      });
       await this.queues.cleanupMedia({
-        keys: [media.originalKey, media.thumbKey, media.feedKey, media.detailKey].filter((k): k is string => !!k),
+        keys: [media.originalKey, media.thumbKey, media.feedKey, media.detailKey].filter(
+          (k): k is string => !!k,
+        ),
       });
     }
     return orphans.length;

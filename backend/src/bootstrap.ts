@@ -32,7 +32,9 @@ export async function createApp(options: { logger?: boolean } = {}): Promise<INe
       crossOriginResourcePolicy: { policy: 'cross-origin' },
     }),
   );
-  const origins = config.CORS_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean);
+  const origins = config.CORS_ORIGINS.split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
   app.enableCors({
     origin: origins.length ? origins : config.NODE_ENV !== 'production',
     credentials: false,

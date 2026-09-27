@@ -45,7 +45,9 @@ services:
 
   api:
     profiles: [app]
+    image: bozor/api:local
     build: ./backend
+    init: true
     command: ["sh", "-c", "npx prisma migrate deploy && node dist/prisma/seed.js && node dist/src/main.js"]
     env_file: ./backend/.env.docker
     ports: ["3000:3000"]
@@ -56,8 +58,12 @@ services:
 
   worker:
     profiles: [app]
+    image: bozor/api:local
     build: ./backend
-    command: ["node", "dist/worker.js"]
+    init: true
+    command: ["node", "dist/src/worker.js"]
+    healthcheck:
+      disable: true
     env_file: ./backend/.env.docker
     depends_on:
       postgres: { condition: service_healthy }
