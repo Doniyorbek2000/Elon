@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router/routes.dart';
 import '../../../core/config/app_config.dart';
-import '../../../core/config/feature_flags.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/domain/media_image.dart';
@@ -21,7 +20,6 @@ import '../../auth/application/session_controller.dart';
 import '../../create_listing/data/media_services.dart';
 import '../../jobs/application/job_providers.dart';
 import '../../jobs/domain/job.dart';
-import '../../monetization/application/monetization_providers.dart';
 import '../../search/application/search_providers.dart';
 import '../../settings/application/settings_controller.dart';
 import '../../trust_safety/application/trust_safety_providers.dart';
@@ -313,77 +311,6 @@ class HelpScreen extends ConsumerWidget {
               icon: const Icon(Icons.support_agent_rounded),
               label: const Text('Qo‘llab-quvvatlash (Telegram)'),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ------------------------------------------------------------------- plans
-
-class PlansScreen extends ConsumerWidget {
-  const PlansScreen({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final flags = ref.watch(featureFlagsProvider);
-    final plans = ref.watch(subscriptionPlansProvider).value ?? const [];
-    final palette = context.palette;
-    final text = Theme.of(context).textTheme;
-    return Scaffold(
-      appBar: AppBar(title: const Text('To‘lovlar va tariflar')),
-      body: ContentWidth(
-        child: ListView(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          children: [
-            SurfaceCard(
-              color: palette.successSoft,
-              borderColor: Colors.transparent,
-              padding: const EdgeInsets.all(AppSpacing.xl),
-              child: Column(
-                children: [
-                  Icon(Icons.celebration_rounded, size: 40, color: palette.success),
-                  const SizedBox(height: AppSpacing.md),
-                  Text('Hozircha hammasi bepul', style: text.titleLarge, textAlign: TextAlign.center),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    'E’lonlar, vakansiyalar, xizmatlar va chat — cheklovsiz va to‘lovsiz.',
-                    style: text.bodyMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            Text('To‘lovlar tarixi', style: text.titleSmall),
-            const SizedBox(height: AppSpacing.sm),
-            const EmptyState(icon: Icons.receipt_long_outlined, title: 'To‘lovlar yo‘q', compact: true),
-            if (flags.monetizationEnabled && plans.isNotEmpty) ...[
-              Text('Biznes tariflar', style: text.titleSmall),
-              const SizedBox(height: AppSpacing.sm),
-              for (final plan in plans)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                  child: SurfaceCard(
-                    borderColor: plan.highlighted ? palette.primary : null,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(child: Text(plan.title, style: text.titleMedium)),
-                            Text('${Formatters.money(plan.monthlyPrice)}/oy', style: text.titleSmall),
-                          ],
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        for (final benefit in plan.benefits)
-                          MetaLine(icon: Icons.check_rounded, text: benefit, color: palette.textSecondary),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
           ],
         ),
       ),

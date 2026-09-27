@@ -43,10 +43,7 @@ class RemoteJobRepository implements JobRepository {
     salaryMin: (json['salaryMin'] as num?)?.toInt(),
     salaryMax: (json['salaryMax'] as num?)?.toInt(),
     currency: Currency.parse(json['currency']),
-    promotion: switch (PromotionType.parse(json['promotion'])) {
-      final PromotionType type => Promotion(type),
-      null => null,
-    },
+    promotion: Promotion.fromJson(json),
     views: (json['views'] as num?)?.toInt() ?? 0,
     status: JobStatus.parse(json['status']),
     applicationCount: (json['applicationCount'] as num?)?.toInt(),
@@ -99,7 +96,8 @@ class RemoteJobRepository implements JobRepository {
     resume: json['resume'] == null ? null : candidateFromJson(json['resume'] as JsonMap),
   );
 
-  Map<String, Object?> _query(JobQuery query) {
+  /// `/jobs` query parameters (shared by the promoted block).
+  static Map<String, Object?> apiQuery(JobQuery query) {
     final remote = query.types.contains(EmploymentType.remote);
     final types = {
       for (final t in query.types)
@@ -120,7 +118,7 @@ class RemoteJobRepository implements JobRepository {
 
   @override
   Future<List<Job>> searchJobs(JobQuery query) async =>
-      (await _api.getPage('/jobs', jobFromJson, query: _query(query))).items;
+      (await _api.getPage('/jobs', jobFromJson, query: apiQuery(query))).items;
 
   @override
   Future<Job> postVacancy(NewVacancy vacancy, {required PublicProfile employer}) async =>
@@ -131,7 +129,7 @@ class RemoteJobRepository implements JobRepository {
 
   @override
   Future<List<CandidateProfile>> searchCandidates(JobQuery query) async {
-    final params = _query(query)
+    final params = apiQuery(query)
       ..removeWhere((key, _) => const {'experience', 'salaryMin', 'sort', 'workFormat'}.contains(key));
     return (await _api.getPage('/candidates', candidateFromJson, query: params)).items;
   }

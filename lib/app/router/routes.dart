@@ -21,6 +21,10 @@ abstract final class AppRoutes {
   static const blockedUsers = '/account/settings/blocked';
   static const help = '/account/help';
   static const plans = '/account/plans';
+  static const businessPlans = '/account/plans/business';
+  static const myBusiness = '/account/business';
+  static const businessEditor = '/account/business/edit';
+  static const businessAds = '/account/business/ads';
   static const editProfile = '/account/edit';
   static const resume = '/account/resume';
   static const providerEditor = '/account/provider';
@@ -32,6 +36,9 @@ abstract final class AppRoutes {
   static String provider(String id) => '/provider/$id';
   static String seller(String id) => '/seller/$id';
   static String chat(String id) => '/chat/$id';
+  static String business(String id) => '/business/$id';
+  static String purchase(String id) => '/account/payments/$id';
+  static String listingStats(String id) => '/account/listings/$id/stats';
   static String serviceCategory(String id) => '/services/category/$id';
   static String applicants(String jobId) => '/employer/jobs/$jobId/applicants';
 
@@ -54,6 +61,8 @@ abstract final class AppRoutes {
   static const protectedPrefixes = [
     create,
     myListings,
+    myBusiness,
+    '/account/payments/',
     applications,
     editProfile,
     resume,

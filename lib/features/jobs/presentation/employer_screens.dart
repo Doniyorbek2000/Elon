@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/routes.dart';
+import '../../../core/config/feature_flags.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/errors/app_failure.dart';
@@ -16,6 +17,8 @@ import '../../../core/widgets/state_views.dart';
 import '../../chat/domain/chat.dart';
 import '../../chat/presentation/start_chat.dart';
 import '../../location/application/location_controller.dart';
+import '../../monetization/domain/monetization.dart';
+import '../../monetization/presentation/promote_sheet.dart';
 import '../application/job_providers.dart';
 import '../domain/job.dart';
 
@@ -119,11 +122,23 @@ class _JobMenu extends ConsumerWidget {
     }
   }
 
+  Future<void> _promote(BuildContext context, WidgetRef ref) async {
+    final activated = await showPromoteSheet(
+      context,
+      target: PromotionTarget.job,
+      targetId: job.id,
+      itemTitle: job.title,
+    );
+    if (activated) ref.invalidate(myJobsProvider);
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) => PopupMenuButton<JobStatus>(
+  Widget build(BuildContext context, WidgetRef ref) => PopupMenuButton<Object>(
     tooltip: 'Amallar',
-    onSelected: (status) => _set(context, ref, status),
+    onSelected: (value) => value is JobStatus ? _set(context, ref, value) : _promote(context, ref),
     itemBuilder: (_) => [
+      if (job.status == JobStatus.active && ref.read(featureFlagsProvider).canPromoteJobs)
+        const PopupMenuItem<Object>(value: 'promote', child: Text('TOP / Shoshilinch')),
       if (job.status == JobStatus.active) const PopupMenuItem(value: JobStatus.paused, child: Text('To‘xtatish')),
       if (job.status == JobStatus.paused || job.status == JobStatus.expired)
         const PopupMenuItem(value: JobStatus.active, child: Text('Faollashtirish')),

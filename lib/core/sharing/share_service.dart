@@ -6,7 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../config/app_config.dart';
 import '../domain/media_image.dart';
 
-enum ShareTarget { listing, job, provider, seller }
+enum ShareTarget { listing, job, provider, seller, business }
 
 /// Everything needed to render a share preview card and a Telegram-friendly
 /// message. The web landing page at [url] renders the same data as Open
@@ -47,6 +47,7 @@ class DeepLinks {
     ShareTarget.job => '/job/$id',
     ShareTarget.provider => '/provider/$id',
     ShareTarget.seller => '/seller/$id',
+    ShareTarget.business => '/business/$id',
   };
 
   Uri web(ShareTarget target, String id) => Uri.parse('${_config.webBaseUrl}${pathFor(target, id)}');

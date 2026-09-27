@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/routes.dart';
-import '../../../../core/config/feature_flags.dart';
 import '../../../../core/design/app_colors.dart';
 import '../../../../core/design/app_tokens.dart';
 import '../../../../core/utils/formatters.dart';
@@ -24,7 +23,7 @@ String _semantics(ServiceProvider p) => [
   if (p.isTop) 'TOP usta',
 ].join(', ');
 
-/// Compact vertical card for "Tavsiya etilgan ustalar" carousels.
+/// Compact vertical card for provider carousels.
 class ProviderCard extends ConsumerWidget {
   const ProviderCard({super.key, required this.provider});
 
@@ -33,7 +32,6 @@ class ProviderCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final text = Theme.of(context).textTheme;
-    final showBadges = ref.watch(featureFlagsProvider).showPromotionBadges;
     return SurfaceCard(
       padding: const EdgeInsets.all(AppSpacing.md),
       onTap: () => context.push(AppRoutes.provider(provider.id)),
@@ -72,7 +70,7 @@ class ProviderCard extends ConsumerWidget {
               runSpacing: AppSpacing.xs,
               children: [
                 if (provider.profile.isOnline) const StatusPill(label: 'Onlayn', style: PillStyle.success, dense: true),
-                if (showBadges && provider.isTop) const StatusPill(label: 'TOP', style: PillStyle.warning, dense: true),
+                if (provider.promotion case final promotion?) PromotionBadge(type: promotion.type),
               ],
             ),
           ],
@@ -92,7 +90,6 @@ class ProviderTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final palette = context.palette;
     final text = Theme.of(context).textTheme;
-    final showBadges = ref.watch(featureFlagsProvider).showPromotionBadges;
     return SurfaceCard(
       padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, 0, AppSpacing.md),
       onTap: () => context.push(AppRoutes.provider(provider.id)),
@@ -120,9 +117,9 @@ class ProviderTile extends ConsumerWidget {
                       ),
                       const SizedBox(width: AppSpacing.xs),
                       VerifiedBadge(level: provider.profile.verification, size: 14),
-                      if (showBadges && provider.isTop) ...[
+                      if (provider.promotion case final promotion?) ...[
                         const SizedBox(width: AppSpacing.xs),
-                        const StatusPill(label: 'TOP', style: PillStyle.warning, dense: true),
+                        PromotionBadge(type: promotion.type),
                       ],
                     ],
                   ),

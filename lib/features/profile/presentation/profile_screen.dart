@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/routes.dart';
+import '../../../core/config/feature_flags.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/utils/formatters.dart';
@@ -232,6 +233,8 @@ class _Menu extends ConsumerWidget {
         ),
       if (signedIn)
         (Icons.handyman_outlined, AccentTone.purple, 'Usta profilim', () => context.push(AppRoutes.providerEditor), 0),
+      if (signedIn && ref.watch(featureFlagsProvider).businessAccounts)
+        (Icons.storefront_outlined, AccentTone.blue, 'Biznes profil', () => context.push(AppRoutes.myBusiness), 0),
       (Icons.favorite_border_rounded, AccentTone.red, 'Saqlanganlar', () => context.push(AppRoutes.saved), 0),
       if (signedIn)
         (

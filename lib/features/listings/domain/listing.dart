@@ -164,10 +164,7 @@ class Listing {
     ],
     views: json['views'] as int? ?? 0,
     favorites: json['favorites'] as int? ?? 0,
-    promotion: switch (PromotionType.parse(json['promotion'])) {
-      final PromotionType type => Promotion(type),
-      null => null,
-    },
+    promotion: Promotion.fromJson(json),
     status: ListingStatus.parse(json['status']),
     distanceKm: (json['distanceKm'] as num?)?.toDouble(),
     shareUrl: json['shareUrl'] as String?,

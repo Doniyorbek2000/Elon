@@ -39,6 +39,7 @@
                 <data android:pathPrefix="/job/" />
                 <data android:pathPrefix="/provider/" />
                 <data android:pathPrefix="/seller/" />
+                <data android:pathPrefix="/business/" />
             </intent-filter>
 
             <!-- Custom scheme fallback: bozor://app/listing/42 -->

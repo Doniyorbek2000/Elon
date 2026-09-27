@@ -125,6 +125,17 @@ class ApiClient {
     final serverMessage = error['message'] as String?;
     final details = error['details'] is Map ? error['details'] as Map<Object?, Object?> : const <Object?, Object?>{};
     final message = _localizedMessage(code) ?? serverMessage ?? 'Server xatosi';
+    switch (code) {
+      case 'LIMIT_REACHED':
+        final max = (details['max'] as num?)?.toInt();
+        final limit = details['limit'] as String? ?? '';
+        return LimitReachedFailure(_limitMessage(limit, max), limit: limit, max: max);
+      case 'FEATURE_DISABLED':
+        return const FeatureDisabledFailure();
+      case 'PAYMENT_ROUTE_UNAVAILABLE':
+      case 'PROVIDER_NOT_CONFIGURED':
+        return const PaymentUnavailableFailure();
+    }
     switch (status) {
       case 401:
         return UnauthorizedFailure(_localizedMessage(code) ?? 'Tizimga qayta kiring');
@@ -166,6 +177,18 @@ class ApiClient {
     return const {};
   }
 
+  static String _limitMessage(String limit, int? max) {
+    final count = max == null ? '' : ' ($max ta)';
+    return switch (limit) {
+      'activeListings' => 'Faol e’lonlar chegarasiga yetdingiz$count. Eskisini arxivlang yoki tarifni kengaytiring',
+      'monthlyListings' => 'Shu oy uchun e’lonlar chegarasiga yetdingiz$count',
+      'photos' => 'Rasmlar soni chegaradan oshdi$count',
+      'activeJobs' => 'Faol vakansiyalar chegarasiga yetdingiz$count',
+      'managers' => 'Menejerlar soni chegarasiga yetdingiz$count',
+      _ => 'Tarif chegarasiga yetdingiz$count',
+    };
+  }
+
   static String? _localizedMessage(String? code) => switch (code) {
     'OTP_INVALID' => 'Kod noto‘g‘ri. Qayta urinib ko‘ring',
     'OTP_EXPIRED' => 'Kod muddati tugadi. Yangi kod so‘rang',
@@ -175,6 +198,9 @@ class ApiClient {
     'TOKEN_EXPIRED' => 'Sessiya muddati tugadi',
     'NOT_ELIGIBLE' => 'Sharh qoldirish uchun avval usta bilan yozishgan bo‘lishingiz kerak',
     'BLOCKED' => 'Bu foydalanuvchi bilan yozishib bo‘lmaydi',
+    'COUPON_INVALID' => 'Promo kod yaroqsiz',
+    'INSUFFICIENT_CREDITS' => 'Kreditlar yetarli emas',
+    'PRICE_UNAVAILABLE' => 'Bu xizmat hozircha sotuvda emas',
     _ => null,
   };
 }

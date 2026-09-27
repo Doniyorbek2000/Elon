@@ -251,7 +251,7 @@ void main() {
   group('Services', () {
     testWidgets('category → provider profile with portfolio and reviews', (tester) async {
       await pumpBozorApp(tester, location: '/services');
-      expect(find.text('Tavsiya etilgan ustalar'), findsOneWidget);
+      expect(find.text('Reytingi yuqori ustalar'), findsOneWidget);
       await tapText(tester, 'Santexnik');
       expect(find.text('Rustam usta'), findsOneWidget);
       await tapText(tester, 'Rustam usta');

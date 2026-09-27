@@ -33,8 +33,27 @@ final class UnauthorizedFailure extends AppFailure {
 }
 
 /// 403: authenticated but not allowed (roles, inactive account).
-final class ForbiddenFailure extends AppFailure {
+base class ForbiddenFailure extends AppFailure {
   const ForbiddenFailure([super.message = 'Bu amal uchun ruxsat yo‘q']);
+}
+
+/// 403 LIMIT_REACHED: a plan limit (server-configured) was hit.
+final class LimitReachedFailure extends ForbiddenFailure {
+  const LimitReachedFailure(super.message, {required this.limit, this.max});
+
+  /// `activeListings`, `monthlyListings`, `photos`, `activeJobs`, `managers`.
+  final String limit;
+  final int? max;
+}
+
+/// 403 FEATURE_DISABLED: switched off on the server (e.g. not launched yet).
+final class FeatureDisabledFailure extends ForbiddenFailure {
+  const FeatureDisabledFailure([super.message = 'Bu imkoniyat hozircha mavjud emas']);
+}
+
+/// Payment could not start: method not available here or not configured.
+final class PaymentUnavailableFailure extends AppFailure {
+  const PaymentUnavailableFailure([super.message = 'Bu to‘lov usuli hozircha mavjud emas']);
 }
 
 /// 403 BLOCKED: one of the users blocked the other.

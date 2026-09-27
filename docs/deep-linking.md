@@ -7,7 +7,8 @@ Every listing, vacancy, provider and seller has a canonical public URL that equa
 | Listing | `https://bozor.uz/listing/{id}` | `/listing/:id` |
 | Vacancy | `https://bozor.uz/job/{id}` | `/job/:id` |
 | Provider | `https://bozor.uz/provider/{id}` | `/provider/:id` |
-| Seller / storefront | `https://bozor.uz/seller/{id}` | `/seller/:id` |
+| Seller profile | `https://bozor.uz/seller/{id}` | `/seller/:id` |
+| Business storefront | `https://bozor.uz/business/{id}` | `/business/:id` |
 
 Custom-scheme fallback: `bozor://app/listing/{id}`. Links are built by `DeepLinks` (`lib/core/sharing/share_service.dart`); host and scheme come from `WEB_BASE_URL` / `APP_SCHEME`.
 
@@ -42,7 +43,7 @@ Already declared in `android/app/src/main/AndroidManifest.xml` (`autoVerify="tru
 { "applinks": { "details": [{
   "appIDs": ["<TEAM_ID>.uz.bozor.app"],
   "components": [
-    { "/": "/listing/*" }, { "/": "/job/*" }, { "/": "/provider/*" }, { "/": "/seller/*" }
+    { "/": "/listing/*" }, { "/": "/job/*" }, { "/": "/provider/*" }, { "/": "/seller/*" }, { "/": "/business/*" }
   ]
 }]}}
 ```

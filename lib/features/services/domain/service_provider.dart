@@ -227,10 +227,7 @@ class ServiceProvider {
     ],
     priceFrom: json['priceFrom'] == null ? null : Money.fromJson(json['priceFrom'] as Map<String, dynamic>),
     priceUnit: json['priceUnit'] as String?,
-    promotion: switch (PromotionType.parse(json['promotion'])) {
-      final PromotionType type => Promotion(type),
-      null => null,
-    },
+    promotion: Promotion.fromJson(json),
     offerings: [
       for (final offering in json['offerings'] as List<dynamic>? ?? const [])
         ServiceOffering.fromJson(offering as Map<String, dynamic>),

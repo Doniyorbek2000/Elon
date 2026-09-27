@@ -14,6 +14,7 @@ import '../../../core/widgets/sheets.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../location/application/location_controller.dart';
+import '../../monetization/presentation/promoted_blocks.dart';
 import '../application/job_providers.dart';
 import '../domain/job.dart';
 import 'widgets/job_cards.dart';
@@ -104,6 +105,11 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                 sliver: SliverToBoxAdapter(
                   child: _PostVacancyCard(onTap: () => context.push(AppRoutes.createIn('jobs'))),
                 ),
+              ),
+            if (!_hiring)
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(gutter, AppSpacing.md, gutter, 0),
+                sliver: SliverToBoxAdapter(child: PromotedJobsBlock(query: query)),
               ),
             SliverPadding(
               padding: EdgeInsets.fromLTRB(gutter, AppSpacing.md, gutter, AppSpacing.xxxl),
