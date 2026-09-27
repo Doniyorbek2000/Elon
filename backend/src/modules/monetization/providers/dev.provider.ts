@@ -59,6 +59,11 @@ export class DevPaymentProvider implements PaymentProvider {
     return createHmac('sha256', this.secret()).update(`page:${paymentId}`).digest('hex').slice(0, 32);
   }
 
+  checkPageToken(paymentId: string, token: unknown): boolean {
+    if (typeof token !== 'string' || !/^[0-9a-f]{32}$/.test(token)) return false;
+    return timingSafeEqual(Buffer.from(token), Buffer.from(this.pageToken(paymentId)));
+  }
+
   async createCheckout(payment: Payment): Promise<{ action: CheckoutAction; externalId: string }> {
     const externalId = `dev_${payment.id}`;
     await this.redis.set(`devpay:${payment.id}`, 'pending', 'EX', 7 * 24 * 3600);

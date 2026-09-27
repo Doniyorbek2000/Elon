@@ -35,9 +35,9 @@ The backend lives in [`backend/`](backend/README.md) (NestJS, PostgreSQL/PostGIS
 | `APP_SCHEME` | `bozor` | Custom URL scheme (`bozor://app/listing/42`) |
 | `SUPPORT_TELEGRAM_URL` | `https://t.me/bozoruz_support` | Help → support button. **Replace with the real account.** |
 | `DEMO_LATENCY_MS` | `450` | Simulated latency for demo repositories |
-| `FF_MONETIZATION`, `FF_PAID_PROMOTIONS`, `FF_SUBSCRIPTIONS`, `FF_BUSINESS_ACCOUNTS`, `FF_ADVERTISING` | `false` | Monetization switches (hidden during the free phase) |
 | `FF_AI_LISTING_ASSIST` | `false` | Photo → title/description suggestions in the create flow |
-| `FF_PROMOTION_BADGES` | `true` | Show TOP/VIP badges |
+
+Monetization switches, prices and plan limits are **not** build settings: the app reads them from `GET /config` and the catalog endpoints, and admins change them at runtime (see [docs/monetization.md](docs/monetization.md)).
 
 ### Android release signing
 

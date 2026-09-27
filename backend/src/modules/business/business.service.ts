@@ -65,8 +65,9 @@ export class BusinessService {
 
   async create(user: AuthUser, dto: BusinessDto) {
     if (!(await this.config.enabled('businessAccounts'))) throw AppError.featureDisabled('businessAccounts');
-    if (await this.prisma.business.findUnique({ where: { ownerId: user.userId } })) {
-      throw AppError.conflict('You already have a business');
+    // One business per person, whether as owner or as someone's manager.
+    if (await this.prisma.businessMember.findFirst({ where: { userId: user.userId } })) {
+      throw AppError.conflict('You already belong to a business');
     }
     await this.assertLogo(user.userId, dto.logoId);
     const place = await this.locations.resolvePlace({ regionId: dto.regionId, districtId: dto.districtId });

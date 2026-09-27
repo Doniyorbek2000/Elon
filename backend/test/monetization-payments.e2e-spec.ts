@@ -389,6 +389,35 @@ describe('Monetization: promotions, payments, webhooks, coupons, credits, refund
     expect(feed.body.data[0].id).toBe(listingId); // bumped listing leads the organic "newest" order
   });
 
+  it('two bump purchases paid at the same time apply only one bump (the other goes to review)', async () => {
+    const bumper = await signIn(ctx.http); // own checkout rate-limit budget
+    const fresh = await createListing(ctx.http, bumper, 'Redmi Note 13 Pro 8/256');
+    // Both checkouts pass the cooldown check because neither is paid yet.
+    const [a, b] = await Promise.all([
+      checkout(bumper, { productId: 'listing_bump', targetId: fresh }).expect(201),
+      checkout(bumper, { productId: 'listing_bump', targetId: fresh }).expect(201),
+    ]);
+    const payments = await Promise.all([paymentOf(ctx, a.body.data.id), paymentOf(ctx, b.body.data.id)]);
+    await Promise.all(
+      payments.map((p) =>
+        devWebhook(ctx.http, {
+          eventId: `evt_${p.id}_ok`,
+          paymentId: p.id,
+          status: 'succeeded',
+          amountMinor: p.amountMinor.toString(),
+        }).expect(200),
+      ),
+    );
+    expect(await prisma.promotionActivation.count({ where: { targetId: fresh, kind: 'LISTING_BUMP' } })).toBe(
+      1,
+    );
+    const purchases = await prisma.purchase.findMany({
+      where: { id: { in: [a.body.data.id, b.body.data.id] } },
+    });
+    expect(purchases.map((p) => p.status).sort()).toEqual(['FULFILLED', 'NEEDS_REVIEW']);
+    expect(purchases.find((p) => p.status === 'NEEDS_REVIEW')!.failureReason).toBe('bump_cooldown');
+  });
+
   it('VIP outranks TOP inside the paid block; organic feed keeps its order', async () => {
     const vipListing = await createListing(ctx.http, seller, 'iPhone 15 Pro Max 512GB');
     const topListing = await createListing(ctx.http, seller, 'Xiaomi 14 Ultra 16/512');

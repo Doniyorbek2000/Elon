@@ -247,6 +247,13 @@ describe('Monetization: business plans, entitlements, premium jobs, providers, a
     expect(notice).toBeTruthy();
   });
 
+  it('a manager cannot open a second business', async () => {
+    const res = await as(ctx.http, manager)
+      .post('/businesses', { ...business, name: 'Menejer do‘koni' })
+      .expect(409);
+    expect(res.body.error.code).toBe('CONFLICT');
+  });
+
   it('admin verification is audited and shown on the business', async () => {
     await as(ctx.http, admin)
       .patch(`/admin/monetization/businesses/${businessId}/verification`, { verification: 'verified' })

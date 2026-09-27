@@ -261,7 +261,25 @@ export class PaymentsService {
       });
       return;
     }
+    if (product.kind === 'LISTING_BUMP') {
+      // Serialize bumps per listing: two purchases paid at once must not
+      // both bypass the cooldown checked at checkout time.
+      await tx.$queryRaw`SELECT 1 FROM "Listing" WHERE "id" = ${fresh.targetId}::uuid FOR UPDATE`;
+    }
     const info = await this.promotions.targetInfo(fresh.target!, fresh.targetId!, tx);
+    const blocked =
+      !!info && product.kind === 'LISTING_BUMP' && (await this.promotions.bumpCoolingDown(info));
+    if (blocked) {
+      await tx.purchase.update({
+        where: { id: fresh.id },
+        data: { status: PurchaseStatus.NEEDS_REVIEW, failureReason: 'bump_cooldown' },
+      });
+      await tx.payment.updateMany({
+        where: { purchaseId: fresh.id, status: PaymentStatus.SUCCEEDED },
+        data: { needsReview: true },
+      });
+      return;
+    }
     if (!info || !info.eligible || info.ownerId !== fresh.userId) {
       // Paid but the listing/job/provider is gone or inactive: nothing is
       // activated; finance reviews and refunds.

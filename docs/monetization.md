@@ -48,7 +48,7 @@ admin    ── /admin/monetization/* (ADMIN role) + AdminAuditLog
 - Money: `BigInt` minor units (`amountMinor`, tiyin for UZS). No floats.
 
 ### Store-policy decision (requires confirmation before release)
-Checkout routes are data (`AppSetting checkout.routes`), resolved per platform × product kind × country:
+Checkout routes are data (`AppSetting` key `checkoutRoutes`, editable by admins), resolved per platform (`ios` / `android` / `web`). Per-country or per-product routing is not implemented; add it here if legal review requires it.
 
 | Platform | Default route for digital products (boosts, subscriptions, ads) |
 |---|---|
@@ -59,6 +59,37 @@ Checkout routes are data (`AppSetting checkout.routes`), resolved per platform �
 Consequence today: with store billing not configured, **mobile production builds show products but no purchasable route** (clear message, no external link). Legal/commercial confirmation is needed for: (1) whether any product qualifies for an exception, (2) region-specific alternative billing programs, (3) web checkout and how (if at all) the app may reference it.
 
 Sources: [App Review Guidelines](https://developer.apple.com/app-store/review/guidelines/), [Google Play Payments policy](https://support.google.com/googleplay/android-developer/answer/9858738), [Understanding Google Play’s Payments policy](https://support.google.com/googleplay/android-developer/answer/10281818).
+
+### Client (Flutter)
+- Flags and free-tier limits come from `GET /config` at start-up (`remoteConfigProvider`); if it fails, everything commercial stays hidden. The old `FF_*` build flags were removed (only `FF_AI_LISTING_ASSIST` remains).
+- No prices, plans or products exist in the app. Demo builds use `UnavailableMonetizationRepository` / `EmptyPromotedRepository` (nothing for sale, no invented paid blocks).
+- `CheckoutController` (not widgets) owns the flow: `POST /checkout` with a client idempotency key (reused on retry of the same attempt) → open the provider page (`redirect`) → poll `GET /me/purchases/:id` and re-check on app resume → show only what the server reports. Store actions go through `StoreBilling` (unavailable: the purchase is cancelled, nothing links out).
+- Screens: “E’lonni tezroq soting” sheet (also vacancies, provider profile, ad campaigns), “TOP faollashtirildi” result, “To‘lovlar va tariflar” (plan, subscriptions, credits, receipts), “Biznes uchun” comparison, business profile + managers, public storefront `/business/:id`, listing statistics with promotion results.
+- Paid blocks are separate from organic lists and always labeled (“Reklama”, TOP/VIP/Tavsiya/Shoshilinch). Failures of paid blocks hide the block, never the page.
+
+### Launching a product (admin, no deploy)
+1. `PUT /admin/monetization/flags/monetization {enabled:true}` and the product flag (e.g. `listingTop`).
+2. `POST /admin/monetization/products/:id/prices {amountMinor, currency}` — whole so‘m only; `validFrom` in the future schedules a change.
+3. `PATCH /admin/monetization/products/:id {active:true}` (refused without a price).
+4. Plans: `POST /admin/monetization/plans/:id/prices {period}` + `PATCH …/plans/:id {active:true}`; plan limit edits apply immediately.
+Every step is written to `AdminAuditLog`.
+
+### Requires credentials / external work before real money
+| Item | Status | Needed |
+|---|---|---|
+| Payme | Interface + webhook route; `UnconfiguredPaymentProvider` | Merchant account, official protocol docs, sandbox; implement `createCheckout`, signature check, `fetchStatus`, `refund`. Note: if its callbacks are not JSON, extend the raw-body capture in `bootstrap.ts`. |
+| Click | Same as Payme | Same as Payme |
+| Apple IAP | Interface; route `ios → APPLE` | App Store Connect products, App Store Server API key; client StoreKit implementation of `StoreBilling`; receipt verification endpoint |
+| Google Play Billing | Interface; route `android → GOOGLE` | Play Console products, service account for Play Developer API; client billing implementation; purchase-token verification + RTDN webhook |
+| Real prices | None seeded | Business decision, entered via admin API |
+| Legal/tax | Not done | Offer terms, refund policy text, fiscal receipts (OFD) requirements in Uzbekistan |
+
+Nothing above has been sandbox-tested. Only the `dev` provider (HMAC-signed, test-only, refused in production by env validation) is exercised end-to-end in tests.
+
+### Security review (Phase 7)
+Checked: webhook signature before parsing (raw body, constant-time compare, 300 s timestamp window), event-id replay protection, row locks around payment/coupon/credit/bump state, idempotency keys, ownership checks returning 404 for others’ items, admin/finance role guards with audit log, rate limits on checkout/quote/ad events, no card data stored, no secrets in the repo or logs.
+Fixed during review: (1) two bump purchases paid concurrently could both apply — fulfillment now locks the listing row and re-checks the cooldown (the loser goes to `NEEDS_REVIEW` for a refund decision); (2) a manager could open a second business — creation now requires no existing membership; (3) the dev checkout page token is compared in constant time.
+Known limits: the per-process 15 s config cache means a flag change can take up to 15 s per API instance; entitlement cache is invalidated on plan edits and subscription changes.
 
 ### Future commission marketplace
 Extension points only (`Purchase.kind` can gain `ORDER_COMMISSION`; `PaymentProvider` supports split/hold capabilities flags). No escrow is implemented or claimed.

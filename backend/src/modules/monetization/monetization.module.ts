@@ -269,7 +269,7 @@ class PaymentWebhookController {
   @Header('Cache-Control', 'no-store')
   async devCheckoutPage(@Param('paymentId', ParseUUIDPipe) paymentId: string, @Query('token') token: string) {
     const provider = this.dev();
-    if (token !== provider.pageToken(paymentId)) throw AppError.notFound('Page');
+    if (!provider.checkPageToken(paymentId, token)) throw AppError.notFound('Page');
     const payment = await this.prisma.payment.findUnique({
       where: { id: paymentId },
       include: { purchase: { include: { product: true } } },
@@ -291,7 +291,7 @@ ${button('succeeded', "To'lash (muvaffaqiyatli)")}${button('failed', 'Xato')}${b
   @HttpCode(200)
   async devComplete(@Param('paymentId', ParseUUIDPipe) paymentId: string, @Body() dto: DevCompleteDto) {
     const provider = this.dev();
-    if (dto.token !== provider.pageToken(paymentId)) throw AppError.notFound('Page');
+    if (!provider.checkPageToken(paymentId, dto.token)) throw AppError.notFound('Page');
     const payment = await this.prisma.payment.findUnique({ where: { id: paymentId } });
     if (!payment || payment.provider !== PaymentProviderKey.DEV) throw AppError.notFound('Page');
     // Behaves like the real provider: asynchronously sends a signed webhook.

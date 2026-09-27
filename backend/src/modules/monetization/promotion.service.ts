@@ -156,10 +156,15 @@ export class PromotionService {
 
   /** Bump abuse guard: one bump per cooldown window per listing. */
   async assertBumpAllowed(info: TargetInfo): Promise<void> {
-    const { bumpCooldownHours } = await this.config.setting('ranking');
-    if (info.lastBumpAt && Date.now() - info.lastBumpAt.getTime() < bumpCooldownHours * 3600_000) {
+    if (await this.bumpCoolingDown(info)) {
+      const { bumpCooldownHours } = await this.config.setting('ranking');
       throw AppError.invalidState(`A listing can be bumped once every ${bumpCooldownHours} hours`);
     }
+  }
+
+  async bumpCoolingDown(info: TargetInfo, now = new Date()): Promise<boolean> {
+    const { bumpCooldownHours } = await this.config.setting('ranking');
+    return !!info.lastBumpAt && now.getTime() - info.lastBumpAt.getTime() < bumpCooldownHours * 3600_000;
   }
 
   /**
