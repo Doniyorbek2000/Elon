@@ -59,3 +59,13 @@ When the app is not installed the same URL loads the website. The landing page s
 ```
 
 plus “Ilovada ochish” / store badges.
+
+## Push notifications (FCM → Android + iOS)
+
+The server sends pushes through FCM HTTP v1 (`backend/README.md` → credentials). Each push carries `data.route`; the app routes taps there (cold start included). Without Firebase options the app runs with in-app notifications only.
+
+1. Create a Firebase project; add Android app `uz.bozor.app` and iOS app with your bundle id.
+2. Build the app with `--dart-define=FIREBASE_API_KEY=… FIREBASE_APP_ID=… FIREBASE_SENDER_ID=… FIREBASE_PROJECT_ID=…` (+ `FIREBASE_IOS_BUNDLE_ID` for iOS). No `google-services.json` / `GoogleService-Info.plist` is committed.
+3. iOS: in Xcode → Runner → Signing & Capabilities add **Push Notifications** (creates the `aps-environment` entitlement; requires a paid team) and upload an APNs auth key to Firebase. `UIBackgroundModes = remote-notification` is already in `Info.plist`.
+4. Android 13+: the notification permission is requested after sign-in.
+5. Server: `PUSH_PROVIDER=fcm`, `FCM_PROJECT_ID`, `FCM_SERVICE_ACCOUNT`.

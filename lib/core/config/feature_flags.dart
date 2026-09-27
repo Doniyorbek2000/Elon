@@ -14,7 +14,6 @@ class FeatureFlags {
     this.subscriptionsEnabled = false,
     this.aiListingAssistEnabled = false,
     this.showPromotionBadges = true,
-    this.realtimeChatEnabled = false,
   });
 
   factory FeatureFlags.fromEnvironment() => const FeatureFlags(
@@ -25,7 +24,6 @@ class FeatureFlags {
     subscriptionsEnabled: bool.fromEnvironment('FF_SUBSCRIPTIONS'),
     aiListingAssistEnabled: bool.fromEnvironment('FF_AI_LISTING_ASSIST'),
     showPromotionBadges: bool.fromEnvironment('FF_PROMOTION_BADGES', defaultValue: true),
-    realtimeChatEnabled: bool.fromEnvironment('FF_REALTIME_CHAT'),
   );
 
   /// Master switch for anything that asks the user for money.
@@ -43,9 +41,6 @@ class FeatureFlags {
   /// Promoted content can still be labeled during the free phase
   /// (e.g. editorially featured providers) without selling promotions.
   final bool showPromotionBadges;
-
-  /// Use the WebSocket gateway instead of the polling/demo transport.
-  final bool realtimeChatEnabled;
 
   bool get canSellPromotions => monetizationEnabled && paidPromotionsEnabled;
 }

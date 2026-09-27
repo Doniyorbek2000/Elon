@@ -201,15 +201,6 @@ final class PresenceChanged extends ChatEvent {
   final bool isOnline;
 }
 
-/// Transport seam: a WebSocket implementation (e.g. `web_socket_channel`)
-/// plugs in here when `FeatureFlags.realtimeChatEnabled` is on.
-abstract interface class ChatRealtimeGateway {
-  Stream<ChatEvent> get events;
-  Future<void> connect();
-  Future<void> disconnect();
-  void sendTyping(String conversationId, {required bool isTyping});
-}
-
 abstract interface class ChatRepository {
   Stream<List<Conversation>> watchConversations();
   Stream<List<ChatMessage>> watchMessages(String conversationId);

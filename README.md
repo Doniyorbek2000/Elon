@@ -18,17 +18,19 @@ Screenshots are rendered by the test suite with network images disabled, so phot
 
 ```bash
 flutter pub get
-flutter run                                   # demo data, no backend needed
-flutter run --dart-define=API_BASE_URL=https://api.bozor.uz/v1   # real API for listings/jobs
+flutter run                                   # debug build on local demo data (no backend)
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000/api/v1   # Android emulator → local backend
 ```
 
-With no `API_BASE_URL` the app runs on local demo data (`lib/data/demo/`).
+The backend lives in [`backend/`](backend/README.md) (NestJS, PostgreSQL/PostGIS, Redis, BullMQ, Socket.IO, S3). With `API_BASE_URL` set every feature talks to it — auth (phone OTP), listings, media upload, favorites, search, jobs/applications/CV, services/reviews, realtime chat and notifications — and server failures are shown as errors, never replaced by demo data. A **release** build without `API_BASE_URL` refuses to start unless `DEMO_MODE=true` is passed explicitly.
 
 ### Build-time configuration (`--dart-define`)
 
 | Key | Default | Purpose |
 |---|---|---|
-| `API_BASE_URL` | *(empty → demo data)* | REST backend base URL |
+| `API_BASE_URL` | *(empty → demo data in debug)* | Backend base URL including `/api/v1` |
+| `DEMO_MODE` | `false` | Allow demo data in a release build (store demos only) |
+| `FIREBASE_API_KEY`, `FIREBASE_APP_ID`, `FIREBASE_SENDER_ID`, `FIREBASE_PROJECT_ID`, `FIREBASE_IOS_BUNDLE_ID` | *(empty → push disabled)* | Firebase Cloud Messaging; without them the app uses in-app notifications only |
 | `WEB_BASE_URL` | `https://bozor.uz` | Share links / App Links / Universal Links host |
 | `APP_SCHEME` | `bozor` | Custom URL scheme (`bozor://app/listing/42`) |
 | `SUPPORT_TELEGRAM_URL` | `https://t.me/bozoruz_support` | Help → support button. **Replace with the real account.** |
@@ -36,7 +38,6 @@ With no `API_BASE_URL` the app runs on local demo data (`lib/data/demo/`).
 | `FF_MONETIZATION`, `FF_PAID_PROMOTIONS`, `FF_SUBSCRIPTIONS`, `FF_BUSINESS_ACCOUNTS`, `FF_ADVERTISING` | `false` | Monetization switches (hidden during the free phase) |
 | `FF_AI_LISTING_ASSIST` | `false` | Photo → title/description suggestions in the create flow |
 | `FF_PROMOTION_BADGES` | `true` | Show TOP/VIP badges |
-| `FF_REALTIME_CHAT` | `false` | Use the WebSocket chat gateway |
 
 ### Android release signing
 
@@ -56,14 +57,16 @@ Without it, release builds fall back to debug signing (local testing only).
 ```bash
 dart format -l 120 lib test tool
 flutter analyze
-flutter test                                                  # 183 unit + widget + responsive tests
+flutter test                                                  # unit + widget + responsive tests
+LIVE_API_URL=http://localhost:3000/api/v1 flutter test test/integration   # app data layer against a running dev backend (OTP_DEV_ECHO=true)
 flutter test tool/screenshots/screens_test.dart --update-goldens   # renders all screens × 6 devices to tool/screenshots/out/
 ```
 
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md) — layers, state, design system, performance, accessibility
-- [Backend contract](docs/backend-contract.md) — endpoints the remote repositories expect
+- [Backend](backend/README.md) — setup, operations, required production credentials
+- [API contract](docs/backend-contract.md) — endpoints, errors, realtime events, push payloads
 - [Deep linking](docs/deep-linking.md) — App Links / Universal Links / Telegram share loop
 - UI reference: `docs/reference/marketplace-ui.png`
 
