@@ -1,0 +1,1006 @@
+// Bozor.uz relational schema.
+//
+// Conventions
+// - UUID primary keys, `createdAt`/`updatedAt` everywhere, `deletedAt` for
+//   soft-deletable user content.
+// - Geospatial columns (`geo`) are PostGIS geography points GENERATED from
+//   lat/lng in SQL migrations; Prisma treats them as Unsupported (read-only).
+// - Money: whole currency units (so'm has no minor unit in practice).
+//   `priceUzs` is a normalized value for filtering/sorting mixed currencies.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+  binaryTargets   = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis, pg_trgm]
+}
+
+// ───────────────────────────────────────────────────────────── enums
+
+enum UserRole {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum VerificationLevel {
+  NONE
+  PHONE
+  IDENTITY
+  BUSINESS
+}
+
+enum AccountType {
+  PERSONAL
+  BUSINESS
+}
+
+enum AuthProvider {
+  PHONE_OTP
+  GOOGLE
+  APPLE
+}
+
+enum DevicePlatform {
+  ANDROID
+  IOS
+  WEB
+  OTHER
+}
+
+enum CategoryKind {
+  MARKETPLACE
+  JOBS
+  SERVICES
+}
+
+enum PriceMode {
+  REQUIRED
+  OPTIONAL
+  SALARY
+  NONE
+}
+
+enum AttributeType {
+  TEXT
+  NUMBER
+  BOOLEAN
+  SELECT
+  MULTI_SELECT
+}
+
+enum Currency {
+  UZS
+  USD
+}
+
+enum ItemCondition {
+  NEW
+  USED
+}
+
+enum ListingStatus {
+  DRAFT
+  PENDING_REVIEW
+  ACTIVE
+  RESERVED
+  SOLD
+  EXPIRED
+  REJECTED
+  ARCHIVED
+}
+
+enum PromotionType {
+  TOP
+  VIP
+  BUMP
+  FEATURED
+  PREMIUM_VACANCY
+}
+
+enum MediaPurpose {
+  LISTING
+  AVATAR
+  CHAT
+  PORTFOLIO
+  OFFERING
+}
+
+enum MediaStatus {
+  PROCESSING
+  READY
+  FAILED
+  DELETED
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  TEMPORARY
+  INTERNSHIP
+}
+
+enum WorkFormat {
+  ON_SITE
+  REMOTE
+  HYBRID
+}
+
+enum ExperienceLevel {
+  NONE
+  UP_TO_1
+  ONE_TO_3
+  THREE_PLUS
+}
+
+enum ApplicationMode {
+  IN_APP
+  PHONE
+  BOTH
+}
+
+enum JobStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  FILLED
+  EXPIRED
+  REJECTED
+  ARCHIVED
+}
+
+enum ApplicationStatus {
+  SUBMITTED
+  VIEWED
+  SHORTLISTED
+  REJECTED
+  ACCEPTED
+  WITHDRAWN
+}
+
+enum ResumeVisibility {
+  PUBLIC
+  APPLICATIONS_ONLY
+  HIDDEN
+}
+
+enum ProviderStatus {
+  ACTIVE
+  PAUSED
+  SUSPENDED
+}
+
+enum Availability {
+  AVAILABLE
+  BUSY
+  AWAY
+}
+
+enum PricingType {
+  FIXED
+  FROM
+  HOURLY
+  NEGOTIABLE
+}
+
+enum OfferingStatus {
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum ReviewStatus {
+  PUBLISHED
+  HIDDEN
+  REMOVED
+}
+
+enum ConversationContext {
+  LISTING
+  JOB
+  SERVICE
+  DIRECT
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  LISTING_SHARE
+  SYSTEM
+}
+
+enum NotificationType {
+  MESSAGE
+  LISTING_STATUS
+  APPLICATION_RECEIVED
+  APPLICATION_STATUS
+  REVIEW_RECEIVED
+  ACCOUNT
+  SYSTEM
+}
+
+enum PushProviderKind {
+  FCM
+}
+
+enum ReportTarget {
+  LISTING
+  USER
+  JOB
+  PROVIDER
+  CONVERSATION
+  MESSAGE
+  REVIEW
+}
+
+enum ReportReason {
+  FRAUD
+  PROHIBITED
+  WRONG_INFO
+  WRONG_CATEGORY
+  DUPLICATE
+  SPAM
+  OFFENSIVE
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  REVIEWING
+  RESOLVED
+  DISMISSED
+}
+
+enum ModerationAction {
+  APPROVED
+  REJECTED
+  HIDDEN
+  RESTORED
+  AUTO_FLAGGED
+}
+
+// ─────────────────────────────────────────────────────── identity & auth
+
+model User {
+  id              String     @id @default(uuid()) @db.Uuid
+  phone           String     @unique // E.164 digits without '+', e.g. 998901234567
+  phoneVerifiedAt DateTime?
+  role            UserRole   @default(USER)
+  status          UserStatus @default(ACTIVE)
+  lastSeenAt      DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  deletedAt       DateTime?
+
+  profile         Profile?
+  identities      UserIdentity[]
+  sessions        Session[]
+  pushDevices     PushDevice[]
+  listings        Listing[]
+  media           Media[]
+  favorites       Favorite[]
+  jobs            Job[]              @relation("JobEmployer")
+  applications    JobApplication[]
+  resume          Resume?
+  provider        ServiceProvider?
+  reviews         Review[]           @relation("ReviewAuthor")
+  participations  ConversationParticipant[]
+  messages        Message[]
+  notifications   Notification[]
+  reports         Report[]           @relation("ReportAuthor")
+  blocksMade      Block[]            @relation("Blocker")
+  blocksReceived  Block[]            @relation("Blocked")
+}
+
+/// Public-facing profile data. Never includes the phone number.
+model Profile {
+  userId             String            @id @db.Uuid
+  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName        String
+  avatarId           String?           @unique @db.Uuid
+  avatar             Media?            @relation("ProfileAvatar", fields: [avatarId], references: [id], onDelete: SetNull)
+  bio                String?
+  verification       VerificationLevel @default(NONE)
+  accountType        AccountType       @default(PERSONAL)
+  showPhone          Boolean           @default(true)
+  messagePreviews    Boolean           @default(true)
+  preferredRegionId  String?
+  preferredRegion    Region?           @relation(fields: [preferredRegionId], references: [id])
+  preferredDistrictId String?
+  preferredDistrict  District?         @relation(fields: [preferredDistrictId], references: [id])
+  preferredLocalityId String?
+  preferredLocality  Locality?         @relation(fields: [preferredLocalityId], references: [id])
+  preferredRadiusKm  Int?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+}
+
+/// Links a user to an external identity (phone OTP today; Google/Apple later).
+model UserIdentity {
+  id             String       @id @default(uuid()) @db.Uuid
+  userId         String       @db.Uuid
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider       AuthProvider
+  providerUserId String
+  createdAt      DateTime     @default(now())
+
+  @@unique([provider, providerUserId])
+  @@index([userId])
+}
+
+/// One row per signed-in device. Refresh tokens rotate on every use; only a
+/// SHA-256 hash is stored. Presenting the previous token again (reuse) revokes
+/// the session.
+model Session {
+  id                String         @id @default(uuid()) @db.Uuid
+  userId            String         @db.Uuid
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId          String
+  deviceName        String?
+  platform          DevicePlatform @default(OTHER)
+  refreshTokenHash  String         @unique
+  previousTokenHash String?        @unique
+  rotatedAt         DateTime?
+  expiresAt         DateTime
+  lastUsedAt        DateTime       @default(now())
+  ipAddress         String?
+  userAgent         String?
+  revokedAt         DateTime?
+  revokedReason     String?
+  createdAt         DateTime       @default(now())
+  pushDevices       PushDevice[]
+
+  @@index([userId, revokedAt])
+}
+
+model PushDevice {
+  id         String           @id @default(uuid()) @db.Uuid
+  userId     String           @db.Uuid
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId  String?          @db.Uuid
+  session    Session?         @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  provider   PushProviderKind @default(FCM)
+  token      String           @unique
+  platform   DevicePlatform
+  locale     String?
+  lastSeenAt DateTime         @default(now())
+  disabledAt DateTime?
+  createdAt  DateTime         @default(now())
+
+  @@index([userId, disabledAt])
+}
+
+// ──────────────────────────────────────────────────────────── locations
+
+model Region {
+  id        String     @id // stable slug: "namangan"
+  name      String
+  nameRu    String?
+  lat       Float
+  lng       Float
+  sortOrder Int        @default(0)
+  districts District[]
+  profiles  Profile[]
+  listings  Listing[]
+  jobs      Job[]
+  providers ServiceProvider[]
+  areas     ServiceArea[]
+}
+
+model District {
+  id         String     @id // "chust"
+  regionId   String
+  region     Region     @relation(fields: [regionId], references: [id])
+  name       String
+  nameRu     String?
+  lat        Float?
+  lng        Float?
+  geo        Unsupported("geography(Point, 4326)")? @default(dbgenerated("\nCASE\n    WHEN ((lat IS NOT NULL) AND (lng IS NOT NULL)) THEN (st_setsrid(st_makepoint(lng, lat), 4326))::geography\n    ELSE NULL::geography\nEND"))
+  localities Locality[]
+  profiles   Profile[]
+  listings   Listing[]
+  jobs       Job[]
+  providers  ServiceProvider[]
+  areas      ServiceArea[]
+
+  @@index([regionId])
+  @@index([geo], type: Gist)
+}
+
+model Locality {
+  id         String    @id // "chust_karkidon"
+  districtId String
+  district   District  @relation(fields: [districtId], references: [id])
+  name       String
+  lat        Float?
+  lng        Float?
+  profiles   Profile[]
+  listings   Listing[]
+
+  @@index([districtId])
+}
+
+// ─────────────────────────────────────────────────────────── categories
+
+model Category {
+  id                String              @id // slug: "cars"
+  parentId          String?
+  parent            Category?           @relation("CategoryTree", fields: [parentId], references: [id])
+  children          Category[]          @relation("CategoryTree")
+  kind              CategoryKind        @default(MARKETPLACE)
+  name              String
+  nameRu            String?
+  subtitle          String?
+  iconKey           String
+  tone              String
+  sortOrder         Int                 @default(0)
+  priceMode         PriceMode           @default(REQUIRED)
+  supportsCondition Boolean             @default(true)
+  photosRequired    Boolean             @default(true)
+  allowUsd          Boolean             @default(false)
+  titleHint         String?
+  isActive          Boolean             @default(true)
+  homeShortcut      Boolean             @default(false)
+  attributes        CategoryAttribute[]
+  listings          Listing[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([parentId, sortOrder])
+}
+
+/// Server-driven form field. Leaf categories without their own attributes
+/// inherit from the nearest ancestor that defines some.
+model CategoryAttribute {
+  id         String           @id @default(uuid()) @db.Uuid
+  categoryId String
+  category   Category         @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  key        String
+  label      String
+  type       AttributeType
+  required   Boolean          @default(false)
+  filterable Boolean          @default(false)
+  unit       String?
+  min        Int?
+  max        Int?
+  hint       String?
+  options    String[]
+  sortOrder  Int              @default(0)
+  values     ListingAttribute[]
+
+  @@unique([categoryId, key])
+}
+
+// ───────────────────────────────────────────────────────────────── media
+
+/// Uploaded file. Originals are private; derived renditions (thumb/feed/
+/// detail) are generated asynchronously by the worker.
+model Media {
+  id           String       @id @default(uuid()) @db.Uuid
+  ownerId      String       @db.Uuid
+  owner        User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  purpose      MediaPurpose
+  status       MediaStatus  @default(PROCESSING)
+  mimeType     String
+  sizeBytes    Int
+  width        Int?
+  height       Int?
+  originalKey  String
+  thumbKey     String?
+  feedKey      String?
+  detailKey    String?
+  failureReason String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  deletedAt    DateTime?
+
+  profileAvatar   Profile?              @relation("ProfileAvatar")
+  listingLinks    ListingMedia[]
+  attachmentLinks MessageAttachment[]
+  portfolioLinks  PortfolioItem[]
+  offeringLinks   OfferingMedia[]
+
+  @@index([ownerId, purpose, createdAt])
+  @@index([status, createdAt])
+}
+
+// ────────────────────────────────────────────────────────────── listings
+
+model Listing {
+  id              String          @id @default(uuid()) @db.Uuid
+  sellerId        String          @db.Uuid
+  seller          User            @relation(fields: [sellerId], references: [id])
+  categoryId      String
+  category        Category        @relation(fields: [categoryId], references: [id])
+  title           String
+  description     String
+  priceAmount     BigInt?
+  currency        Currency        @default(UZS)
+  priceUzs        BigInt?
+  negotiable      Boolean         @default(false)
+  condition       ItemCondition?
+  status          ListingStatus   @default(DRAFT)
+  regionId        String
+  region          Region          @relation(fields: [regionId], references: [id])
+  districtId      String?
+  district        District?       @relation(fields: [districtId], references: [id])
+  localityId      String?
+  locality        Locality?       @relation(fields: [localityId], references: [id])
+  lat             Float?
+  lng             Float?
+  geo             Unsupported("geography(Point, 4326)")? @default(dbgenerated("\nCASE\n    WHEN ((lat IS NOT NULL) AND (lng IS NOT NULL)) THEN (st_setsrid(st_makepoint(lng, lat), 4326))::geography\n    ELSE NULL::geography\nEND"))
+  searchText      String          @default("")
+  viewCount       Int             @default(0)
+  favoriteCount   Int             @default(0)
+  flagged         Boolean         @default(false)
+  riskFlags       String[]
+  rejectReason    String?
+  promotionType   PromotionType?
+  promotedUntil   DateTime?
+  publishedAt     DateTime?
+  expiresAt       DateTime?
+  soldAt          DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  deletedAt       DateTime?
+
+  attributes      ListingAttribute[]
+  media           ListingMedia[]
+  favorites       Favorite[]
+  conversations   Conversation[]
+  sharedIn        Message[]       @relation("SharedListing")
+
+  @@index([status, publishedAt(sort: Desc), id])
+  @@index([status, categoryId, publishedAt(sort: Desc)])
+  @@index([status, regionId, districtId, publishedAt(sort: Desc)])
+  @@index([status, priceUzs])
+  @@index([sellerId, status, updatedAt(sort: Desc)])
+  @@index([geo], type: Gist)
+  @@index([searchText(ops: raw("gin_trgm_ops"))], type: Gin)
+}
+
+model ListingAttribute {
+  id          String            @id @default(uuid()) @db.Uuid
+  listingId   String            @db.Uuid
+  listing     Listing           @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  attributeId String            @db.Uuid
+  attribute   CategoryAttribute @relation(fields: [attributeId], references: [id])
+  valueText   String?
+  valueNumber Float?
+  valueBool   Boolean?
+  valueList   String[]
+
+  @@unique([listingId, attributeId])
+  @@index([attributeId, valueNumber])
+  @@index([attributeId, valueText])
+}
+
+model ListingMedia {
+  listingId String  @db.Uuid
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  mediaId   String  @db.Uuid
+  media     Media   @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  position  Int
+
+  @@id([listingId, mediaId])
+  @@index([listingId, position])
+}
+
+/// Exactly one of listingId/jobId/providerId is set (CHECK constraint in SQL).
+model Favorite {
+  id         String           @id @default(uuid()) @db.Uuid
+  userId     String           @db.Uuid
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listingId  String?          @db.Uuid
+  listing    Listing?         @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  jobId      String?          @db.Uuid
+  job        Job?             @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  providerId String?          @db.Uuid
+  provider   ServiceProvider? @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  createdAt  DateTime         @default(now())
+
+  @@unique([userId, listingId])
+  @@unique([userId, jobId])
+  @@unique([userId, providerId])
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+// ────────────────────────────────────────────────────────────────── jobs
+
+model Job {
+  id               String            @id @default(uuid()) @db.Uuid
+  employerId       String            @db.Uuid
+  employer         User              @relation("JobEmployer", fields: [employerId], references: [id])
+  companyName      String
+  title            String
+  description      String
+  requirements     String[]
+  responsibilities String[]
+  salaryMin        Int?
+  salaryMax        Int?
+  salaryCurrency   Currency          @default(UZS)
+  salaryNegotiable Boolean           @default(false)
+  employmentType   EmploymentType    @default(FULL_TIME)
+  workFormat       WorkFormat        @default(ON_SITE)
+  experience       ExperienceLevel   @default(NONE)
+  workSchedule     String?
+  applicationMode  ApplicationMode   @default(IN_APP)
+  status           JobStatus         @default(ACTIVE)
+  regionId         String
+  region           Region            @relation(fields: [regionId], references: [id])
+  districtId       String?
+  district         District?         @relation(fields: [districtId], references: [id])
+  lat              Float?
+  lng              Float?
+  geo              Unsupported("geography(Point, 4326)")? @default(dbgenerated("\nCASE\n    WHEN ((lat IS NOT NULL) AND (lng IS NOT NULL)) THEN (st_setsrid(st_makepoint(lng, lat), 4326))::geography\n    ELSE NULL::geography\nEND"))
+  searchText       String            @default("")
+  viewCount        Int               @default(0)
+  promotionType    PromotionType?
+  promotedUntil    DateTime?
+  publishedAt      DateTime?
+  expiresAt        DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  deletedAt        DateTime?
+
+  applications     JobApplication[]
+  favorites        Favorite[]
+  conversations    Conversation[]
+
+  @@index([status, publishedAt(sort: Desc), id])
+  @@index([status, regionId, districtId, publishedAt(sort: Desc)])
+  @@index([status, employmentType, publishedAt(sort: Desc)])
+  @@index([employerId, status])
+  @@index([geo], type: Gist)
+  @@index([searchText(ops: raw("gin_trgm_ops"))], type: Gin)
+}
+
+model JobApplication {
+  id              String            @id @default(uuid()) @db.Uuid
+  jobId           String            @db.Uuid
+  job             Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  applicantId     String            @db.Uuid
+  applicant       User              @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  coverLetter     String?
+  status          ApplicationStatus @default(SUBMITTED)
+  statusChangedAt DateTime          @default(now())
+  viewedAt        DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@unique([jobId, applicantId])
+  @@index([applicantId, createdAt(sort: Desc)])
+  @@index([jobId, status, createdAt(sort: Desc)])
+}
+
+/// Simple candidate profile (CV). Photo/name come from Profile.
+model Resume {
+  id                String             @id @default(uuid()) @db.Uuid
+  userId            String             @unique @db.Uuid
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title             String
+  about             String?
+  experienceYears   Int                @default(0)
+  skills            String[]
+  employmentTypes   EmploymentType[]
+  preferredRegionId String?
+  preferredDistrictId String?
+  salaryExpectation Int?
+  salaryCurrency    Currency           @default(UZS)
+  visibility        ResumeVisibility   @default(APPLICATIONS_ONLY)
+  searchText        String             @default("")
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  experiences       ResumeExperience[]
+  educations        ResumeEducation[]
+
+  @@index([visibility, updatedAt(sort: Desc)])
+  @@index([searchText(ops: raw("gin_trgm_ops"))], type: Gin)
+}
+
+model ResumeExperience {
+  id          String    @id @default(uuid()) @db.Uuid
+  resumeId    String    @db.Uuid
+  resume      Resume    @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  company     String
+  position    String
+  startYear   Int
+  endYear     Int?
+  description String?
+  sortOrder   Int       @default(0)
+}
+
+model ResumeEducation {
+  id          String   @id @default(uuid()) @db.Uuid
+  resumeId    String   @db.Uuid
+  resume      Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  institution String
+  degree      String?
+  endYear     Int?
+  sortOrder   Int      @default(0)
+}
+
+// ────────────────────────────────────────────────────────────── services
+
+model ServiceCategory {
+  id         String                    @id // "plumber"
+  name       String
+  nameRu     String?
+  iconKey    String
+  tone       String
+  sortOrder  Int                       @default(0)
+  isActive   Boolean                   @default(true)
+  providers  ServiceProviderCategory[]
+  offerings  ServiceOffering[]
+}
+
+model ServiceProvider {
+  id              String                    @id @default(uuid()) @db.Uuid
+  userId          String                    @unique @db.Uuid
+  user            User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName     String
+  profession      String
+  description     String
+  experienceYears Int                       @default(0)
+  status          ProviderStatus            @default(ACTIVE)
+  availability    Availability              @default(AVAILABLE)
+  regionId        String
+  region          Region                    @relation(fields: [regionId], references: [id])
+  districtId      String?
+  district        District?                 @relation(fields: [districtId], references: [id])
+  lat             Float?
+  lng             Float?
+  geo             Unsupported("geography(Point, 4326)")? @default(dbgenerated("\nCASE\n    WHEN ((lat IS NOT NULL) AND (lng IS NOT NULL)) THEN (st_setsrid(st_makepoint(lng, lat), 4326))::geography\n    ELSE NULL::geography\nEND"))
+  searchText      String                    @default("")
+  ratingAvg       Float                     @default(0)
+  reviewCount     Int                       @default(0)
+  promotionType   PromotionType?
+  promotedUntil   DateTime?
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+  deletedAt       DateTime?
+
+  categories      ServiceProviderCategory[]
+  areas           ServiceArea[]
+  offerings       ServiceOffering[]
+  portfolio       PortfolioItem[]
+  reviews         Review[]
+  favorites       Favorite[]
+  conversations   Conversation[]
+
+  @@index([status, regionId, districtId])
+  @@index([status, ratingAvg(sort: Desc)])
+  @@index([geo], type: Gist)
+  @@index([searchText(ops: raw("gin_trgm_ops"))], type: Gin)
+}
+
+model ServiceProviderCategory {
+  providerId String          @db.Uuid
+  provider   ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   ServiceCategory @relation(fields: [categoryId], references: [id])
+
+  @@id([providerId, categoryId])
+  @@index([categoryId])
+}
+
+/// Where a provider works: whole region (districtId null) or a district.
+model ServiceArea {
+  id         String          @id @default(uuid()) @db.Uuid
+  providerId String          @db.Uuid
+  provider   ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  regionId   String
+  region     Region          @relation(fields: [regionId], references: [id])
+  districtId String?
+  district   District?       @relation(fields: [districtId], references: [id])
+
+  @@unique([providerId, regionId, districtId])
+  @@index([regionId, districtId])
+}
+
+model ServiceOffering {
+  id          String          @id @default(uuid()) @db.Uuid
+  providerId  String          @db.Uuid
+  provider    ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    ServiceCategory @relation(fields: [categoryId], references: [id])
+  title       String
+  description String?
+  pricingType PricingType     @default(FROM)
+  priceFrom   Int?
+  priceTo     Int?
+  currency    Currency        @default(UZS)
+  priceUnit   String?
+  status      OfferingStatus  @default(ACTIVE)
+  searchText  String          @default("")
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  deletedAt   DateTime?
+  media       OfferingMedia[]
+
+  @@index([providerId, status])
+  @@index([categoryId, status])
+  @@index([searchText(ops: raw("gin_trgm_ops"))], type: Gin)
+}
+
+model OfferingMedia {
+  offeringId String          @db.Uuid
+  offering   ServiceOffering @relation(fields: [offeringId], references: [id], onDelete: Cascade)
+  mediaId    String          @db.Uuid
+  media      Media           @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  position   Int
+
+  @@id([offeringId, mediaId])
+}
+
+model PortfolioItem {
+  id         String          @id @default(uuid()) @db.Uuid
+  providerId String          @db.Uuid
+  provider   ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  mediaId    String          @db.Uuid
+  media      Media           @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  caption    String?
+  position   Int
+  createdAt  DateTime        @default(now())
+
+  @@unique([providerId, mediaId])
+  @@index([providerId, position])
+}
+
+/// One review per author per provider (editable). Eligibility is enforced in
+/// the service layer (prior two-way conversation).
+model Review {
+  id         String          @id @default(uuid()) @db.Uuid
+  authorId   String          @db.Uuid
+  author     User            @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  providerId String          @db.Uuid
+  provider   ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  rating     Int
+  text       String?
+  status     ReviewStatus    @default(PUBLISHED)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  @@unique([authorId, providerId])
+  @@index([providerId, status, createdAt(sort: Desc)])
+}
+
+// ──────────────────────────────────────────────────────────────── chat
+
+/// `contextKey` deduplicates: one conversation per (context target, pair of
+/// participants), e.g. "LISTING:<listingId>:<userA>:<userB>".
+model Conversation {
+  id            String                    @id @default(uuid()) @db.Uuid
+  contextType   ConversationContext
+  contextKey    String                    @unique
+  listingId     String?                   @db.Uuid
+  listing       Listing?                  @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  jobId         String?                   @db.Uuid
+  job           Job?                      @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  providerId    String?                   @db.Uuid
+  provider      ServiceProvider?          @relation(fields: [providerId], references: [id], onDelete: SetNull)
+  lastMessageAt DateTime?
+  lastMessageId String?                   @db.Uuid
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+  participants  ConversationParticipant[]
+  messages      Message[]
+}
+
+model ConversationParticipant {
+  conversationId  String       @db.Uuid
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId          String       @db.Uuid
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  unreadCount     Int          @default(0)
+  lastReadAt      DateTime?
+  lastDeliveredAt DateTime?
+  archivedAt      DateTime?
+  joinedAt        DateTime     @default(now())
+
+  @@id([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id              String              @id @default(uuid()) @db.Uuid
+  conversationId  String              @db.Uuid
+  conversation    Conversation        @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId        String?             @db.Uuid
+  sender          User?               @relation(fields: [senderId], references: [id], onDelete: SetNull)
+  clientId        String?
+  type            MessageType
+  text            String?
+  sharedListingId String?             @db.Uuid
+  sharedListing   Listing?            @relation("SharedListing", fields: [sharedListingId], references: [id], onDelete: SetNull)
+  flagged         Boolean             @default(false)
+  createdAt       DateTime            @default(now())
+  deletedAt       DateTime?
+  attachments     MessageAttachment[]
+
+  @@unique([senderId, clientId])
+  @@index([conversationId, createdAt(sort: Desc), id(sort: Desc)])
+}
+
+model MessageAttachment {
+  messageId String  @db.Uuid
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  mediaId   String  @db.Uuid
+  media     Media   @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  position  Int
+
+  @@id([messageId, mediaId])
+}
+
+// ─────────────────────────────────────────────────── notifications & safety
+
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @db.Uuid
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  body      String
+  /// Deep link + ids for the client, e.g. {"route":"/listing/…"}.
+  data      Json             @default("{}")
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, readAt])
+}
+
+model Report {
+  id         String       @id @default(uuid()) @db.Uuid
+  reporterId String       @db.Uuid
+  reporter   User         @relation("ReportAuthor", fields: [reporterId], references: [id], onDelete: Cascade)
+  targetType ReportTarget
+  targetId   String
+  reason     ReportReason
+  comment    String?
+  status     ReportStatus @default(OPEN)
+  handledById String?     @db.Uuid
+  handledAt  DateTime?
+  resolution String?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@unique([reporterId, targetType, targetId])
+  @@index([targetType, targetId, status])
+  @@index([status, createdAt])
+}
+
+model Block {
+  blockerId String   @db.Uuid
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedId String   @db.Uuid
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+}
+
+/// Append-only audit trail for moderation decisions (manual and automatic).
+model ModerationEvent {
+  id         String           @id @default(uuid()) @db.Uuid
+  targetType ReportTarget
+  targetId   String
+  action     ModerationAction
+  actorId    String?          @db.Uuid
+  reason     String?
+  createdAt  DateTime         @default(now())
+
+  @@index([targetType, targetId, createdAt])
+}
