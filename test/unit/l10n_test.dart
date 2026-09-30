@@ -20,13 +20,12 @@ void main() {
 
   group('tr', () {
     test('returns the Uzbek source and fills placeholders in Uzbek', () {
-      expect(tr('Tarif: {planTitle}', {'planTitle': 'Business'}), 'Tarif: Business');
+      expect(tr('Hammasi ({length})', {'length': 12}), 'Hammasi (12)');
       expect(tr('Hech qanday tarjima yo‘q'), 'Hech qanday tarjima yo‘q');
     });
 
     test('translates to Russian and keeps every placeholder', () {
       currentLanguage = AppLanguage.ru;
-      expect(tr('Tarif: {planTitle}', {'planTitle': 'Business'}), 'Тариф: Business');
       expect(tr('Hammasi ({length})', {'length': 12}), 'Все (12)');
       expect(tr('Hech qanday tarjima yo‘q'), 'Hech qanday tarjima yo‘q', reason: 'unknown text falls back to source');
     });
@@ -87,8 +86,6 @@ void main() {
         'Excel',
         'Cobalt',
         'Chevrolet',
-        'Payme',
-        'Click',
         'WebP',
         'HEIC',
         'JPEG',

@@ -12,7 +12,6 @@ import '../../../core/widgets/paged_sliver.dart';
 import '../../catalog/application/catalog_providers.dart';
 import '../../catalog/domain/category.dart';
 import '../../location/application/location_controller.dart';
-import '../../monetization/presentation/promoted_blocks.dart';
 import '../application/listing_providers.dart';
 import '../domain/listing_query.dart';
 import 'widgets/listing_feed_slivers.dart';
@@ -141,21 +140,6 @@ class _ListingsScreenState extends ConsumerState<ListingsScreen> {
                       ),
                     ],
                   ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (query.categoryId != null)
-                      FeaturedListingsBlock(
-                        placement: 'category',
-                        categoryId: query.categoryId,
-                        regionId: query.regionId,
-                        gutter: gutter,
-                      ),
-                    PromotedListingsBlock(query: query, gutter: gutter),
-                  ],
                 ),
               ),
               ListingFeedSlivers(query: query, gutter: gutter, layout: ListingLayout.list, heroPrefix: 'browse'),

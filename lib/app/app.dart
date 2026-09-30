@@ -6,7 +6,6 @@ import '../core/config/app_config.dart';
 import '../core/design/app_theme.dart';
 import '../core/l10n/l10n.dart';
 import '../core/push/push_registration.dart';
-import '../features/monetization/application/monetization_providers.dart';
 import '../features/settings/application/settings_controller.dart';
 import 'router/app_router.dart';
 
@@ -21,7 +20,6 @@ class BozorApp extends ConsumerWidget {
     // Keeps push token registration in sync with the signed-in account.
     ref.watch(pushRegistrationProvider);
     ref.watch(languageSyncProvider);
-    ref.watch(storeRecoveryProvider);
     return MaterialApp.router(
       title: 'Bozor.uz',
       debugShowCheckedModeBanner: false,

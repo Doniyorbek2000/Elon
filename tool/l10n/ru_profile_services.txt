@@ -44,7 +44,6 @@ Usta topilmadi ||| Мастера не найдены
 Boshqa filtr yoki kategoriyani tanlab ko‘ring. ||| Попробуйте другой фильтр или категорию.
 O‘z xizmatingizni joylang ||| Разместите свою услугу
 reyting {p0}, {reviewCount} sharh ||| рейтинг {p0}, отзывов: {reviewCount}
-TOP usta ||| ТОП-мастер
 {p0} dan{p1} ||| от {p0}{p1}
 Avval usta profilini yarating ||| Сначала создайте профиль мастера
 {name} — Bozor.uz ||| {name} — Bozor.uz
@@ -82,7 +81,6 @@ Bu amalni qaytarib bo‘lmaydi. ||| Это действие нельзя отм�
 Tekshiruvdagi e’lonlar yo‘q ||| Объявлений на проверке нет
 Arxiv bo‘sh ||| Архив пуст
 Birinchi e’loningizni 1 daqiqada joylang. ||| Разместите первое объявление за 1 минуту.
-Tezroq sotish (TOP/VIP) ||| Продать быстрее (ТОП/VIP)
 Statistika ||| Статистика
 Band qilindi deb belgilash ||| Отметить как забронировано
 Sotildi deb belgilash ||| Отметить как продано

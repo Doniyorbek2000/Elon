@@ -119,6 +119,7 @@ export class BusinessService {
     return {
       ...(await this.present(business)),
       myRole: apiEnum(member.role),
+      maxManagers: LIMITS.managersPerBusiness,
       members: business.members.map((m) => ({
         userId: m.userId,
         name: m.user.profile?.displayName ?? '',

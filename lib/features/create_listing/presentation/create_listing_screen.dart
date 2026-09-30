@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/routes.dart';
-import '../../../core/config/feature_flags.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/errors/app_failure.dart';
@@ -98,16 +97,7 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
       if (!mounted) return;
       setState(() => _publishing = false);
       final failure = error.asFailure();
-      // Plan limit: the draft is kept; offer plans only when they are on sale.
-      final upgrade = failure is LimitReachedFailure && ref.read(featureFlagsProvider).canBuyPlans;
-      showAppSnack(
-        context,
-        failure.message,
-        icon: Icons.error_outline_rounded,
-        action: upgrade
-            ? SnackBarAction(label: tr('Tariflar'), onPressed: () => context.push(AppRoutes.businessPlans))
-            : null,
-      );
+      showAppSnack(context, failure.message, icon: Icons.error_outline_rounded);
     }
   }
 

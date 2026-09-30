@@ -72,7 +72,6 @@ class ListingCard extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final now = ref.watch(clockProvider)();
     final visual = listingVisual(ref, listing.categoryId);
-    final promotion = listing.promotion;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Pressable(
@@ -98,12 +97,6 @@ class ListingCard extends ConsumerWidget {
                     tag: '$heroPrefix-${listing.id}',
                     child: AppImage(image: listing.cover, placeholderIcon: visual.icon, tone: visual.tone),
                   ),
-                  if (promotion != null && promotion.isActive(now))
-                    PositionedDirectional(
-                      top: AppSpacing.sm,
-                      start: AppSpacing.sm,
-                      child: PromotionBadge(type: promotion.type),
-                    ),
                   PositionedDirectional(
                     top: 0,
                     end: 0,
@@ -155,7 +148,6 @@ class ListingTile extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final now = ref.watch(clockProvider)();
     final visual = listingVisual(ref, listing.categoryId);
-    final promotion = listing.promotion;
     final thumbWidth = MediaQuery.textScalerOf(context).scale(1) > 1.3 ? 96.0 : 112.0;
 
     return Pressable(
@@ -191,10 +183,6 @@ class ListingTile extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          if (promotion != null && promotion.isActive(now)) ...[
-                            PromotionBadge(type: promotion.type),
-                            const SizedBox(width: AppSpacing.xs),
-                          ],
                           Expanded(
                             child: Text(
                               listing.title,

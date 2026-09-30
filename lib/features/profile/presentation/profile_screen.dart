@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/routes.dart';
-import '../../../core/config/feature_flags.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/l10n/l10n.dart';
@@ -240,7 +239,7 @@ class _Menu extends ConsumerWidget {
           () => context.push(AppRoutes.providerEditor),
           0,
         ),
-      if (signedIn && ref.watch(featureFlagsProvider).businessAccounts)
+      if (signedIn)
         (Icons.storefront_outlined, AccentTone.blue, tr('Biznes profil'), () => context.push(AppRoutes.myBusiness), 0),
       (Icons.favorite_border_rounded, AccentTone.red, tr('Saqlanganlar'), () => context.push(AppRoutes.saved), 0),
       if (signedIn)
@@ -251,13 +250,6 @@ class _Menu extends ConsumerWidget {
           () => context.go(AppRoutes.chats),
           unreadChats,
         ),
-      (
-        Icons.receipt_long_outlined,
-        AccentTone.amber,
-        tr('To‘lovlar va tariflar'),
-        () => context.push(AppRoutes.plans),
-        0,
-      ),
       (Icons.settings_outlined, AccentTone.slate, tr('Sozlamalar'), () => context.push(AppRoutes.settings), 0),
       (Icons.help_outline_rounded, AccentTone.green, tr('Yordam'), () => context.push(AppRoutes.help), 0),
     ];

@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router/routes.dart';
 import '../../../core/config/app_config.dart';
-import '../../../core/config/feature_flags.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/sharing/share_sheet.dart';
@@ -15,8 +14,6 @@ import '../../listings/application/listing_providers.dart';
 import '../../listings/domain/listing.dart';
 import '../../listings/presentation/listing_detail_screen.dart';
 import '../../listings/presentation/widgets/listing_cards.dart';
-import '../../monetization/domain/monetization.dart';
-import '../../monetization/presentation/promote_sheet.dart';
 
 enum _Tab {
   active('Faol', {ListingStatus.active, ListingStatus.reserved}),
@@ -106,19 +103,8 @@ class _ListingsTab extends ConsumerWidget {
     ref.read(listingsRevisionProvider.notifier).bump();
   }
 
-  Future<void> _promote(BuildContext context, WidgetRef ref, Listing listing) async {
-    final activated = await showPromoteSheet(
-      context,
-      target: PromotionTarget.listing,
-      targetId: listing.id,
-      itemTitle: listing.title,
-    );
-    if (activated) ref.read(listingsRevisionProvider.notifier).bump();
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final canPromote = ref.watch(featureFlagsProvider).canPromoteListings;
     final remote = !ref.watch(appConfigProvider).useDemoData;
     if (items.isEmpty) {
       return EmptyState(
@@ -150,7 +136,6 @@ class _ListingsTab extends ConsumerWidget {
               'reserve' => _setStatus(context, ref, listing, ListingStatus.reserved),
               'archive' => _setStatus(context, ref, listing, ListingStatus.archived),
               'activate' => _setStatus(context, ref, listing, ListingStatus.active),
-              'promote' => _promote(context, ref, listing),
               'stats' => context.push(AppRoutes.listingStats(listing.id)),
               'delete' => _delete(context, ref, listing),
               _ => null,
@@ -158,7 +143,6 @@ class _ListingsTab extends ConsumerWidget {
             itemBuilder: (_) => [
               if (listing.status == ListingStatus.active) ...[
                 PopupMenuItem(value: 'share', child: Text(tr('Ulashish'))),
-                if (canPromote) PopupMenuItem(value: 'promote', child: Text(tr('Tezroq sotish (TOP/VIP)'))),
                 if (remote) PopupMenuItem(value: 'stats', child: Text(tr('Statistika'))),
                 PopupMenuItem(value: 'reserve', child: Text(tr('Band qilindi deb belgilash'))),
                 PopupMenuItem(value: 'sold', child: Text(tr('Sotildi deb belgilash'))),

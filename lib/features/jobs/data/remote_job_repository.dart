@@ -2,7 +2,6 @@ import '../../../core/design/app_colors.dart';
 import '../../../core/domain/media_image.dart';
 import '../../../core/domain/money.dart';
 import '../../../core/domain/place.dart';
-import '../../../core/domain/promotion.dart';
 import '../../../core/domain/public_profile.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/l10n/l10n.dart';
@@ -44,7 +43,6 @@ class RemoteJobRepository implements JobRepository {
     salaryMin: (json['salaryMin'] as num?)?.toInt(),
     salaryMax: (json['salaryMax'] as num?)?.toInt(),
     currency: Currency.parse(json['currency']),
-    promotion: Promotion.fromJson(json),
     views: (json['views'] as num?)?.toInt() ?? 0,
     status: JobStatus.parse(json['status']),
     applicationCount: (json['applicationCount'] as num?)?.toInt(),

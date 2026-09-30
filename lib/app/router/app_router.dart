@@ -21,7 +21,6 @@ import '../../features/listings/domain/listing_query.dart';
 import '../../features/listings/presentation/listing_detail_screen.dart';
 import '../../features/listings/presentation/listings_screen.dart';
 import '../../features/location/presentation/location_picker_screen.dart';
-import '../../features/monetization/presentation/payments_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/profile/presentation/account_screens.dart';
@@ -175,18 +174,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: AppRoutes.settings, builder: (_, _) => const SettingsScreen()),
       GoRoute(path: AppRoutes.blockedUsers, builder: (_, _) => const BlockedUsersScreen()),
       GoRoute(path: AppRoutes.help, builder: (_, _) => const HelpScreen()),
-      GoRoute(path: AppRoutes.plans, builder: (_, _) => const PaymentsScreen()),
-      GoRoute(path: AppRoutes.businessPlans, builder: (_, _) => const BusinessPlansScreen()),
-      GoRoute(
-        path: '/account/payments/:id',
-        builder: (_, state) => PurchaseDetailScreen(purchaseId: state.pathParameters['id']!),
-      ),
       GoRoute(path: AppRoutes.myBusiness, builder: (_, _) => const MyBusinessScreen()),
       GoRoute(
         path: AppRoutes.businessEditor,
         builder: (_, state) => BusinessEditorScreen(initial: state.extra is Business ? state.extra! as Business : null),
       ),
-      GoRoute(path: AppRoutes.businessAds, builder: (_, _) => const CampaignsScreen()),
       GoRoute(
         path: '/account/listings/:id/stats',
         builder: (_, state) => ListingStatsScreen(listingId: state.pathParameters['id']!),

@@ -133,9 +133,6 @@ class ApiClient {
         return LimitReachedFailure(_limitMessage(limit, max), limit: limit, max: max);
       case 'FEATURE_DISABLED':
         return const FeatureDisabledFailure();
-      case 'PAYMENT_ROUTE_UNAVAILABLE':
-      case 'PROVIDER_NOT_CONFIGURED':
-        return const PaymentUnavailableFailure();
     }
     switch (status) {
       case 401:
@@ -181,15 +178,12 @@ class ApiClient {
   static String _limitMessage(String limit, int? max) {
     final count = max == null ? '' : tr(' ({max} ta)', {'max': max});
     return switch (limit) {
-      'activeListings' => tr(
-        'Faol e’lonlar chegarasiga yetdingiz{count}. Eskisini arxivlang yoki tarifni kengaytiring',
-        {'count': count},
-      ),
+      'activeListings' => tr('Faol e’lonlar chegarasiga yetdingiz{count}. Eskisini arxivlang', {'count': count}),
       'monthlyListings' => tr('Shu oy uchun e’lonlar chegarasiga yetdingiz{count}', {'count': count}),
       'photos' => tr('Rasmlar soni chegaradan oshdi{count}', {'count': count}),
       'activeJobs' => tr('Faol vakansiyalar chegarasiga yetdingiz{count}', {'count': count}),
       'managers' => tr('Menejerlar soni chegarasiga yetdingiz{count}', {'count': count}),
-      _ => tr('Tarif chegarasiga yetdingiz{count}', {'count': count}),
+      _ => tr('Chegaraga yetdingiz{count}', {'count': count}),
     };
   }
 
@@ -202,9 +196,6 @@ class ApiClient {
     'TOKEN_EXPIRED' => tr('Sessiya muddati tugadi'),
     'NOT_ELIGIBLE' => tr('Sharh qoldirish uchun avval usta bilan yozishgan bo‘lishingiz kerak'),
     'BLOCKED' => tr('Bu foydalanuvchi bilan yozishib bo‘lmaydi'),
-    'COUPON_INVALID' => tr('Promo kod yaroqsiz'),
-    'INSUFFICIENT_CREDITS' => tr('Kreditlar yetarli emas'),
-    'PRICE_UNAVAILABLE' => tr('Bu xizmat hozircha sotuvda emas'),
     _ => null,
   };
 }

@@ -23,7 +23,6 @@ class DemoJobRepository implements JobRepository {
   Future<List<Job>> searchJobs(JobQuery query) async {
     await _db.roundTrip();
     final tokens = SearchNormalizer.tokens(query.text);
-    final now = _clock();
     final results = _db.jobs.where((job) {
       if (query.types.isNotEmpty && !query.types.contains(job.employmentType)) return false;
       if (query.experience != null && job.experience != query.experience) return false;
@@ -31,11 +30,9 @@ class DemoJobRepository implements JobRepository {
       if (!_inArea(job.place.regionId, job.place.districtId, query)) return false;
       return SearchNormalizer.matches(tokens, '${job.title} ${job.company.name} ${job.description}');
     }).toList();
-    int promoted(Job j) => j.promotion?.isActive(now) ?? false ? 1 : 0;
     results.sort((a, b) {
       if (query.sortBySalary) return b.salarySortKey.compareTo(a.salarySortKey);
-      final byPromotion = promoted(b).compareTo(promoted(a));
-      return byPromotion != 0 ? byPromotion : b.publishedAt.compareTo(a.publishedAt);
+      return b.publishedAt.compareTo(a.publishedAt);
     });
     return results;
   }
@@ -166,7 +163,6 @@ class DemoJobRepository implements JobRepository {
       salaryMin: job.salaryMin,
       salaryMax: job.salaryMax,
       currency: job.currency,
-      promotion: job.promotion,
       views: job.views,
       status: status,
     );

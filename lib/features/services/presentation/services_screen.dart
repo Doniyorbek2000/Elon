@@ -13,7 +13,6 @@ import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../catalog/application/catalog_providers.dart';
 import '../../location/application/location_controller.dart';
-import '../../monetization/presentation/promoted_blocks.dart';
 import '../application/services_providers.dart';
 import '../data/bundled_service_categories.dart';
 import '../domain/service_provider.dart';
@@ -110,9 +109,6 @@ class _ServicesScreenState extends ConsumerState<ServicesScreen> {
                     },
                   ),
                 ),
-              ),
-              SliverToBoxAdapter(
-                child: PromotedProvidersBlock(regionId: regionId, gutter: gutter),
               ),
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(gutter, AppSpacing.xl, gutter - AppSpacing.sm, AppSpacing.sm),
@@ -271,9 +267,6 @@ class _ServiceCategoryScreenState extends ConsumerState<ServiceCategoryScreen> {
                   onSelected: (f) => setState(() => _filter = f),
                 ),
               ),
-            ),
-            SliverToBoxAdapter(
-              child: PromotedProvidersBlock(categoryId: widget.categoryId, regionId: regionId, gutter: gutter),
             ),
             SliverPadding(
               padding: EdgeInsets.fromLTRB(gutter, AppSpacing.md, gutter, AppSpacing.md),

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/routes.dart';
-import '../../../core/config/feature_flags.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/errors/app_failure.dart';
@@ -15,8 +14,6 @@ import '../../../core/widgets/state_views.dart';
 import '../../auth/application/session_controller.dart';
 import '../../catalog/application/catalog_providers.dart';
 import '../../location/application/location_controller.dart';
-import '../../monetization/domain/monetization.dart';
-import '../../monetization/presentation/promote_sheet.dart';
 import '../application/services_providers.dart';
 import '../domain/service_provider.dart';
 
@@ -126,19 +123,6 @@ class _ProviderEditorScreenState extends ConsumerState<ProviderEditorScreen> {
                           ],
                         ),
                       ),
-                    if (provider != null && ref.watch(featureFlagsProvider).canPromoteProviders) ...[
-                      const SizedBox(height: AppSpacing.sm),
-                      OutlinedButton.icon(
-                        onPressed: () => showPromoteSheet(
-                          context,
-                          target: PromotionTarget.provider,
-                          targetId: provider.id,
-                          itemTitle: provider.name,
-                        ),
-                        icon: const Icon(Icons.trending_up_rounded),
-                        label: Text(tr('Ko‘proq mijoz toping')),
-                      ),
-                    ],
                     const SizedBox(height: AppSpacing.lg),
                     TextField(
                       controller: _name,

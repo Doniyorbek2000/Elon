@@ -31,7 +31,6 @@ Vakansiya joylash ||| Разместить вакансию
 {p0} ta ariza · {p1} ||| Откликов: {p0} · {p1}
 Holat yangilandi: {label} ||| Статус обновлён: {label}
 Amallar ||| Действия
-TOP / Shoshilinch ||| ТОП / Срочно
 Faollashtirish ||| Активировать
 Xodim topildi ||| Сотрудник найден
 Arxivlash ||| В архив
@@ -86,7 +85,6 @@ Qoralama tiklandi ||| Черновик восстановлен
 Yangidan ||| Заново
 E’londan karta raqamini olib tashlang ||| Уберите номер карты из объявления
 Rasmlar yuklanmoqda, biroz kuting… ||| Фото загружаются, подождите…
-Tariflar ||| Тарифы
 Chiqishdan oldin ||| Перед выходом
 Kiritgan ma’lumotlaringiz qoralama sifatida saqlanadi. Keyin davom ettirishingiz mumkin. ||| Введённые данные сохранятся как черновик. Позже можно продолжить.
 Saqlash va chiqish ||| Сохранить и выйти

@@ -42,8 +42,6 @@ void main() {
     '/account/applications',
     '/account/settings',
     '/account/help',
-    '/account/plans',
-    '/account/plans/business',
     '/account/business',
     '/account/edit',
     '/verify-phone',

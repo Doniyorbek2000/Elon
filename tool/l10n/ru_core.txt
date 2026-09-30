@@ -183,16 +183,12 @@ Shu oy uchun e’lonlar chegarasiga yetdingiz{count} ||| Вы достигли �
 Rasmlar soni chegaradan oshdi{count} ||| Превышено допустимое число фото{count}
 Faol vakansiyalar chegarasiga yetdingiz{count} ||| Вы достигли лимита активных вакансий{count}
 Menejerlar soni chegarasiga yetdingiz{count} ||| Вы достигли лимита числа менеджеров{count}
-Tarif chegarasiga yetdingiz{count} ||| Вы достигли лимита тарифа{count}
 Kod muddati tugadi. Yangi kod so‘rang ||| Срок действия кода истёк. Запросите новый код
 Urinishlar ko‘p bo‘ldi. Yangi kod so‘rang ||| Слишком много попыток. Запросите новый код
 Yangi kodni biroz kutib so‘rang ||| Подождите немного и запросите новый код
 Sessiya tugatildi. Qayta kiring ||| Сеанс завершён. Войдите снова
 Sessiya muddati tugadi ||| Срок действия сеанса истёк
 Bu foydalanuvchi bilan yozishib bo‘lmaydi ||| Переписка с этим пользователем невозможна
-Promo kod yaroqsiz ||| Промокод недействителен
-Kreditlar yetarli emas ||| Недостаточно кредитов
-Bu xizmat hozircha sotuvda emas ||| Эта услуга пока недоступна для покупки
 Qurilma ||| Устройство
 Telefon tasdiqlangan ||| Телефон подтверждён
 Shaxsi tasdiqlangan ||| Личность подтверждена
@@ -233,3 +229,7 @@ Havola ko‘rinishi: {title} ||| Предпросмотр ссылки: {title}
 Havola nusxalandi ||| Ссылка скопирована
 Nusxalash ||| Копировать
 Boshqa ||| Другое
+
+Faol e’lonlar chegarasiga yetdingiz{count}. Eskisini arxivlang ||| Вы достигли лимита активных объявлений{count}. Архивируйте старое
+Chegaraga yetdingiz{count} ||| Вы достигли лимита{count}
+Biznes profil, do‘kon sahifasi va statistika bepul. ||| Бизнес-профиль, страница магазина и статистика бесплатны.

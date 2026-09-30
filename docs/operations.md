@@ -29,13 +29,7 @@ release time (`dart run sentry_dart_plugin` with `--split-debug-info`), which is
 
 ## Payments
 
-See `docs/monetization.md`. Click and Payme are implemented against their public specifications and tested against a
-simulator only: run each provider’s sandbox checks before enabling it. Apple/Google purchase verification is not implemented.
-
-Callback URLs to enter in the provider cabinets:
-
-- Click: `POST {PUBLIC_API_URL}/api/v1/payments/webhooks/click`
-- Payme: `POST {PUBLIC_API_URL}/api/v1/payments/webhooks/payme` (account field `order_id`)
+None: the service is free and has no payment integrations.
 
 ## Content safety
 
@@ -66,4 +60,4 @@ Server errors are never masked by the cache.
 - **Load testing**: scripts and one sandbox measurement in `docs/loadtest.md`; a real capacity test on production-shaped infrastructure is still to do.
 - **Device integration tests**: `integration_test/app_test.dart` (nightly Android-emulator workflow) was written but **never run** — this
   environment has no device. Expect to fix selectors on the first run. Widget tests and the optional live-backend test are what currently gate changes.
-- **Store billing and Payme/Click/Sightengine** are implemented against public documentation and tested against fakes; each needs its sandbox run (see `docs/monetization.md`).
+- **Sightengine** is implemented against public documentation and tested against a fake; it needs a run with a real account.

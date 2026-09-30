@@ -57,13 +57,9 @@ class DemoListingRepository implements ListingRepository {
       results.add(listing.copyWith(distanceKm: distance));
     }
 
-    int promoted(Listing l) => l.promotion?.isActive(_clock()) ?? false ? 1 : 0;
     switch (query.sort) {
       case ListingSort.newest:
-        results.sort((a, b) {
-          final byPromotion = promoted(b).compareTo(promoted(a));
-          return byPromotion != 0 ? byPromotion : b.publishedAt.compareTo(a.publishedAt);
-        });
+        results.sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
       case ListingSort.priceAsc:
         results.sort((a, b) => (a.price?.approxUzs ?? 1 << 62).compareTo(b.price?.approxUzs ?? 1 << 62));
       case ListingSort.priceDesc:

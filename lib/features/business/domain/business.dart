@@ -116,37 +116,18 @@ class Business {
 
 @immutable
 class MyBusiness {
-  const MyBusiness({
-    required this.business,
-    required this.myRole,
-    required this.members,
-    required this.planId,
-    required this.planTitle,
-    required this.storefront,
-    required this.maxManagers,
-  });
+  const MyBusiness({required this.business, required this.myRole, required this.members, required this.maxManagers});
 
-  factory MyBusiness.fromJson(Json json) {
-    final plan = json['plan'] as Json? ?? const {};
-    return MyBusiness(
-      business: Business.fromJson(json),
-      myRole: BusinessRole.parse(json['myRole']),
-      members: [for (final m in json['members'] as List<dynamic>? ?? const []) BusinessMember.fromJson(m as Json)],
-      planId: plan['id'] as String? ?? 'FREE',
-      planTitle: plan['title'] as String? ?? '',
-      storefront: plan['storefront'] as bool? ?? false,
-      maxManagers: (plan['maxManagers'] as num?)?.toInt() ?? 0,
-    );
-  }
+  factory MyBusiness.fromJson(Json json) => MyBusiness(
+    business: Business.fromJson(json),
+    myRole: BusinessRole.parse(json['myRole']),
+    members: [for (final m in json['members'] as List<dynamic>? ?? const []) BusinessMember.fromJson(m as Json)],
+    maxManagers: (json['maxManagers'] as num?)?.toInt() ?? 0,
+  );
 
   final Business business;
   final BusinessRole myRole;
   final List<BusinessMember> members;
-  final String planId;
-  final String planTitle;
-
-  /// Public storefront is an entitlement of the owner's plan.
-  final bool storefront;
   final int maxManagers;
 
   bool get isOwner => myRole == BusinessRole.owner;
@@ -247,7 +228,6 @@ class StatTotals {
 @immutable
 class ListingStats {
   const ListingStats({
-    required this.advanced,
     required this.from,
     required this.to,
     required this.totals,
@@ -257,7 +237,6 @@ class ListingStats {
   });
 
   factory ListingStats.fromJson(Json json) => ListingStats(
-    advanced: json['level'] == 'advanced',
     from: json['from'] as String? ?? '',
     to: json['to'] as String? ?? '',
     totals: StatTotals.fromJson(json['totals'] as Json?),
@@ -269,131 +248,10 @@ class ListingStats {
     lifetimeFavorites: ((json['lifetime'] as Json?)?['favorites'] as num?)?.toInt() ?? 0,
   );
 
-  /// Business plans: daily series and longer ranges.
-  final bool advanced;
   final String from;
   final String to;
   final StatTotals totals;
   final List<({String day, StatTotals totals})> daily;
   final int lifetimeViews;
   final int lifetimeFavorites;
-}
-
-@immutable
-class MyPromotion {
-  const MyPromotion({
-    required this.id,
-    required this.kind,
-    required this.title,
-    required this.target,
-    required this.targetId,
-    required this.status,
-    this.startsAt,
-    this.expiresAt,
-  });
-
-  factory MyPromotion.fromJson(Json json) => MyPromotion(
-    id: json['id'] as String,
-    kind: json['kind'] as String? ?? '',
-    title: json['title'] as String? ?? '',
-    target: json['target'] as String? ?? '',
-    targetId: json['targetId'] as String? ?? '',
-    status: json['status'] as String? ?? '',
-    startsAt: _date(json['startsAt']),
-    expiresAt: _date(json['expiresAt']),
-  );
-
-  final String id;
-  final String kind;
-  final String title;
-  final String target;
-  final String targetId;
-
-  /// `scheduled`, `active`, `expired`, `cancelled`, `refunded`.
-  final String status;
-  final DateTime? startsAt;
-  final DateTime? expiresAt;
-}
-
-@immutable
-class PromotionResults {
-  const PromotionResults({required this.during, required this.comparable, required this.note, this.before});
-
-  factory PromotionResults.fromJson(Json json) => PromotionResults(
-    during: StatTotals.fromJson(json['during'] as Json?),
-    before: json['before'] is Map ? StatTotals.fromJson(json['before'] as Json) : null,
-    comparable: json['comparable'] as bool? ?? false,
-    note: json['note'] as String? ?? '',
-  );
-
-  final StatTotals during;
-
-  /// Same-length period before the promotion, only when one existed.
-  final StatTotals? before;
-  final bool comparable;
-  final String note;
-}
-
-@immutable
-class AdCampaign {
-  const AdCampaign({
-    required this.id,
-    required this.title,
-    required this.body,
-    required this.status,
-    required this.destination,
-    required this.destinationId,
-    required this.impressions,
-    required this.clicks,
-    this.regionId,
-    this.startsAt,
-    this.endsAt,
-    this.rejectReason,
-  });
-
-  factory AdCampaign.fromJson(Json json) {
-    final stats = json['stats'] as Json? ?? const {};
-    return AdCampaign(
-      id: json['id'] as String,
-      title: json['title'] as String? ?? '',
-      body: json['body'] as String? ?? '',
-      status: json['status'] as String? ?? 'draft',
-      destination: json['destination'] as String? ?? 'business',
-      destinationId: json['destinationId'] as String? ?? '',
-      regionId: (json['targeting'] as Json?)?['regionId'] as String?,
-      startsAt: _date(json['startsAt']),
-      endsAt: _date(json['endsAt']),
-      impressions: (stats['impressions'] as num?)?.toInt() ?? 0,
-      clicks: (stats['clicks'] as num?)?.toInt() ?? 0,
-      rejectReason: json['rejectReason'] as String?,
-    );
-  }
-
-  final String id;
-  final String title;
-  final String body;
-
-  /// `draft`, `awaitingPayment`, `pendingReview`, `active`, `paused`, `rejected`, `ended`.
-  final String status;
-  final String destination;
-  final String destinationId;
-  final String? regionId;
-  final DateTime? startsAt;
-  final DateTime? endsAt;
-  final int impressions;
-  final int clicks;
-  final String? rejectReason;
-
-  bool get payable => status == 'draft' || status == 'awaitingPayment';
-
-  String get statusLabel => switch (status) {
-    'draft' => tr('Qoralama'),
-    'awaitingPayment' => tr('To‘lov kutilmoqda'),
-    'pendingReview' => tr('Tekshiruvda'),
-    'active' => tr('Faol'),
-    'paused' => tr('To‘xtatilgan'),
-    'rejected' => tr('Rad etilgan'),
-    'ended' => tr('Tugagan'),
-    _ => status,
-  };
 }

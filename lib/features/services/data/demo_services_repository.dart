@@ -19,8 +19,7 @@ class DemoServicesRepository implements ServicesRepository {
     await _db.roundTrip();
     final sorted = [..._db.providers]
       ..sort((a, b) {
-        final byTop = (b.isTop ? 1 : 0).compareTo(a.isTop ? 1 : 0);
-        return byTop != 0 ? byTop : (b.rating * b.reviewCount).compareTo(a.rating * a.reviewCount);
+        return (b.rating * b.reviewCount).compareTo(a.rating * a.reviewCount);
       });
     return sorted
         .where((p) => regionId == null || p.place.regionId == regionId)
@@ -43,12 +42,10 @@ class DemoServicesRepository implements ServicesRepository {
           return switch (query.filter) {
             ProviderFilter.all => true,
             ProviderFilter.online => provider.profile.isOnline,
-            ProviderFilter.top => provider.isTop,
             ProviderFilter.topRated => provider.rating >= 4.8,
           };
         }).toList()..sort((a, b) {
-          final byTop = (b.isTop ? 1 : 0).compareTo(a.isTop ? 1 : 0);
-          return byTop != 0 ? byTop : b.rating.compareTo(a.rating);
+          return b.rating.compareTo(a.rating);
         });
     return results;
   }

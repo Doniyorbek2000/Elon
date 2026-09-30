@@ -25,7 +25,6 @@ class JobCard extends ConsumerWidget {
     final palette = context.palette;
     final text = Theme.of(context).textTheme;
     final now = ref.watch(clockProvider)();
-    final promotion = job.promotion;
     final salary = Formatters.salaryRange(job.salaryMin, job.salaryMax, job.currency);
     final meta = '${job.place.shortLabel} · ${Formatters.relativeTime(job.publishedAt, now)}';
 
@@ -51,13 +50,7 @@ class JobCard extends ConsumerWidget {
                         child: Text(job.title, style: text.titleSmall, maxLines: 2, overflow: TextOverflow.ellipsis),
                       ),
                       const SizedBox(width: AppSpacing.sm),
-                      if (promotion != null && promotion.isActive(now))
-                        Wrap(
-                          spacing: AppSpacing.xs,
-                          children: [for (final badge in promotion.all) PromotionBadge(type: badge)],
-                        )
-                      else if (job.isNew(now))
-                        StatusPill(label: tr('Yangi'), style: PillStyle.success, dense: true),
+                      if (job.isNew(now)) StatusPill(label: tr('Yangi'), style: PillStyle.success, dense: true),
                     ],
                   ),
                   const SizedBox(height: 2),

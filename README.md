@@ -38,8 +38,6 @@ The backend lives in [`backend/`](backend/README.md) (NestJS, PostgreSQL/PostGIS
 | `DEMO_LATENCY_MS` | `450` | Simulated latency for demo repositories |
 | `FF_AI_LISTING_ASSIST` | `false` | Photo → title/description suggestions in the create flow |
 
-Monetization switches, prices and plan limits are **not** build settings: the app reads them from `GET /config` and the catalog endpoints, and admins change them at runtime (see [docs/monetization.md](docs/monetization.md)).
-
 ### Android release signing
 
 Create `android/key.properties` (git-ignored):

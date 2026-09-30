@@ -4,7 +4,6 @@ import '../../../core/design/app_colors.dart';
 import '../../../core/domain/media_image.dart';
 import '../../../core/domain/money.dart';
 import '../../../core/domain/place.dart';
-import '../../../core/domain/promotion.dart';
 import '../../../core/domain/public_profile.dart';
 import '../../../core/l10n/l10n.dart';
 
@@ -185,7 +184,6 @@ class ServiceProvider {
     this.priceFrom,
     this.priceUnit,
     this.completedJobs = 0,
-    this.promotion,
     this.offerings = const [],
     this.shareUrl,
   });
@@ -205,7 +203,6 @@ class ServiceProvider {
   /// "xizmat uchun", "soatiga", "m² uchun"…
   final String? priceUnit;
   final int completedJobs;
-  final Promotion? promotion;
   final List<ServiceOffering> offerings;
   final String? shareUrl;
 
@@ -230,7 +227,6 @@ class ServiceProvider {
     ],
     priceFrom: json['priceFrom'] == null ? null : Money.fromJson(json['priceFrom'] as Map<String, dynamic>),
     priceUnit: json['priceUnit'] as String?,
-    promotion: Promotion.fromJson(json),
     offerings: [
       for (final offering in json['offerings'] as List<dynamic>? ?? const [])
         ServiceOffering.fromJson(offering as Map<String, dynamic>),
@@ -239,13 +235,11 @@ class ServiceProvider {
   );
   double get rating => profile.rating ?? 0;
   int get reviewCount => profile.reviewCount;
-  bool get isTop => promotion?.type == PromotionType.top || promotion?.type == PromotionType.featured;
 }
 
 enum ProviderFilter {
   all('Hammasi'),
   online('Onlayn'),
-  top('TOP'),
   topRated('Yuqori reyting');
 
   const ProviderFilter(this._label);

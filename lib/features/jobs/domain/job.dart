@@ -4,7 +4,6 @@ import '../../../core/design/app_colors.dart';
 import '../../../core/domain/media_image.dart';
 import '../../../core/domain/money.dart';
 import '../../../core/domain/place.dart';
-import '../../../core/domain/promotion.dart';
 import '../../../core/domain/public_profile.dart';
 import '../../../core/l10n/l10n.dart';
 
@@ -107,7 +106,6 @@ class Job {
     this.salaryMax,
     this.currency = Currency.uzs,
     this.responsibilities = const [],
-    this.promotion,
     this.views = 0,
     this.status = JobStatus.active,
     this.applicationCount,
@@ -131,7 +129,6 @@ class Job {
   final int? salaryMin;
   final int? salaryMax;
   final Currency currency;
-  final Promotion? promotion;
   final int views;
   final JobStatus status;
 

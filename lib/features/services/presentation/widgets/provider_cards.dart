@@ -21,7 +21,6 @@ String _semantics(ServiceProvider p) => [
   tr('reyting {p0}, {reviewCount} sharh', {'p0': p.rating.toStringAsFixed(1), 'reviewCount': p.reviewCount}),
   p.place.shortLabel,
   if (p.profile.isOnline) 'onlayn',
-  if (p.isTop) tr('TOP usta'),
 ].join(', ');
 
 /// Compact vertical card for provider carousels.
@@ -71,7 +70,6 @@ class ProviderCard extends ConsumerWidget {
               runSpacing: AppSpacing.xs,
               children: [
                 if (provider.profile.isOnline) StatusPill(label: tr('Onlayn'), style: PillStyle.success, dense: true),
-                if (provider.promotion case final promotion?) PromotionBadge(type: promotion.type),
               ],
             ),
           ],
@@ -118,10 +116,6 @@ class ProviderTile extends ConsumerWidget {
                       ),
                       const SizedBox(width: AppSpacing.xs),
                       VerifiedBadge(level: provider.profile.verification, size: 14),
-                      if (provider.promotion case final promotion?) ...[
-                        const SizedBox(width: AppSpacing.xs),
-                        PromotionBadge(type: promotion.type),
-                      ],
                     ],
                   ),
                   Text(provider.profession, style: text.bodySmall),
