@@ -37,7 +37,9 @@ import { PaymeService } from './payme.service';
 import { PaymentsService } from './payments.service';
 import { PromotionService } from './promotion.service';
 import { DevPaymentProvider } from './providers/dev.provider';
+import { ApplePaymentProvider } from './providers/apple.provider';
 import { ClickPaymentProvider } from './providers/click.provider';
+import { GooglePaymentProvider } from './providers/google.provider';
 import { PAYMENT_PROVIDERS, PaymentProvider } from './providers/payment-provider';
 import { PaymePaymentProvider } from './providers/payme.provider';
 import { PaymentProviderRegistry } from './providers/providers.registry';
@@ -45,6 +47,13 @@ import { UnconfiguredPaymentProvider } from './providers/unconfigured.provider';
 import { SubscriptionsService } from './subscriptions.service';
 
 type RawRequest = Request & { rawBody?: Buffer };
+
+class StoreReceiptDto {
+  /** App Store transaction id or Google Play purchase token. */
+  @IsString()
+  @Length(10, 400)
+  receipt!: string;
+}
 
 class DevCompleteDto {
   @IsIn(['succeeded', 'failed', 'cancelled'])
@@ -214,6 +223,17 @@ class CheckoutController {
     return this.checkout.present(id, user.userId);
   }
 
+  /** Store billing: report the App Store transaction id / Play purchase token for verification. */
+  @Post('me/purchases/:id/store-receipt')
+  @HttpCode(200)
+  storeReceipt(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: StoreReceiptDto,
+  ) {
+    return this.checkout.submitStoreReceipt(user.userId, id, dto.receipt);
+  }
+
   @Post('me/purchases/:id/cancel')
   @HttpCode(200)
   cancel(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string) {
@@ -350,8 +370,8 @@ function escapeHtml(value: string): string {
         new PaymePaymentProvider(),
         new ClickPaymentProvider(prisma),
         // Store purchases need Apple/Google server APIs and credentials (see docs/monetization.md).
-        new UnconfiguredPaymentProvider(PaymentProviderKey.APPLE),
-        new UnconfiguredPaymentProvider(PaymentProviderKey.GOOGLE),
+        new ApplePaymentProvider(prisma),
+        new GooglePaymentProvider(prisma),
         new UnconfiguredPaymentProvider(PaymentProviderKey.CREDITS),
         new UnconfiguredPaymentProvider(PaymentProviderKey.FREE),
       ],

@@ -35,6 +35,13 @@ export class WebhookRejection extends Error {
   }
 }
 
+/** The store does not confirm this purchase (unknown, refunded, wrong product or account…). */
+export class ReceiptInvalid extends Error {
+  constructor(readonly reason: string) {
+    super(reason);
+  }
+}
+
 export interface ProviderCapabilities {
   refunds: boolean;
   statusLookup: boolean;
@@ -58,6 +65,12 @@ export interface PaymentProvider {
   parseWebhook(request: WebhookRequest): Promise<ProviderEvent[]>;
   /** Response body the provider expects for an accepted webhook. */
   webhookAck(events: ProviderEvent[], request: WebhookRequest): unknown;
+  /**
+   * Store billing: the app reports a receipt (Apple transaction id / Google
+   * purchase token); the provider verifies it with the store's server API and
+   * returns the verified fact. Throws `ReceiptInvalid` when it does not check out.
+   */
+  verifyReceipt?(payment: Payment, purchase: Purchase, receipt: string): Promise<ProviderEvent>;
   fetchStatus?(payment: Payment): Promise<ProviderEvent | null>;
   refund?(payment: Payment, amountMinor: bigint): Promise<{ succeeded: boolean; providerRefundId?: string }>;
 }

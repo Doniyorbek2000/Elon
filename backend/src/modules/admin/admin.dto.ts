@@ -147,3 +147,11 @@ export class RevenueQuery {
   @Type(() => Date) @IsDate() to!: Date;
   @IsOptional() @IsIn(['day', 'week', 'month']) groupBy?: 'day' | 'week' | 'month';
 }
+
+export class StoreProductDto {
+  @IsIn(['APPLE', 'GOOGLE']) provider!: 'APPLE' | 'GOOGLE';
+  @IsString() @Length(3, 200) storeProductId!: string;
+  /** Exactly one of these two. */
+  @IsOptional() @IsString() @Length(3, 64) productId?: string;
+  @IsOptional() @IsString() @Length(36, 36) planPriceId?: string;
+}

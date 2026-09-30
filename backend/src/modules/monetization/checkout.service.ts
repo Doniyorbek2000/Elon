@@ -26,7 +26,7 @@ import { CheckoutDto, QuoteDto } from './checkout.dto';
 import { presentAmount } from './money';
 import { PaymentsService } from './payments.service';
 import { PromotionService } from './promotion.service';
-import { CheckoutAction } from './providers/payment-provider';
+import { CheckoutAction, ReceiptInvalid } from './providers/payment-provider';
 import { PaymentProviderRegistry } from './providers/providers.registry';
 
 interface Priced {
@@ -433,6 +433,45 @@ export class CheckoutService {
   }
 
   /** Pending purchases the user abandoned can be cancelled by the user. */
+  /**
+   * Store billing (App Store / Google Play): the app reports the receipt of a
+   * purchase it made for this payment. Nothing is activated until the store's
+   * server API confirms it; a receipt that does not check out is rejected.
+   */
+  async submitStoreReceipt(userId: string, purchaseId: string, receipt: string) {
+    const purchase = await this.prisma.purchase.findFirst({ where: { id: purchaseId, userId } });
+    if (!purchase) throw AppError.notFound('Purchase');
+    const payment = await this.prisma.payment.findFirst({
+      where: { purchaseId, provider: { in: [PaymentProviderKey.APPLE, PaymentProviderKey.GOOGLE] } },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!payment) throw AppError.invalidState('This purchase is not paid through a store');
+    if (purchase.status === PurchaseStatus.FULFILLED) return this.present(purchaseId, userId);
+    if (purchase.status !== PurchaseStatus.AWAITING_PAYMENT)
+      throw AppError.invalidState('Purchase is not awaiting payment');
+    const provider = this.registry.get(payment.provider);
+    if (!provider.verifyReceipt) throw AppError.invalidState('This provider does not take receipts');
+    await this.limiter.consume(`store-receipt:${userId}`, 20, 3600);
+    let event;
+    try {
+      event = await provider.verifyReceipt(payment, purchase, receipt);
+    } catch (error) {
+      if (error instanceof ReceiptInvalid) {
+        throw new AppError(
+          'RECEIPT_INVALID',
+          'The store did not confirm this purchase',
+          HttpStatus.UNPROCESSABLE_ENTITY,
+          {
+            reason: error.reason,
+          },
+        );
+      }
+      throw error;
+    }
+    await this.payments.applyEvent(payment.provider, event, 'internal');
+    return this.present(purchaseId, userId);
+  }
+
   async cancel(userId: string, purchaseId: string) {
     const purchase = await this.prisma.purchase.findFirst({ where: { id: purchaseId, userId } });
     if (!purchase) throw AppError.notFound('Purchase');

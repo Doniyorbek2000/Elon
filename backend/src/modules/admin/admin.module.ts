@@ -39,6 +39,7 @@ import {
   RefundDto,
   RevenueQuery,
   SettingDto,
+  StoreProductDto,
   UpdateCouponDto,
   UpdatePlanDto,
   UpdateProductDto,
@@ -121,6 +122,38 @@ class AdminMonetizationController {
     await this.config.setSetting(key as 'ranking', value, user.userId);
     await this.admin.audit(user.userId, 'setting.set', 'AppSetting', key, value);
     return this.config.setting(key as 'ranking');
+  }
+
+  // ─── store products (App Store / Google Play ids)
+
+  @Get('store-products')
+  storeProducts() {
+    return this.prisma.storeProduct.findMany({ orderBy: [{ provider: 'asc' }, { storeProductId: 'asc' }] });
+  }
+
+  @Put('store-products')
+  async setStoreProduct(@CurrentUser() user: AuthUser, @Body() dto: StoreProductDto) {
+    if (!!dto.productId === !!dto.planPriceId) {
+      throw AppError.validation('Set exactly one of productId or planPriceId');
+    }
+    if (dto.productId && !(await this.prisma.promotionProduct.findUnique({ where: { id: dto.productId } }))) {
+      throw AppError.validation('Unknown productId', { field: 'productId' });
+    }
+    if (dto.planPriceId && !(await this.prisma.planPrice.findUnique({ where: { id: dto.planPriceId } }))) {
+      throw AppError.validation('Unknown planPriceId', { field: 'planPriceId' });
+    }
+    const row = await this.prisma.storeProduct.upsert({
+      where: { provider_storeProductId: { provider: dto.provider, storeProductId: dto.storeProductId } },
+      create: {
+        provider: dto.provider,
+        storeProductId: dto.storeProductId,
+        productId: dto.productId,
+        planPriceId: dto.planPriceId,
+      },
+      update: { productId: dto.productId ?? null, planPriceId: dto.planPriceId ?? null },
+    });
+    await this.admin.audit(user.userId, 'storeProduct.set', 'StoreProduct', row.id, dto);
+    return row;
   }
 
   // ─── catalog

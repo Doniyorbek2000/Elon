@@ -1368,6 +1368,21 @@ model PaymeTransaction {
   @@index([createTime])
 }
 
+/// Maps an App Store / Google Play product id to what it sells here: exactly
+/// one of productId (promotion) or planPriceId (business plan period).
+model StoreProduct {
+  id             String             @id @default(uuid()) @db.Uuid
+  provider       PaymentProviderKey
+  storeProductId String
+  productId      String?
+  planPriceId    String?            @db.Uuid
+  createdAt      DateTime           @default(now())
+
+  @@unique([provider, storeProductId])
+  @@index([provider, productId])
+  @@index([provider, planPriceId])
+}
+
 /// Append-only log of provider callbacks and reconciliation results.
 /// (provider, eventId) is unique: replays are recognised and ignored.
 model PaymentEvent {

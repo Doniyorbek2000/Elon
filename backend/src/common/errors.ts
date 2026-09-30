@@ -31,6 +31,7 @@ export type ErrorCode =
   | 'COUPON_INVALID'
   | 'INSUFFICIENT_CREDITS'
   | 'SIGNATURE_INVALID'
+  | 'RECEIPT_INVALID'
   | 'PRICE_UNAVAILABLE';
 
 export class AppError extends HttpException {

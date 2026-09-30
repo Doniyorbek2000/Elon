@@ -94,6 +94,23 @@ const schema = z
     /** Override for tests / proxies. */
     SIGHTENGINE_URL: z.string().url().default('https://api.sightengine.com/1.0/check.json'),
 
+    /** App Store Server API (in-app purchases). All of these are needed to enable Apple. */
+    APPLE_BUNDLE_ID: z.string().optional(),
+    APPLE_ISSUER_ID: z.string().optional(),
+    APPLE_KEY_ID: z.string().optional(),
+    /** The .p8 key (PEM, raw or base64). */
+    APPLE_PRIVATE_KEY: z.string().optional(),
+    /** Apple Root CA - G3 (PEM, raw or base64), downloaded from apple.com/certificateauthority. */
+    APPLE_ROOT_CA: z.string().optional(),
+    APPLE_ENVIRONMENT: z.enum(['production', 'sandbox']).default('production'),
+    /** Google Play Developer API (in-app purchases). */
+    GOOGLE_PACKAGE_NAME: z.string().optional(),
+    /** Service-account JSON (raw or base64) with access to the Play Console app. */
+    GOOGLE_SERVICE_ACCOUNT: z.string().optional(),
+    /** Overrides for tests / proxies. */
+    APPLE_API_URL: z.string().url().optional(),
+    GOOGLE_API_URL: z.string().url().default('https://androidpublisher.googleapis.com'),
+
     SWAGGER_ENABLED: bool.default('true'),
     WEB_BASE_URL: z.string().url().default('https://bozor.uz'),
   })
