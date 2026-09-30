@@ -63,5 +63,7 @@ Server errors are never masked by the cache.
   Meilisearch: typo tolerance and ranking come from the engine, the worker syncs changed rows every minute (so results lag writes
   by up to a minute), and `postgres` remains a valid fallback. Tested against Meilisearch 1.11 (`test/search-meilisearch.e2e-spec.ts`,
   enabled by `TEST_MEILI_URL`). Run a full reindex by clearing the `search:sync:*` Redis keys.
-- **Load testing**: none yet (chat, search, feed).
-- **Device integration tests**: only widget tests and the optional live-backend test exist.
+- **Load testing**: scripts and one sandbox measurement in `docs/loadtest.md`; a real capacity test on production-shaped infrastructure is still to do.
+- **Device integration tests**: `integration_test/app_test.dart` (nightly Android-emulator workflow) was written but **never run** — this
+  environment has no device. Expect to fix selectors on the first run. Widget tests and the optional live-backend test are what currently gate changes.
+- **Store billing and Payme/Click/Sightengine** are implemented against public documentation and tested against fakes; each needs its sandbox run (see `docs/monetization.md`).
