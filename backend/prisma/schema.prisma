@@ -240,9 +240,6 @@ enum NotificationType {
   REVIEW_RECEIVED
   ACCOUNT
   SYSTEM
-  PAYMENT
-  PROMOTION
-  SUBSCRIPTION
 }
 
 enum PushProviderKind {
@@ -1034,14 +1031,6 @@ model ModerationEvent {
 
   @@index([targetType, targetId, createdAt])
 }
-
-// ─────────────────────────────────────────────────────── configuration
-
-// ─────────────────────────────────────────────────────── catalog
-
-// ─────────────────────────────────────────────────────── purchases & payments
-
-// ─────────────────────────────────────────────────────── entitlements
 
 // ─────────────────────────────────────────────────────── business
 
