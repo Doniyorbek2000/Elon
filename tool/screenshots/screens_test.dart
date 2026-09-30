@@ -4,6 +4,7 @@
 //
 // Output: tool/screenshots/out/<device>/<screen>.png. Any layout overflow
 // fails the run, so this doubles as a multi-viewport layout check.
+import 'package:bozor/core/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -11,12 +12,13 @@ import '../../test/helpers/fonts.dart';
 import '../../test/helpers/test_app.dart';
 
 class Device {
-  const Device(this.name, this.size, {this.textScale = 1, this.theme = ThemeMode.light});
+  const Device(this.name, this.size, {this.textScale = 1, this.theme = ThemeMode.light, this.language});
 
   final String name;
   final Size size;
   final double textScale;
   final ThemeMode theme;
+  final String? language;
 }
 
 const devices = [
@@ -26,6 +28,8 @@ const devices = [
   Device('android_small_text130', Size(360, 640), textScale: 1.3),
   Device('pro_max_text200', Size(430, 932), textScale: 2),
   Device('ipad', Size(820, 1180)),
+  Device('iphone15_ru', Size(393, 852), language: 'ru'),
+  Device('iphone_se_ru', Size(320, 568), language: 'ru'),
 ];
 
 const screens = <String, String>{
@@ -49,6 +53,7 @@ const screens = <String, String>{
 
 void main() {
   setUpAll(loadAppFonts);
+  tearDown(() => currentLanguage = AppLanguage.uz);
 
   for (final device in devices) {
     group(device.name, () {
@@ -59,6 +64,7 @@ void main() {
           size: device.size,
           textScale: device.textScale,
           themeMode: device.theme,
+          language: device.language,
         );
         await settle(tester, frames: 60);
         await expectLater(find.byType(MaterialApp), matchesGoldenFile('out/${device.name}/00_onboarding.png'));
@@ -74,6 +80,7 @@ void main() {
             size: device.size,
             textScale: device.textScale,
             themeMode: device.theme,
+            language: device.language,
           );
           await settle(tester, frames: 60);
           await expectLater(

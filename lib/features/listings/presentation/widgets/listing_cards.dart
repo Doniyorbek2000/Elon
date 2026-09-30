@@ -6,6 +6,7 @@ import '../../../../app/router/routes.dart';
 import '../../../../core/design/app_colors.dart';
 import '../../../../core/design/app_icons.dart';
 import '../../../../core/design/app_tokens.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/clock.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_image.dart';
@@ -34,7 +35,7 @@ class PriceText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final price = listing.price;
-    final text = price == null ? 'Kelishiladi' : Formatters.money(price);
+    final text = price == null ? tr('Kelishiladi') : Formatters.money(price);
     return Text(
       text,
       maxLines: 1,
@@ -53,7 +54,7 @@ String _meta(Listing listing, DateTime now, {bool compact = false}) =>
 
 String _semantics(Listing listing, DateTime now) => [
   listing.title,
-  listing.price == null ? 'Narx kelishiladi' : Formatters.money(listing.price!).replaceAll(' ', ' '),
+  listing.price == null ? tr('Narx kelishiladi') : Formatters.money(listing.price!).replaceAll(' ', ' '),
   listing.place.shortLabel,
   Formatters.relativeTime(listing.publishedAt, now),
 ].join(', ');
@@ -71,7 +72,6 @@ class ListingCard extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final now = ref.watch(clockProvider)();
     final visual = listingVisual(ref, listing.categoryId);
-    final promotion = listing.promotion;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Pressable(
@@ -97,12 +97,6 @@ class ListingCard extends ConsumerWidget {
                     tag: '$heroPrefix-${listing.id}',
                     child: AppImage(image: listing.cover, placeholderIcon: visual.icon, tone: visual.tone),
                   ),
-                  if (promotion != null && promotion.isActive(now))
-                    PositionedDirectional(
-                      top: AppSpacing.sm,
-                      start: AppSpacing.sm,
-                      child: PromotionBadge(type: promotion.type),
-                    ),
                   PositionedDirectional(
                     top: 0,
                     end: 0,
@@ -154,7 +148,6 @@ class ListingTile extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final now = ref.watch(clockProvider)();
     final visual = listingVisual(ref, listing.categoryId);
-    final promotion = listing.promotion;
     final thumbWidth = MediaQuery.textScalerOf(context).scale(1) > 1.3 ? 96.0 : 112.0;
 
     return Pressable(
@@ -190,10 +183,6 @@ class ListingTile extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          if (promotion != null && promotion.isActive(now)) ...[
-                            PromotionBadge(type: promotion.type),
-                            const SizedBox(width: AppSpacing.xs),
-                          ],
                           Expanded(
                             child: Text(
                               listing.title,

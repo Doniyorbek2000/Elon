@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/sheets.dart';
 import '../application/trust_safety_providers.dart';
@@ -53,11 +54,11 @@ class _ReportSheetState extends ConsumerState<ReportSheet> {
           );
       if (!mounted) return;
       Navigator.pop(context);
-      showAppSnack(context, 'Rahmat! Shikoyatingiz moderatorlarga yuborildi.', icon: Icons.check_circle_rounded);
+      showAppSnack(context, tr('Rahmat! Shikoyatingiz moderatorlarga yuborildi.'), icon: Icons.check_circle_rounded);
     } on Object {
       if (!mounted) return;
       setState(() => _sending = false);
-      showAppSnack(context, 'Yuborib bo‘lmadi. Qayta urinib ko‘ring.');
+      showAppSnack(context, tr('Yuborib bo‘lmadi. Qayta urinib ko‘ring.'));
     }
   }
 
@@ -65,7 +66,7 @@ class _ReportSheetState extends ConsumerState<ReportSheet> {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     return SheetScaffold(
-      title: 'Shikoyat qilish',
+      title: tr('Shikoyat qilish'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(AppSpacing.sm, 0, AppSpacing.xl, AppSpacing.lg),
         child: Column(
@@ -73,7 +74,7 @@ class _ReportSheetState extends ConsumerState<ReportSheet> {
           children: [
             Padding(
               padding: const EdgeInsets.only(left: AppSpacing.md, bottom: AppSpacing.sm),
-              child: Text('Sababni tanlang. Shikoyatlar anonim ko‘rib chiqiladi.', style: text.bodySmall),
+              child: Text(tr('Sababni tanlang. Shikoyatlar anonim ko‘rib chiqiladi.'), style: text.bodySmall),
             ),
             RadioGroup<ReportReason>(
               groupValue: _reason,
@@ -95,7 +96,7 @@ class _ReportSheetState extends ConsumerState<ReportSheet> {
                 controller: _comment,
                 maxLines: 3,
                 maxLength: 500,
-                decoration: const InputDecoration(hintText: 'Qo‘shimcha izoh (ixtiyoriy)'),
+                decoration: InputDecoration(hintText: tr('Qo‘shimcha izoh (ixtiyoriy)')),
               ),
             ),
           ],
@@ -109,7 +110,7 @@ class _ReportSheetState extends ConsumerState<ReportSheet> {
                 dimension: 22,
                 child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
               )
-            : const Text('Yuborish'),
+            : Text(tr('Yuborish')),
       ),
     );
   }
@@ -124,19 +125,20 @@ Future<bool> confirmAndBlock(
 }) async {
   final confirmed = await confirmDialog(
     context,
-    title: '$name bloklansinmi?',
-    message:
-        'U sizga yoza olmaydi va uning e’lonlari sizga ko‘rsatilmaydi. Istalgan vaqtda blokdan chiqarishingiz mumkin.',
-    confirmLabel: 'Bloklash',
+    title: tr('{name} bloklansinmi?', {'name': name}),
+    message: tr(
+      'U sizga yoza olmaydi va uning e’lonlari sizga ko‘rsatilmaydi. Istalgan vaqtda blokdan chiqarishingiz mumkin.',
+    ),
+    confirmLabel: tr('Bloklash'),
     destructive: true,
   );
   if (!confirmed || !context.mounted) return false;
   try {
     await ref.read(blockedUsersProvider.notifier).block(userId);
-    if (context.mounted) showAppSnack(context, '$name bloklandi', icon: Icons.block_rounded);
+    if (context.mounted) showAppSnack(context, tr('{name} bloklandi', {'name': name}), icon: Icons.block_rounded);
     return true;
   } on Object {
-    if (context.mounted) showAppSnack(context, 'Bloklab bo‘lmadi. Qayta urinib ko‘ring.');
+    if (context.mounted) showAppSnack(context, tr('Bloklab bo‘lmadi. Qayta urinib ko‘ring.'));
     return false;
   }
 }

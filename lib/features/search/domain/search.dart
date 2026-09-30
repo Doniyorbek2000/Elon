@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/domain/public_profile.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../jobs/domain/job.dart';
 import '../../listings/domain/listing.dart';
 import '../../listings/domain/listing_query.dart';
@@ -13,9 +14,11 @@ enum SearchScope {
   services('Xizmatlar'),
   users('Foydalanuvchilar');
 
-  const SearchScope(this.label);
+  const SearchScope(this._label);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
 }
 
 enum SuggestionKind { query, category, listing, job, service }

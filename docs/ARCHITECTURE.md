@@ -12,7 +12,7 @@ lib/
   core/
     config/                  AppConfig (--dart-define), FeatureFlags
     design/                  tokens (colors, spacing, radii, motion, breakpoints), theme, icons
-    domain/                  shared value types: Money, MediaImage, Place, PublicProfile, Promotion, paging
+    domain/                  shared value types: Money, MediaImage, Place, PublicProfile, paging
     errors/                  AppFailure sealed hierarchy
     network/                 ApiClient (Dio) + auth interceptor + error mapping
     storage/                 KeyValueStore (prefs), SecureStore (Keychain/Keystore)
@@ -27,7 +27,7 @@ lib/
     presentation/            screens and feature widgets
 ```
 
-Features: `onboarding, home, catalog, listings, create_listing, jobs, services, search, location, chat, auth, profile, saved, notifications, trust_safety, monetization, settings`.
+Features: `onboarding, home, catalog, listings, create_listing, jobs, services, search, location, chat, auth, profile, saved, notifications, trust_safety, business, settings`.
 
 ## Principles
 
@@ -58,7 +58,7 @@ Global auto-retry is disabled (`ProviderScope(retry: …)`): every failure surfa
 
 `AppPalette` (ThemeExtension) defines semantic colors for **light and a separately designed dark palette** (navy surfaces, lifted accents for AA contrast; elevation expressed through surface tone, not shadows). Tokens: `AppSpacing`, `AppRadii`, `AppIconSize`, `AppTouch` (48dp targets), `AppMotion` (durations respect OS reduce-motion), `AppBreakpoints` (compact/medium/expanded by width, never by device model), `AppShadows`.
 
-Components (`core/widgets`): `AppImage`, `Shimmer/SkeletonBox`, `AppSearchField`, `SectionHeader`, `ToneIcon`, `SurfaceCard`, `Pressable`, `ChoiceChipsRow`, `InfoTile`, `MetaLine`, `RatingLabel`, `VerifiedBadge`, `StatusPill`, `PromotionBadge`, `CountBadge`, `AppAvatar`, `FavoriteButton`, `EmptyState`, `FailureView`, `LoadMoreFooter`, `SheetScaffold`/`showAppSheet`, `StickyActionBar`, `CircleIconButton`, `ExpandableText`, `SafetyTipsCard`, `DetailSection`, `ContactSheet`, `ShareSheet`, `BrandMark`, `LandscapeBackdrop`.
+Components (`core/widgets`): `AppImage`, `Shimmer/SkeletonBox`, `AppSearchField`, `SectionHeader`, `ToneIcon`, `SurfaceCard`, `Pressable`, `ChoiceChipsRow`, `InfoTile`, `MetaLine`, `RatingLabel`, `VerifiedBadge`, `StatusPill`, `CountBadge`, `AppAvatar`, `FavoriteButton`, `EmptyState`, `FailureView`, `LoadMoreFooter`, `SheetScaffold`/`showAppSheet`, `StickyActionBar`, `CircleIconButton`, `ExpandableText`, `SafetyTipsCard`, `DetailSection`, `ContactSheet`, `ShareSheet`, `BrandMark`, `LandscapeBackdrop`.
 
 ## Performance
 
@@ -76,9 +76,9 @@ Semantic labels on cards (title, price, place, time), toggles expose `toggled`, 
 
 Client-side heuristics (`trust_safety/domain`) warn about card numbers, phone numbers in text, external links, prepayment requests and price outliers; anything above “info” publishes as *pending review*. `MessageGuard` throttles chat bursts and warns before sending risky content. Contact numbers are fetched only on explicit “Qo‘ng‘iroq” (server rate-limited). Verification badges render only server-asserted levels. Report/block exist for listings, users, jobs, providers and conversations.
 
-## Monetization (dormant)
+## Free service
 
-`Promotion`/`PromotionProduct`/`SubscriptionPlan` models, badges, a promote sheet on “My listings” and a plans screen exist but stay hidden unless `FF_MONETIZATION` + the specific flag are enabled. During the free phase the plans screen only states that everything is free.
+The service is free: no payments, plans, credits, coupons or paid promotion. Business profiles, storefronts, team members and listing statistics are free, with fixed fair-use limits enforced by the backend (`LimitsService`).
 
 ## Localization
 

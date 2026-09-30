@@ -8,6 +8,7 @@ import '../../../../core/design/app_colors.dart';
 import '../../../../core/design/app_icons.dart';
 import '../../../../core/design/app_tokens.dart';
 import '../../../../core/domain/money.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/input_formatters.dart';
 import '../../../../core/widgets/common.dart';
 import '../../../catalog/application/catalog_providers.dart';
@@ -81,24 +82,24 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
       padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xxxl),
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       children: [
-        const _FieldLabel('Kategoriya', required: true),
+        _FieldLabel(tr('Kategoriya'), required: true),
         _PickerField(
           icon: category == null ? Icons.category_outlined : AppIcons.forKey(category.iconKey),
           tone: category?.tone ?? AccentTone.slate,
-          value: category == null ? null : [?parent?.name, category.name].join(' › '),
-          placeholder: 'Kategoriyani tanlang',
+          value: category == null ? null : [?(parent == null ? null : tr(parent.name)), tr(category.name)].join(' › '),
+          placeholder: tr('Kategoriyani tanlang'),
           error: errors[DraftField.category],
           onTap: _pickCategory,
         ),
         const SizedBox(height: AppSpacing.lg),
-        const _FieldLabel('Sarlavha', required: true),
+        _FieldLabel(tr('Sarlavha'), required: true),
         TextField(
           controller: _title,
           maxLength: ListingDraft.titleMaxLength,
           textCapitalization: TextCapitalization.sentences,
           textInputAction: TextInputAction.next,
           onChanged: _controller.setTitle,
-          decoration: InputDecoration(hintText: schema.titleHint, errorText: errors[DraftField.title]),
+          decoration: InputDecoration(hintText: tr(schema.titleHint), errorText: errors[DraftField.title]),
         ),
         if (schema.priceMode != PriceMode.none) ...[
           const SizedBox(height: AppSpacing.sm),
@@ -115,7 +116,7 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
                     onChanged: (v) => _controller.setPrice(ThousandsInputFormatter.parse(v)),
                     decoration: InputDecoration(
                       hintText: 'dan',
-                      suffixText: 'so‘m',
+                      suffixText: tr('so‘m'),
                       errorText: errors[DraftField.price],
                     ),
                   ),
@@ -127,7 +128,7 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
                     keyboardType: TextInputType.number,
                     inputFormatters: const [ThousandsInputFormatter()],
                     onChanged: (v) => _controller.setPriceMax(ThousandsInputFormatter.parse(v)),
-                    decoration: const InputDecoration(hintText: 'gacha', suffixText: 'so‘m'),
+                    decoration: InputDecoration(hintText: 'gacha', suffixText: tr('so‘m')),
                   ),
                 ),
               ],
@@ -145,7 +146,7 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
                     onChanged: (v) => _controller.setPrice(ThousandsInputFormatter.parse(v)),
                     decoration: InputDecoration(
                       hintText: '0',
-                      suffixText: schema.allowUsd ? null : 'so‘m',
+                      suffixText: schema.allowUsd ? null : tr('so‘m'),
                       errorText: errors[DraftField.price],
                     ),
                   ),
@@ -155,9 +156,9 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
                   SegmentedButton<Currency>(
                     showSelectedIcon: false,
                     style: SegmentedButton.styleFrom(minimumSize: const Size(0, AppTouch.inputHeight)),
-                    segments: const [
-                      ButtonSegment(value: Currency.uzs, label: Text('so‘m')),
-                      ButtonSegment(value: Currency.usd, label: Text('\$')),
+                    segments: [
+                      ButtonSegment(value: Currency.uzs, label: Text(tr('so‘m'))),
+                      const ButtonSegment(value: Currency.usd, label: Text('\$')),
                     ],
                     selected: {draft.currency},
                     onSelectionChanged: (value) => _controller.setCurrency(value.first),
@@ -167,8 +168,8 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
             ),
             SwitchListTile.adaptive(
               contentPadding: EdgeInsets.zero,
-              title: Text('Kelishiladi', style: text.bodyMedium),
-              subtitle: Text('Narx bo‘yicha savdolashish mumkin', style: text.bodySmall),
+              title: Text(tr('Kelishiladi'), style: text.bodyMedium),
+              subtitle: Text(tr('Narx bo‘yicha savdolashish mumkin'), style: text.bodySmall),
               value: draft.negotiable,
               onChanged: (value) => _controller.setNegotiable(value: value),
             ),
@@ -176,7 +177,7 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
         ],
         if (schema.supportsCondition) ...[
           const SizedBox(height: AppSpacing.sm),
-          const _FieldLabel('Holati'),
+          _FieldLabel(tr('Holati')),
           SizedBox(
             width: double.infinity,
             child: SegmentedButton<ItemCondition>(
@@ -193,7 +194,10 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
         ],
         for (final field in schema.fields) ...[
           const SizedBox(height: AppSpacing.lg),
-          _FieldLabel(field.unit == null ? field.label : '${field.label}, ${field.unit}', required: field.required),
+          _FieldLabel(
+            field.unit == null ? tr(field.label) : '${tr(field.label)}, ${tr(field.unit!)}',
+            required: field.required,
+          ),
           if (field.type == AttributeInputType.select)
             _OptionChips(
               options: field.options,
@@ -220,9 +224,9 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
           else if (field.type == AttributeInputType.boolean)
             SegmentedButton<String>(
               emptySelectionAllowed: !field.required,
-              segments: const [
-                ButtonSegment(value: 'true', label: Text('Ha')),
-                ButtonSegment(value: 'false', label: Text('Yo‘q')),
+              segments: [
+                ButtonSegment(value: 'true', label: Text(tr('Ha'))),
+                ButtonSegment(value: 'false', label: Text(tr('Yo‘q'))),
               ],
               selected: {?draft.attributes[field.key]},
               onSelectionChanged: (value) => _controller.setAttribute(field.key, value.isEmpty ? '' : value.first),
@@ -236,11 +240,14 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
                   : null,
               textInputAction: TextInputAction.next,
               onChanged: (value) => _controller.setAttribute(field.key, value),
-              decoration: InputDecoration(hintText: field.hint, errorText: errors[DraftField.attribute(field.key)]),
+              decoration: InputDecoration(
+                hintText: field.hint == null ? null : tr(field.hint!),
+                errorText: errors[DraftField.attribute(field.key)],
+              ),
             ),
         ],
         const SizedBox(height: AppSpacing.lg),
-        const _FieldLabel('Tavsif', required: true),
+        _FieldLabel(tr('Tavsif'), required: true),
         TextField(
           controller: _description,
           minLines: 4,
@@ -250,18 +257,18 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
           keyboardType: TextInputType.multiline,
           onChanged: _controller.setDescription,
           decoration: InputDecoration(
-            hintText: 'Batafsil ma’lumot yozing: holati, xususiyatlari, nima uchun sotilyapti…',
+            hintText: tr('Batafsil ma’lumot yozing: holati, xususiyatlari, nima uchun sotilyapti…'),
             errorText: errors[DraftField.description],
             alignLabelWithHint: true,
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
-        const _FieldLabel('Manzil', required: true),
+        _FieldLabel(tr('Manzil'), required: true),
         _PickerField(
           icon: Icons.location_on_rounded,
           tone: AccentTone.teal,
           value: draft.place?.fullLabel,
-          placeholder: 'Manzilni tanlang',
+          placeholder: tr('Manzilni tanlang'),
           error: errors[DraftField.place],
           onTap: _pickPlace,
         ),
@@ -272,7 +279,7 @@ class _DetailsStepState extends ConsumerState<DetailsStep> {
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
-                'Telefon raqamingiz e’londa ko‘rsatilmaydi — xaridor so‘raganda xavfsiz tarzda beriladi.',
+                tr('Telefon raqamingiz e’londa ko‘rsatilmaydi — xaridor so‘raganda xavfsiz tarzda beriladi.'),
                 style: text.bodySmall,
               ),
             ),
@@ -402,7 +409,7 @@ class _MultiOptionChips extends StatelessWidget {
           children: [
             for (final option in options)
               FilterChip(
-                label: Text(option),
+                label: Text(tr(option)),
                 selected: selected.contains(option),
                 onSelected: (value) => onChanged(value ? {...selected, option} : ({...selected}..remove(option))),
               ),
@@ -439,7 +446,7 @@ class _OptionChips extends StatelessWidget {
           children: [
             for (final option in options)
               ChoiceChip(
-                label: Text(option),
+                label: Text(tr(option)),
                 selected: selected == option,
                 labelStyle: text.labelMedium?.copyWith(
                   color: selected == option ? palette.onPrimary : palette.textPrimary,

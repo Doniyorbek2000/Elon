@@ -20,8 +20,6 @@ import { apiEnum, buildSearchText, dbEnum, searchTokens } from '../../common/tex
 import { PresenceService } from '../../infra/presence.service';
 import { PrismaService } from '../../infra/prisma.service';
 import { RateLimiterService } from '../../infra/rate-limiter.service';
-import { MonetizationConfig } from '../monetization/config.service';
-import { PromotionService, rotate } from '../monetization/promotion.service';
 import { LocationsService } from '../locations/locations.service';
 import { MediaService } from '../media/media.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -44,8 +42,6 @@ export class ServicesService {
     private readonly presence: PresenceService,
     private readonly notifications: NotificationsService,
     private readonly limiter: RateLimiterService,
-    private readonly promotions: PromotionService,
-    private readonly config: MonetizationConfig,
   ) {}
 
   async categories() {
@@ -92,7 +88,6 @@ export class ServicesService {
         ],
       });
     }
-    if (query.filter === 'top') and.push({ boostTier: { gt: 0 }, boostUntil: { gt: new Date() } });
     if (query.filter === 'topRated') and.push({ ratingAvg: { gte: 4.8 }, reviewCount: { gte: 3 } });
     for (const token of searchTokens(query.q ?? '').slice(0, 6)) {
       and.push({
@@ -108,55 +103,6 @@ export class ServicesService {
     }
     if (viewer) and.push({ user: { blocksReceived: { none: { blockerId: viewer.userId } } } });
     return { and, distanceById };
-  }
-
-  /**
-   * Paid TOP providers matching the same search, in a separate labeled block.
-   * Payment affects visibility only: ratings/reviews are never touched.
-   */
-  async promoted(query: ProviderSearchQuery, viewer?: AuthUser) {
-    if (!(await this.config.enabled('featuredServices'))) return [];
-    const { promotedSlots } = await this.config.setting('ranking');
-    const { and } = await this.providerFilters(query, viewer);
-    const rows = await this.prisma.serviceProvider.findMany({
-      where: { AND: [...and, { boostTier: { gt: 0 }, boostUntil: { gt: new Date() } }] },
-      select: providerCardSelect,
-      take: 30,
-    });
-    const picked = rotate(rows).slice(0, promotedSlots);
-    const [online, badges] = await Promise.all([
-      this.presence.onlineMany(picked.map((r) => r.userId)),
-      this.promotions.badges(
-        'PROVIDER',
-        picked.map((r) => r.id),
-      ),
-    ]);
-    return picked.map((r) =>
-      presentProviderCard(r, { isOnline: online.has(r.userId), badges: badges.get(r.id) }),
-    );
-  }
-
-  /** Featured providers for a region or category placement. */
-  async featured(placement: 'region' | 'category', scope: { region?: string; category?: string }) {
-    if (!(await this.config.enabled('featuredServices'))) return [];
-    const { featuredSlots } = await this.config.setting('ranking');
-    const ids = await this.promotions.featuredIds(
-      'PROVIDER_FEATURED',
-      placement === 'region' ? 'REGION' : 'CATEGORY',
-      { regionId: scope.region, categoryIds: scope.category ? [scope.category] : undefined },
-      featuredSlots,
-    );
-    if (!ids.length) return [];
-    const rows = await this.prisma.serviceProvider.findMany({
-      where: { id: { in: ids }, status: ProviderStatus.ACTIVE, deletedAt: null },
-      select: providerCardSelect,
-    });
-    const badges = await this.promotions.badges('PROVIDER', ids);
-    const byId = new Map(rows.map((r) => [r.id, r]));
-    return ids.flatMap((id) => {
-      const row = byId.get(id);
-      return row ? [presentProviderCard(row, { badges: badges.get(id) })] : [];
-    });
   }
 
   async search(query: ProviderSearchQuery, viewer?: AuthUser) {
@@ -181,7 +127,7 @@ export class ServicesService {
     if (query.sort === 'nearest' && distanceById.size)
       rows.sort((a, b) => (distanceById.get(a.id) ?? 0) - (distanceById.get(b.id) ?? 0));
 
-    const [online, favorites, badges] = await Promise.all([
+    const [online, favorites] = await Promise.all([
       this.presence.onlineMany(rows.map((r) => r.userId)),
       viewer
         ? this.prisma.favorite.findMany({
@@ -189,15 +135,10 @@ export class ServicesService {
             select: { providerId: true },
           })
         : Promise.resolve([]),
-      this.promotions.badges(
-        'PROVIDER',
-        rows.map((r) => r.id),
-      ),
     ]);
     const saved = new Set(favorites.map((f) => f.providerId));
     let items = rows.map((r) =>
       presentProviderCard(r, {
-        badges: badges.get(r.id),
         isOnline: online.has(r.userId),
         isFavorite: saved.has(r.id),
         distanceKm: distanceById.get(r.id) ?? null,
@@ -226,7 +167,6 @@ export class ServicesService {
         isOnline,
         isFavorite: favorite > 0,
         isOwner,
-        badges: (await this.promotions.badges('PROVIDER', [provider.id])).get(provider.id),
       }),
       reviews: reviews.items,
     };

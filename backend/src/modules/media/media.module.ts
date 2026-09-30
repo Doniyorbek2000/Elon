@@ -23,6 +23,7 @@ import { memoryStorage } from 'multer';
 import { env } from '../../config/env';
 import { AuthUser, CurrentUser, MaybeUser, OptionalAuth } from '../../common/auth.decorators';
 import { AppError } from '../../common/errors';
+import { IMAGE_MODERATION, createImageModeration } from './image-moderation';
 import { MediaService, Variant } from './media.service';
 
 class UploadDto {
@@ -97,5 +98,9 @@ class MediaController {
 }
 
 @Global()
-@Module({ controllers: [MediaController], providers: [MediaService], exports: [MediaService] })
+@Module({
+  controllers: [MediaController],
+  providers: [MediaService, { provide: IMAGE_MODERATION, useFactory: createImageModeration }],
+  exports: [MediaService, IMAGE_MODERATION],
+})
 export class MediaModule {}

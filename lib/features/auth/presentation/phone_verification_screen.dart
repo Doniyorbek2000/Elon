@@ -10,6 +10,7 @@ import '../../../core/config/app_config.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/utils/input_formatters.dart';
 import '../../../core/widgets/brand.dart';
 import '../../../core/widgets/common.dart' show ContentWidth;
@@ -64,7 +65,7 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
 
   Future<void> _requestCode() async {
     if (UzPhoneInputFormatter.digitsOf(_phone.text).length != 9) {
-      setState(() => _error = 'Raqamni to‘liq kiriting: 90 123 45 67');
+      setState(() => _error = tr('Raqamni to‘liq kiriting: 90 123 45 67'));
       return;
     }
     setState(() {
@@ -95,7 +96,7 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
 
   Future<void> _verify() async {
     if (_code.text.length != 6) {
-      setState(() => _error = '6 xonali kodni kiriting');
+      setState(() => _error = tr('6 xonali kodni kiriting'));
       return;
     }
     setState(() {
@@ -130,7 +131,7 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
     final devCode = _devCode;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Kirish')),
+      appBar: AppBar(title: Text(tr('Kirish'))),
       body: SafeArea(
         child: ContentWidth(
           maxWidth: AppBreakpoints.formMaxWidth,
@@ -140,15 +141,15 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
               const Center(child: BrandMark(size: 64)),
               const SizedBox(height: AppSpacing.xl),
               Text(
-                _codeSent ? 'SMS kodni kiriting' : 'Telefon raqamingiz',
+                _codeSent ? tr('SMS kodni kiriting') : tr('Telefon raqamingiz'),
                 style: text.headlineSmall,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 _codeSent
-                    ? '+998 ${_phone.text} raqamiga 6 xonali kod yuborildi'
-                    : 'Raqamingiz tasdiqlangach, e’lon joylash, chat va ariza topshirish ochiladi.',
+                    ? tr('+998 {text} raqamiga 6 xonali kod yuborildi', {'text': _phone.text})
+                    : tr('Raqamingiz tasdiqlangach, e’lon joylash, chat va ariza topshirish ochiladi.'),
                 style: text.bodyMedium?.copyWith(color: palette.textSecondary),
                 textAlign: TextAlign.center,
               ),
@@ -199,11 +200,15 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
                               _code.clear();
                               _error = null;
                             }),
-                      child: const Text('Raqamni o‘zgartirish'),
+                      child: Text(tr('Raqamni o‘zgartirish')),
                     ),
                     TextButton(
                       onPressed: _secondsLeft > 0 || _busy ? null : _requestCode,
-                      child: Text(_secondsLeft > 0 ? 'Qayta yuborish ($_secondsLeft)' : 'Qayta yuborish'),
+                      child: Text(
+                        _secondsLeft > 0
+                            ? tr('Qayta yuborish ({_secondsLeft})', {'_secondsLeft': _secondsLeft})
+                            : tr('Qayta yuborish'),
+                      ),
                     ),
                   ],
                 ),
@@ -214,8 +219,10 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
                     decoration: BoxDecoration(color: palette.primarySoft, borderRadius: AppRadii.mdAll),
                     child: Text(
                       demo
-                          ? 'Demo rejim: haqiqiy SMS yuborilmaydi. Kod — ${DemoAuthRepository.demoCode}'
-                          : 'Test server: SMS yuborilmadi. Kod — $devCode',
+                          ? tr('Demo rejim: haqiqiy SMS yuborilmaydi. Kod — {demoCode}', {
+                              'demoCode': DemoAuthRepository.demoCode,
+                            })
+                          : tr('Test server: SMS yuborilmadi. Kod — {devCode}', {'devCode': devCode}),
                       style: text.bodySmall?.copyWith(color: palette.primary),
                       textAlign: TextAlign.center,
                     ),
@@ -229,7 +236,7 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
                         dimension: 22,
                         child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
                       )
-                    : Text(_codeSent ? 'Tasdiqlash' : 'Kod olish'),
+                    : Text(_codeSent ? tr('Tasdiqlash') : tr('Kod olish')),
               ),
               const SizedBox(height: AppSpacing.lg),
               Row(
@@ -238,7 +245,7 @@ class _PhoneVerificationScreenState extends ConsumerState<PhoneVerificationScree
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
-                      'Kodni hech kimga aytmang — Bozor.uz xodimlari uni hech qachon so‘ramaydi.',
+                      tr('Kodni hech kimga aytmang — Bozor.uz xodimlari uni hech qachon so‘ramaydi.'),
                       style: text.bodySmall,
                     ),
                   ),

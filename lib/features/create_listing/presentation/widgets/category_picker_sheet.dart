@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/design/app_colors.dart';
 import '../../../../core/design/app_icons.dart';
 import '../../../../core/design/app_tokens.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/widgets/common.dart';
 import '../../../../core/widgets/sheets.dart';
 import '../../../catalog/application/catalog_providers.dart';
@@ -31,13 +32,13 @@ class _CategoryPickerSheetState extends ConsumerState<_CategoryPickerSheet> {
     final palette = context.palette;
 
     return SheetScaffold(
-      title: parent?.name ?? 'Kategoriyani tanlang',
+      title: parent?.name ?? tr('Kategoriyani tanlang'),
       trailing: parent == null
           ? null
           : TextButton.icon(
               onPressed: () => setState(() => _parent = null),
               icon: const Icon(Icons.arrow_back_rounded, size: AppIconSize.sm),
-              label: const Text('Orqaga'),
+              label: Text(tr('Orqaga')),
             ),
       body: AnimatedSwitcher(
         duration: AppMotion.of(context, AppMotion.fast),
@@ -50,8 +51,8 @@ class _CategoryPickerSheetState extends ConsumerState<_CategoryPickerSheet> {
             return ListTile(
               shape: const RoundedRectangleBorder(borderRadius: AppRadii.mdAll),
               leading: ToneIcon(icon: AppIcons.forKey(category.iconKey), tone: category.tone, size: 40),
-              title: Text(category.name),
-              subtitle: category.subtitle == null ? null : Text(category.subtitle!, maxLines: 1),
+              title: Text(tr(category.name)),
+              subtitle: category.subtitle == null ? null : Text(tr(category.subtitle!), maxLines: 1),
               trailing: category.hasChildren ? Icon(Icons.chevron_right_rounded, color: palette.textTertiary) : null,
               onTap: () {
                 if (category.hasChildren) {

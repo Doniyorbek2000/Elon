@@ -6,6 +6,7 @@ import '../../../../app/router/routes.dart';
 import '../../../../core/design/app_colors.dart';
 import '../../../../core/design/app_icons.dart';
 import '../../../../core/design/app_tokens.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/clock.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/avatar.dart';
@@ -24,7 +25,6 @@ class JobCard extends ConsumerWidget {
     final palette = context.palette;
     final text = Theme.of(context).textTheme;
     final now = ref.watch(clockProvider)();
-    final promotion = job.promotion;
     final salary = Formatters.salaryRange(job.salaryMin, job.salaryMax, job.currency);
     final meta = '${job.place.shortLabel} · ${Formatters.relativeTime(job.publishedAt, now)}';
 
@@ -50,13 +50,7 @@ class JobCard extends ConsumerWidget {
                         child: Text(job.title, style: text.titleSmall, maxLines: 2, overflow: TextOverflow.ellipsis),
                       ),
                       const SizedBox(width: AppSpacing.sm),
-                      if (promotion != null && promotion.isActive(now))
-                        Wrap(
-                          spacing: AppSpacing.xs,
-                          children: [for (final badge in promotion.all) PromotionBadge(type: badge)],
-                        )
-                      else if (job.isNew(now))
-                        const StatusPill(label: 'Yangi', style: PillStyle.success, dense: true),
+                      if (job.isNew(now)) StatusPill(label: tr('Yangi'), style: PillStyle.success, dense: true),
                     ],
                   ),
                   const SizedBox(height: 2),
@@ -142,13 +136,17 @@ class CandidateCard extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.xs + 2),
                 Text(
                   candidate.expectedSalary == null
-                      ? 'Maosh: kelishiladi'
-                      : '${Formatters.money(candidate.expectedSalary!)} dan',
+                      ? tr('Maosh: kelishiladi')
+                      : tr('{p0} dan', {'p0': Formatters.money(candidate.expectedSalary!)}),
                   style: text.titleSmall?.copyWith(color: palette.price, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: AppSpacing.xs + 2),
                 Text(
-                  '${candidate.experienceYears} yil tajriba · ${candidate.place.shortLabel} · ${Formatters.relativeTime(candidate.updatedAt, now)}',
+                  tr('{experienceYears} yil tajriba · {shortLabel} · {p2}', {
+                    'experienceYears': candidate.experienceYears,
+                    'shortLabel': candidate.place.shortLabel,
+                    'p2': Formatters.relativeTime(candidate.updatedAt, now),
+                  }),
                   style: text.bodySmall?.copyWith(color: palette.textTertiary),
                   maxLines: 2,
                 ),

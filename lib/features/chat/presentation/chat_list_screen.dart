@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router/routes.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/utils/clock.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_image.dart';
@@ -24,13 +25,13 @@ class ChatListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final signedIn = ref.watch(sessionProvider) != null;
     return Scaffold(
-      appBar: AppBar(title: const Text('Chatlar'), centerTitle: false, automaticallyImplyLeading: false),
+      appBar: AppBar(title: Text(tr('Chatlar')), centerTitle: false, automaticallyImplyLeading: false),
       body: !signedIn
           ? EmptyState(
               icon: Icons.chat_bubble_outline_rounded,
-              title: 'Chatlar uchun tizimga kiring',
-              message: 'Sotuvchilar, ish beruvchilar va ustalar bilan xavfsiz yozishing.',
-              actionLabel: 'Kirish',
+              title: tr('Chatlar uchun tizimga kiring'),
+              message: tr('Sotuvchilar, ish beruvchilar va ustalar bilan xavfsiz yozishing.'),
+              actionLabel: tr('Kirish'),
               onAction: () => context.push(AppRoutes.verifyPhone),
             )
           : ref
@@ -56,9 +57,9 @@ class ChatListScreen extends ConsumerWidget {
                   data: (conversations) => conversations.isEmpty
                       ? EmptyState(
                           icon: Icons.forum_outlined,
-                          title: 'Hali chatlar yo‘q',
-                          message: 'E’lon, vakansiya yoki usta sahifasidagi «Chat» tugmasi orqali yozing.',
-                          actionLabel: 'E’lonlarni ko‘rish',
+                          title: tr('Hali chatlar yo‘q'),
+                          message: tr('E’lon, vakansiya yoki usta sahifasidagi «Chat» tugmasi orqali yozing.'),
+                          actionLabel: tr('E’lonlarni ko‘rish'),
                           onAction: () => context.go(AppRoutes.home),
                         )
                       : ContentWidth(
@@ -93,7 +94,7 @@ class _ConversationTile extends ConsumerWidget {
         conversation.peer.name,
         if (context0 != null) context0.title,
         conversation.lastMessagePreview ?? '',
-        if (unread) '${conversation.unreadCount} ta yangi xabar',
+        if (unread) tr('{unreadCount} ta yangi xabar', {'unreadCount': conversation.unreadCount}),
       ].join(', '),
       excludeSemantics: true,
       child: InkWell(
@@ -177,8 +178,8 @@ class _ConversationTile extends ConsumerWidget {
                         Expanded(
                           child: Text(
                             conversation.isBlocked
-                                ? 'Bloklangan'
-                                : conversation.lastMessagePreview ?? 'Suhbatni boshlang',
+                                ? tr('Bloklangan')
+                                : conversation.lastMessagePreview ?? tr('Suhbatni boshlang'),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: text.bodySmall?.copyWith(

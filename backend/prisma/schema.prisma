@@ -104,127 +104,6 @@ enum ListingStatus {
 
 // ─────────────────────────────────────────────────────── monetization enums
 
-/// What a promotion product does. Targets are implied by the prefix.
-enum PromotionKind {
-  LISTING_TOP
-  LISTING_VIP
-  LISTING_BUMP
-  LISTING_FEATURED
-  JOB_TOP
-  JOB_FEATURED
-  JOB_URGENT
-  PROVIDER_TOP
-  PROVIDER_FEATURED
-  AD_CAMPAIGN
-}
-
-enum PromotionTarget {
-  LISTING
-  JOB
-  PROVIDER
-  BUSINESS
-}
-
-/// Where a FEATURED activation may appear.
-enum Placement {
-  NONE
-  HOME
-  CATEGORY
-  REGION
-}
-
-enum ActivationStatus {
-  SCHEDULED
-  ACTIVE
-  EXPIRED
-  CANCELLED
-}
-
-enum ActivationSource {
-  PURCHASE
-  CREDITS
-  PLAN_BENEFIT
-  ADMIN
-}
-
-enum BillingPeriod {
-  MONTH
-  YEAR
-}
-
-enum PurchaseKind {
-  PROMOTION
-  SUBSCRIPTION
-}
-
-enum PurchaseStatus {
-  AWAITING_PAYMENT
-  FULFILLED
-  FAILED
-  CANCELLED
-  REFUNDED
-  NEEDS_REVIEW
-}
-
-enum PaymentStatus {
-  CREATED
-  PENDING
-  SUCCEEDED
-  FAILED
-  CANCELLED
-  REFUNDED
-  PARTIALLY_REFUNDED
-}
-
-enum PaymentProviderKey {
-  DEV
-  PAYME
-  CLICK
-  APPLE
-  GOOGLE
-  CREDITS
-  FREE
-}
-
-enum RefundStatus {
-  REQUESTED
-  SUCCEEDED
-  FAILED
-  MANUAL_REQUIRED
-}
-
-enum SubscriptionStatus {
-  ACTIVE
-  GRACE_PERIOD
-  PAST_DUE
-  CANCELLED
-  EXPIRED
-}
-
-enum CouponDiscountType {
-  PERCENT
-  FIXED
-}
-
-enum RedemptionStatus {
-  RESERVED
-  REDEEMED
-  RELEASED
-}
-
-enum CreditEntryType {
-  GRANT
-  CONSUME
-  EXPIRE
-  REFUND
-  ADJUST
-}
-
-enum AnalyticsLevel {
-  BASIC
-  ADVANCED
-}
-
 enum BusinessRole {
   OWNER
   MANAGER
@@ -240,24 +119,6 @@ enum BusinessVerification {
 enum BusinessStatus {
   ACTIVE
   SUSPENDED
-}
-
-enum AdStatus {
-  DRAFT
-  AWAITING_PAYMENT
-  PENDING_REVIEW
-  SCHEDULED
-  ACTIVE
-  PAUSED
-  ENDED
-  REJECTED
-}
-
-enum AdDestination {
-  LISTING
-  BUSINESS
-  PROVIDER
-  JOB
 }
 
 enum MediaPurpose {
@@ -379,9 +240,6 @@ enum NotificationType {
   REVIEW_RECEIVED
   ACCOUNT
   SYSTEM
-  PAYMENT
-  PROMOTION
-  SUBSCRIPTION
 }
 
 enum PushProviderKind {
@@ -455,9 +313,6 @@ model User {
   reports             Report[]                  @relation("ReportAuthor")
   blocksMade          Block[]                   @relation("Blocker")
   blocksReceived      Block[]                   @relation("Blocked")
-  purchases           Purchase[]
-  subscriptions       Subscription[]
-  creditAccount       CreditAccount?
   ownedBusiness       Business?                 @relation("BusinessOwner")
   businessMemberships BusinessMember[]
 }
@@ -481,6 +336,8 @@ model Profile {
   preferredLocalityId String?
   preferredLocality   Locality?         @relation(fields: [preferredLocalityId], references: [id])
   preferredRadiusKm   Int?
+  /// Interface language for notifications and server-generated text: "uz" | "ru".
+  language            String            @default("uz")
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
 }
@@ -646,23 +503,33 @@ model CategoryAttribute {
 /// Uploaded file. Originals are private; derived renditions (thumb/feed/
 /// detail) are generated asynchronously by the worker.
 model Media {
-  id            String       @id @default(uuid()) @db.Uuid
-  ownerId       String       @db.Uuid
-  owner         User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  purpose       MediaPurpose
-  status        MediaStatus  @default(PROCESSING)
-  mimeType      String
-  sizeBytes     Int
-  width         Int?
-  height        Int?
-  originalKey   String
-  thumbKey      String?
-  feedKey       String?
-  detailKey     String?
-  failureReason String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  deletedAt     DateTime?
+  id               String       @id @default(uuid()) @db.Uuid
+  ownerId          String       @db.Uuid
+  owner            User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  purpose          MediaPurpose
+  status           MediaStatus  @default(PROCESSING)
+  mimeType         String
+  sizeBytes        Int
+  width            Int?
+  height           Int?
+  originalKey      String
+  thumbKey         String?
+  feedKey          String?
+  detailKey        String?
+  failureReason    String?
+  /// 64-bit perceptual hash (see common/image-hash.ts) of listing photos,
+  /// split into four 16-bit bands for indexed near-duplicate lookups.
+  /// Automated content check: CLEAN | REVIEW | BLOCKED | UNCHECKED (null = not applicable).
+  moderation       String?
+  moderationLabels String[]     @default([])
+  imageHash        BigInt?
+  hashBand0        Int?
+  hashBand1        Int?
+  hashBand2        Int?
+  hashBand3        Int?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  deletedAt        DateTime?
 
   profileAvatar   Profile?            @relation("ProfileAvatar")
   listingLinks    ListingMedia[]
@@ -672,6 +539,10 @@ model Media {
 
   @@index([ownerId, purpose, createdAt])
   @@index([status, createdAt])
+  @@index([hashBand0])
+  @@index([hashBand1])
+  @@index([hashBand2])
+  @@index([hashBand3])
 }
 
 // ────────────────────────────────────────────────────────────── listings
@@ -705,10 +576,7 @@ model Listing {
   flagged       Boolean                                @default(false)
   riskFlags     String[]
   rejectReason  String?
-  // Ranking cache maintained only by the monetization domain (source of
-  // truth: PromotionActivation). rankedAt moves on bump; publishedAt never does.
-  boostTier     Int                                    @default(0)
-  boostUntil    DateTime?
+  // Feed ordering key: the publication time (kept separate from publishedAt for index use).
   rankedAt      DateTime?
   publishedAt   DateTime?
   expiresAt     DateTime?
@@ -725,7 +593,6 @@ model Listing {
 
   @@index([status, publishedAt(sort: Desc), id])
   @@index([status, rankedAt(sort: Desc), id])
-  @@index([status, boostTier, boostUntil])
   @@index([status, categoryId, publishedAt(sort: Desc)])
   @@index([status, regionId, districtId, publishedAt(sort: Desc)])
   @@index([status, priceUzs])
@@ -810,8 +677,6 @@ model Job {
   geo              Unsupported("geography(Point, 4326)")? @default(dbgenerated("\nCASE\n    WHEN ((lat IS NOT NULL) AND (lng IS NOT NULL)) THEN (st_setsrid(st_makepoint(lng, lat), 4326))::geography\n    ELSE NULL::geography\nEND"))
   searchText       String                                 @default("")
   viewCount        Int                                    @default(0)
-  boostTier        Int                                    @default(0)
-  boostUntil       DateTime?
   publishedAt      DateTime?
   expiresAt        DateTime?
   createdAt        DateTime                               @default(now())
@@ -929,8 +794,6 @@ model ServiceProvider {
   searchText      String                                 @default("")
   ratingAvg       Float                                  @default(0)
   reviewCount     Int                                    @default(0)
-  boostTier       Int                                    @default(0)
-  boostUntil      DateTime?
   createdAt       DateTime                               @default(now())
   updatedAt       DateTime                               @updatedAt
   deletedAt       DateTime?
@@ -1169,320 +1032,6 @@ model ModerationEvent {
   @@index([targetType, targetId, createdAt])
 }
 
-// ─────────────────────────────────────────────────────── configuration
-
-/// Runtime switches (monetization can launch gradually, no app release).
-model FeatureFlag {
-  key         String   @id
-  enabled     Boolean  @default(false)
-  description String?
-  updatedById String?  @db.Uuid
-  updatedAt   DateTime @updatedAt
-}
-
-/// Typed JSON settings: limits, ranking slots, checkout routes.
-model AppSetting {
-  key         String   @id
-  value       Json
-  description String?
-  updatedById String?  @db.Uuid
-  updatedAt   DateTime @updatedAt
-}
-
-// ─────────────────────────────────────────────────────── catalog
-
-model PromotionProduct {
-  id           String                @id // slug, e.g. "listing_top_7d"
-  kind         PromotionKind
-  target       PromotionTarget
-  placement    Placement             @default(NONE)
-  durationDays Int? // null for instant products (bump)
-  title        String
-  description  String
-  /// Promotion credits accepted instead of money (null = not allowed).
-  creditCost   Int?
-  active       Boolean               @default(false)
-  sortOrder    Int                   @default(0)
-  createdAt    DateTime              @default(now())
-  updatedAt    DateTime              @updatedAt
-  prices       ProductPrice[]
-  activations  PromotionActivation[]
-  purchases    Purchase[]
-
-  @@index([target, active, sortOrder])
-}
-
-/// Price history: a product's price is the row valid now. Rows are never
-/// edited after they take effect; changes add a new row.
-model ProductPrice {
-  id          String           @id @default(uuid()) @db.Uuid
-  productId   String
-  product     PromotionProduct @relation(fields: [productId], references: [id])
-  amountMinor BigInt
-  currency    Currency         @default(UZS)
-  validFrom   DateTime         @default(now())
-  validUntil  DateTime?
-  createdById String?          @db.Uuid
-  createdAt   DateTime         @default(now())
-
-  @@index([productId, validFrom(sort: Desc)])
-}
-
-model Plan {
-  id                      String         @id // "FREE", "BUSINESS", "BUSINESS_PRO"
-  title                   String
-  description             String
-  active                  Boolean        @default(false)
-  sortOrder               Int            @default(0)
-  /// Entitlements (null = unlimited where it makes sense).
-  activeListingLimit      Int?
-  monthlyListingLimit     Int?
-  photoLimit              Int            @default(12)
-  activeJobLimit          Int?
-  storefront              Boolean        @default(false)
-  businessBadge           Boolean        @default(false)
-  analytics               AnalyticsLevel @default(BASIC)
-  maxManagers             Int            @default(0)
-  monthlyPromotionCredits Int            @default(0)
-  prioritySupport         Boolean        @default(false)
-  createdAt               DateTime       @default(now())
-  updatedAt               DateTime       @updatedAt
-  prices                  PlanPrice[]
-  subscriptions           Subscription[]
-}
-
-model PlanPrice {
-  id          String        @id @default(uuid()) @db.Uuid
-  planId      String
-  plan        Plan          @relation(fields: [planId], references: [id])
-  period      BillingPeriod
-  amountMinor BigInt
-  currency    Currency      @default(UZS)
-  active      Boolean       @default(true)
-  validFrom   DateTime      @default(now())
-  validUntil  DateTime?
-  createdById String?       @db.Uuid
-  createdAt   DateTime      @default(now())
-  purchases   Purchase[]
-
-  @@index([planId, period, validFrom(sort: Desc)])
-}
-
-// ─────────────────────────────────────────────────────── purchases & payments
-
-/// What the user is buying, with a server-side price snapshot. The client
-/// never supplies prices; totals are computed here.
-model Purchase {
-  id                  String               @id @default(uuid()) @db.Uuid
-  userId              String               @db.Uuid
-  user                User                 @relation(fields: [userId], references: [id])
-  businessId          String?              @db.Uuid
-  kind                PurchaseKind
-  productId           String?
-  product             PromotionProduct?    @relation(fields: [productId], references: [id])
-  planPriceId         String?              @db.Uuid
-  planPrice           PlanPrice?           @relation(fields: [planPriceId], references: [id])
-  target              PromotionTarget?
-  targetId            String?              @db.Uuid
-  placementRegionId   String?
-  placementCategoryId String?
-  listAmountMinor     BigInt
-  discountMinor       BigInt               @default(0)
-  totalMinor          BigInt
-  currency            Currency             @default(UZS)
-  creditsUsed         Int                  @default(0)
-  couponId            String?              @db.Uuid
-  status              PurchaseStatus       @default(AWAITING_PAYMENT)
-  platform            String
-  idempotencyKey      String
-  fulfilledAt         DateTime?
-  failureReason       String?
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  payments            Payment[]
-  activation          PromotionActivation?
-  redemption          CouponRedemption?
-  subscriptionPeriods Subscription[]       @relation("SubscriptionPurchase")
-
-  @@unique([userId, idempotencyKey])
-  @@index([userId, createdAt(sort: Desc)])
-  @@index([status, createdAt])
-}
-
-model Payment {
-  id            String             @id @default(uuid()) @db.Uuid
-  purchaseId    String             @db.Uuid
-  purchase      Purchase           @relation(fields: [purchaseId], references: [id])
-  provider      PaymentProviderKey
-  status        PaymentStatus      @default(CREATED)
-  amountMinor   BigInt
-  currency      Currency           @default(UZS)
-  refundedMinor BigInt             @default(0)
-  externalId    String?
-  failureCode   String?
-  succeededAt   DateTime?
-  needsReview   Boolean            @default(false)
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-  events        PaymentEvent[]
-  refunds       Refund[]
-
-  @@unique([provider, externalId])
-  @@index([status, createdAt])
-  @@index([purchaseId])
-}
-
-/// Append-only log of provider callbacks and reconciliation results.
-/// (provider, eventId) is unique: replays are recognised and ignored.
-model PaymentEvent {
-  id          String             @id @default(uuid()) @db.Uuid
-  provider    PaymentProviderKey
-  eventId     String
-  paymentId   String?            @db.Uuid
-  payment     Payment?           @relation(fields: [paymentId], references: [id])
-  source      String // "webhook" | "reconciliation" | "internal"
-  type        String
-  payloadHash String
-  outcome     String // "applied" | "ignored:<reason>"
-  receivedAt  DateTime           @default(now())
-
-  @@unique([provider, eventId])
-  @@index([paymentId, receivedAt])
-}
-
-model Refund {
-  id               String       @id @default(uuid()) @db.Uuid
-  paymentId        String       @db.Uuid
-  payment          Payment      @relation(fields: [paymentId], references: [id])
-  amountMinor      BigInt
-  status           RefundStatus @default(REQUESTED)
-  reason           String
-  providerRefundId String?
-  requestedById    String       @db.Uuid
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-
-  @@index([paymentId])
-}
-
-// ─────────────────────────────────────────────────────── entitlements
-
-model PromotionActivation {
-  id                 String           @id @default(uuid()) @db.Uuid
-  productId          String
-  product            PromotionProduct @relation(fields: [productId], references: [id])
-  kind               PromotionKind
-  target             PromotionTarget
-  targetId           String           @db.Uuid
-  ownerId            String           @db.Uuid
-  purchaseId         String?          @unique @db.Uuid
-  purchase           Purchase?        @relation(fields: [purchaseId], references: [id])
-  source             ActivationSource
-  placement          Placement        @default(NONE)
-  regionId           String?
-  categoryId         String?
-  status             ActivationStatus @default(ACTIVE)
-  startsAt           DateTime
-  expiresAt          DateTime?
-  expiringNotifiedAt DateTime?
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-
-  @@index([target, targetId, status])
-  @@index([status, expiresAt])
-  @@index([kind, status, placement, regionId, categoryId])
-  @@index([ownerId, createdAt(sort: Desc)])
-}
-
-model Subscription {
-  id                 String             @id @default(uuid()) @db.Uuid
-  userId             String             @db.Uuid
-  user               User               @relation(fields: [userId], references: [id])
-  businessId         String?            @db.Uuid
-  planId             String
-  plan               Plan               @relation(fields: [planId], references: [id])
-  status             SubscriptionStatus @default(ACTIVE)
-  provider           PaymentProviderKey
-  externalId         String?
-  currentPeriodStart DateTime
-  currentPeriodEnd   DateTime
-  graceUntil         DateTime?
-  cancelAtPeriodEnd  Boolean            @default(false)
-  cancelledAt        DateTime?
-  lastPurchaseId     String?            @db.Uuid
-  lastPurchase       Purchase?          @relation("SubscriptionPurchase", fields: [lastPurchaseId], references: [id])
-  expiringNotifiedAt DateTime?
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-
-  @@index([userId, status])
-  @@index([status, currentPeriodEnd])
-}
-
-model Coupon {
-  id             String             @id @default(uuid()) @db.Uuid
-  code           String             @unique // stored upper-case
-  description    String?
-  discountType   CouponDiscountType
-  /// PERCENT: 1..100; FIXED: minor units.
-  value          BigInt
-  currency       Currency?
-  validFrom      DateTime
-  validUntil     DateTime?
-  maxRedemptions Int?
-  perUserLimit   Int                @default(1)
-  productIds     String[]
-  planIds        String[]
-  active         Boolean            @default(true)
-  createdById    String             @db.Uuid
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
-  redemptions    CouponRedemption[]
-}
-
-model CouponRedemption {
-  id         String           @id @default(uuid()) @db.Uuid
-  couponId   String           @db.Uuid
-  coupon     Coupon           @relation(fields: [couponId], references: [id])
-  userId     String           @db.Uuid
-  purchaseId String           @unique @db.Uuid
-  purchase   Purchase         @relation(fields: [purchaseId], references: [id])
-  status     RedemptionStatus @default(RESERVED)
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
-
-  @@index([couponId, userId, status])
-}
-
-/// One row per account; `balance` is a cache of the ledger sum, updated in
-/// the same transaction as each entry under a row lock.
-model CreditAccount {
-  userId    String              @id @db.Uuid
-  user      User                @relation(fields: [userId], references: [id])
-  balance   Int                 @default(0)
-  updatedAt DateTime            @updatedAt
-  entries   CreditLedgerEntry[]
-}
-
-model CreditLedgerEntry {
-  id             String          @id @default(uuid()) @db.Uuid
-  userId         String          @db.Uuid
-  account        CreditAccount   @relation(fields: [userId], references: [userId])
-  type           CreditEntryType
-  amount         Int // + grant/refund/adjust-in, − consume/expire/adjust-out
-  remaining      Int             @default(0) // unconsumed part of a GRANT (FIFO)
-  expiresAt      DateTime?
-  reason         String
-  subscriptionId String?         @db.Uuid
-  purchaseId     String?         @db.Uuid
-  activationId   String?         @db.Uuid
-  adminId        String?         @db.Uuid
-  createdAt      DateTime        @default(now())
-
-  @@index([userId, createdAt(sort: Desc)])
-  @@index([type, expiresAt])
-}
-
 // ─────────────────────────────────────────────────────── business
 
 model Business {
@@ -1505,7 +1054,6 @@ model Business {
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
   members      BusinessMember[]
-  campaigns    AdCampaign[]
 
   @@index([status, regionId])
 }
@@ -1523,45 +1071,6 @@ model BusinessMember {
 }
 
 // ─────────────────────────────────────────────────────── ads
-
-model AdCampaign {
-  id              String        @id @default(uuid()) @db.Uuid
-  businessId      String        @db.Uuid
-  business        Business      @relation(fields: [businessId], references: [id])
-  createdById     String        @db.Uuid
-  status          AdStatus      @default(DRAFT)
-  title           String
-  body            String
-  imageId         String?       @db.Uuid
-  destination     AdDestination
-  destinationId   String        @db.Uuid
-  regionId        String?
-  districtId      String?
-  categoryId      String?
-  startsAt        DateTime?
-  endsAt          DateTime?
-  impressionLimit Int?
-  impressions     Int           @default(0)
-  clicks          Int           @default(0)
-  purchaseId      String?       @unique @db.Uuid
-  rejectReason    String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  dailyStats      AdDailyStat[]
-
-  @@index([status, regionId, districtId, categoryId])
-  @@index([businessId, createdAt(sort: Desc)])
-}
-
-model AdDailyStat {
-  campaignId  String     @db.Uuid
-  campaign    AdCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  day         DateTime   @db.Date
-  impressions Int        @default(0)
-  clicks      Int        @default(0)
-
-  @@id([campaignId, day])
-}
 
 // ─────────────────────────────────────────────────────── analytics & audit
 

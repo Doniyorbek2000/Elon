@@ -8,6 +8,7 @@ import '../../../app/router/routes.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/domain/public_profile.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/sharing/share_service.dart';
 import '../../../core/sharing/share_sheet.dart';
 import '../../../core/utils/clock.dart';
@@ -37,7 +38,7 @@ SharePayload listingSharePayload(WidgetRef ref, Listing listing) => SharePayload
   target: ShareTarget.listing,
   id: listing.id,
   title: listing.title,
-  subtitle: listing.price == null ? 'Kelishiladi' : Formatters.money(listing.price!).replaceAll(' ', ' '),
+  subtitle: listing.price == null ? tr('Kelishiladi') : Formatters.money(listing.price!).replaceAll(' ', ' '),
   location: listing.place.shortLabel,
   image: listing.cover,
   url: ref.read(deepLinksProvider).web(ShareTarget.listing, listing.id),
@@ -82,8 +83,8 @@ class _ListingDetailView extends ConsumerWidget {
     final gutter = AppBreakpoints.pagePadding(context);
 
     final attributes = [
-      ...listing.attributes.map((a) => (a.label, a.value)),
-      if (listing.condition != null) ('Holati', listing.condition!.label),
+      ...listing.attributes.map((a) => (tr(a.label), trValue(a.value))),
+      if (listing.condition != null) (tr('Holati'), listing.condition!.label),
     ];
 
     return Scaffold(
@@ -100,14 +101,14 @@ class _ListingDetailView extends ConsumerWidget {
               padding: const EdgeInsetsDirectional.only(start: AppSpacing.sm),
               child: CircleIconButton(
                 icon: Icons.arrow_back_rounded,
-                tooltip: 'Orqaga',
+                tooltip: tr('Orqaga'),
                 onPressed: () => context.canPop() ? context.pop() : context.go(AppRoutes.home),
               ),
             ),
             actions: [
               CircleIconButton(
                 icon: Icons.ios_share_rounded,
-                tooltip: 'Ulashish',
+                tooltip: tr('Ulashish'),
                 onPressed: () => showShareSheet(context, listingSharePayload(ref, listing)),
               ),
               FavoriteButton(kind: SavedKind.listing, id: listing.id, onImage: true),
@@ -133,7 +134,7 @@ class _ListingDetailView extends ConsumerWidget {
                     if (category != null)
                       Padding(
                         padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-                        child: Text(category.name, style: text.labelMedium?.copyWith(color: palette.primary)),
+                        child: Text(tr(category.name), style: text.labelMedium?.copyWith(color: palette.primary)),
                       ),
                     Text(listing.title, style: text.headlineSmall),
                     const SizedBox(height: AppSpacing.xs),
@@ -144,7 +145,7 @@ class _ListingDetailView extends ConsumerWidget {
                         ),
                         if (listing.negotiable) ...[
                           const SizedBox(width: AppSpacing.sm),
-                          const StatusPill(label: 'Kelishiladi', style: PillStyle.success),
+                          StatusPill(label: tr('Kelishiladi'), style: PillStyle.success),
                         ],
                       ],
                     ),
@@ -157,9 +158,12 @@ class _ListingDetailView extends ConsumerWidget {
                         MetaLine(icon: Icons.schedule_rounded, text: Formatters.relativeTime(listing.publishedAt, now)),
                         MetaLine(
                           icon: Icons.visibility_outlined,
-                          text: '${Formatters.compactCount(listing.views)} ko‘rish',
+                          text: tr('{p0} ko‘rish', {'p0': Formatters.compactCount(listing.views)}),
                         ),
-                        MetaLine(icon: Icons.favorite_border_rounded, text: '${listing.favorites} ta saqlangan'),
+                        MetaLine(
+                          icon: Icons.favorite_border_rounded,
+                          text: tr('{favorites} ta saqlangan', {'favorites': listing.favorites}),
+                        ),
                       ],
                     ),
                     if (listing.status != ListingStatus.active) ...[
@@ -180,17 +184,17 @@ class _ListingDetailView extends ConsumerWidget {
                       ),
                     ],
                     DetailSection(
-                      title: 'Tavsif',
+                      title: tr('Tavsif'),
                       child: ExpandableText(listing.description, style: text.bodyMedium?.copyWith(height: 1.55)),
                     ),
                     DetailSection(
-                      title: isMine ? 'Siz joylagan e’lon' : 'Sotuvchi',
+                      title: isMine ? tr('Siz joylagan e’lon') : tr('Sotuvchi'),
                       child: _SellerCard(seller: listing.seller),
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     const SafetyTipsCard(),
                     DetailSection(
-                      title: 'Manzil',
+                      title: tr('Manzil'),
                       child: SurfaceCard(
                         child: Row(
                           children: [
@@ -210,7 +214,7 @@ class _ListingDetailView extends ConsumerWidget {
                         style: TextButton.styleFrom(foregroundColor: palette.danger),
                         onPressed: () => showReportSheet(context, type: ReportTargetType.listing, targetId: listing.id),
                         icon: const Icon(Icons.flag_outlined, size: AppIconSize.sm),
-                        label: const Text('E’lon ustidan shikoyat qilish'),
+                        label: Text(tr('E’lon ustidan shikoyat qilish')),
                       ),
                   ],
                 ),
@@ -225,12 +229,12 @@ class _ListingDetailView extends ConsumerWidget {
                 OutlinedButton.icon(
                   onPressed: () => context.push(AppRoutes.myListings),
                   icon: const Icon(Icons.list_alt_rounded),
-                  label: const Text('E’lonlarim'),
+                  label: Text(tr('E’lonlarim')),
                 ),
                 FilledButton.icon(
                   onPressed: () => showShareSheet(context, listingSharePayload(ref, listing)),
                   icon: const Icon(Icons.ios_share_rounded),
-                  label: const Text('Ulashish'),
+                  label: Text(tr('Ulashish')),
                 ),
               ],
             )
@@ -244,7 +248,7 @@ class _ListingDetailView extends ConsumerWidget {
                     loadPhone: () => ref.read(listingRepositoryProvider).revealPhone(listing.id),
                   ),
                   icon: const Icon(Icons.call_rounded),
-                  label: const Text('Qo‘ng‘iroq'),
+                  label: Text(tr('Qo‘ng‘iroq')),
                 ),
                 FilledButton.icon(
                   onPressed: () => startChat(
@@ -255,12 +259,12 @@ class _ListingDetailView extends ConsumerWidget {
                       subject: ConversationSubject.listing,
                       refId: listing.id,
                       title: listing.title,
-                      subtitle: listing.price == null ? 'Kelishiladi' : Formatters.money(listing.price!),
+                      subtitle: listing.price == null ? tr('Kelishiladi') : Formatters.money(listing.price!),
                       image: listing.cover,
                     ),
                   ),
                   icon: const Icon(Icons.chat_bubble_rounded),
-                  label: const Text('Chat'),
+                  label: Text(tr('Chat')),
                 ),
               ],
             ),
@@ -330,7 +334,7 @@ class _SellerCard extends ConsumerWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(presence, style: text.bodySmall?.copyWith(color: seller.isOnline ? palette.success : null)),
-                    Text('${Formatters.monthYear(seller.memberSince)} dan beri', style: text.bodySmall),
+                    Text(tr('{p0} dan beri', {'p0': Formatters.monthYear(seller.memberSince)}), style: text.bodySmall),
                   ],
                 ),
               ),
@@ -342,7 +346,7 @@ class _SellerCard extends ConsumerWidget {
                   side: BorderSide(color: palette.primary),
                 ),
                 onPressed: () => context.push(AppRoutes.seller(seller.id)),
-                child: const Text('Profil'),
+                child: Text(tr('Profil')),
               ),
             ],
           ),
@@ -358,16 +362,24 @@ class _SellerCard extends ConsumerWidget {
                 children: [
                   if (seller.rating != null) RatingLabel(rating: seller.rating!, count: seller.reviewCount),
                   if (seller.responseTimeMinutes != null)
-                    MetaLine(icon: Icons.bolt_rounded, text: '~${seller.responseTimeMinutes} daqiqada javob'),
-                  MetaLine(icon: Icons.inventory_2_outlined, text: '${seller.activeListings} ta e’lon'),
+                    MetaLine(
+                      icon: Icons.bolt_rounded,
+                      text: tr('~{responseTimeMinutes} daqiqada javob', {
+                        'responseTimeMinutes': seller.responseTimeMinutes,
+                      }),
+                    ),
+                  MetaLine(
+                    icon: Icons.inventory_2_outlined,
+                    text: tr('{activeListings} ta e’lon', {'activeListings': seller.activeListings}),
+                  ),
                 ],
               ),
             ),
           ],
           if (!seller.verification.isVerified) ...[
             const SizedBox(height: AppSpacing.md),
-            const StatusPill(
-              label: 'Sotuvchi hali tasdiqlanmagan',
+            StatusPill(
+              label: tr('Sotuvchi hali tasdiqlanmagan'),
               style: PillStyle.warning,
               icon: Icons.info_outline_rounded,
             ),
@@ -392,7 +404,7 @@ class _SimilarListings extends ConsumerWidget {
     final textScale = MediaQuery.textScalerOf(context).scale(14) / 14;
     final height = cardWidth * 3 / 4 + 20 + 76 * textScale.clamp(1.0, 2.2);
     return DetailSection(
-      title: 'O‘xshash e’lonlar',
+      title: tr('O‘xshash e’lonlar'),
       child: SizedBox(
         height: height,
         child: similar.isLoading

@@ -3,6 +3,8 @@ import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'crash_reporting.dart';
+
 enum LogLevel { debug, info, warning, error }
 
 /// Logging abstraction. Swap [DeveloperLogger] for a crash-reporting
@@ -43,4 +45,4 @@ class DeveloperLogger implements AppLogger {
   }
 }
 
-final appLoggerProvider = Provider<AppLogger>((ref) => const DeveloperLogger());
+final appLoggerProvider = Provider<AppLogger>((ref) => const ReportingLogger(DeveloperLogger()));

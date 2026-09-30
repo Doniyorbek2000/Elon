@@ -1,3 +1,4 @@
+import '../../../core/l10n/l10n.dart';
 import '../../../data/demo/demo_database.dart';
 import '../../catalog/domain/category.dart';
 import '../../jobs/domain/job.dart';
@@ -24,15 +25,15 @@ class DemoSearchRepository implements SearchRepository {
   final JobRepository _jobs;
   final ServicesRepository _services;
 
-  static const _popular = [
+  static List<String> get _popular => [
     'iPhone 14',
     'Cobalt',
-    'Kvartira ijaraga',
-    'Santexnik',
-    'Haydovchi kerak',
-    'Konditsioner',
-    'Sement',
-    'Repetitor',
+    tr('Kvartira ijaraga'),
+    tr('Santexnik'),
+    tr('Haydovchi kerak'),
+    tr('Konditsioner'),
+    tr('Sement'),
+    tr('Repetitor'),
   ];
 
   @override
@@ -56,7 +57,7 @@ class DemoSearchRepository implements SearchRepository {
           text: category.name,
           kind: SuggestionKind.category,
           refId: category.id,
-          subtitle: category.parentId == null ? 'Kategoriya' : _categories.byId(category.parentId)?.name,
+          subtitle: category.parentId == null ? tr('Kategoriya') : _categories.byId(category.parentId)?.name,
         ),
       );
       category.children.forEach(visit);
@@ -68,7 +69,7 @@ class DemoSearchRepository implements SearchRepository {
       if (seenTitles.add(listing.title.toLowerCase())) {
         consider(
           listing.title,
-          SearchSuggestion(text: listing.title, kind: SuggestionKind.query, subtitle: 'E’lonlar'),
+          SearchSuggestion(text: listing.title, kind: SuggestionKind.query, subtitle: tr('E’lonlar')),
         );
       }
     }

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../storage/key_value_store.dart';
 
 /// Stable per-install identifier sent at sign-in so the server can list and
@@ -33,7 +34,7 @@ class DeviceIdentity {
     final name = switch (platform) {
       'android' => 'Android',
       'ios' => 'iPhone',
-      _ => 'Qurilma',
+      _ => tr('Qurilma'),
     };
     return DeviceIdentity(id: id, platform: platform, name: name);
   }

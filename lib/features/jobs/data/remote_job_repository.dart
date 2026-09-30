@@ -2,9 +2,9 @@ import '../../../core/design/app_colors.dart';
 import '../../../core/domain/media_image.dart';
 import '../../../core/domain/money.dart';
 import '../../../core/domain/place.dart';
-import '../../../core/domain/promotion.dart';
 import '../../../core/domain/public_profile.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/network/api_client.dart';
 import '../domain/job.dart';
 
@@ -43,7 +43,6 @@ class RemoteJobRepository implements JobRepository {
     salaryMin: (json['salaryMin'] as num?)?.toInt(),
     salaryMax: (json['salaryMax'] as num?)?.toInt(),
     currency: Currency.parse(json['currency']),
-    promotion: Promotion.fromJson(json),
     views: (json['views'] as num?)?.toInt() ?? 0,
     status: JobStatus.parse(json['status']),
     applicationCount: (json['applicationCount'] as num?)?.toInt(),
@@ -53,7 +52,7 @@ class RemoteJobRepository implements JobRepository {
   /// Résumé places may have no preferred region yet.
   static Place _resumePlace(JsonMap? json) {
     final regionId = json?['regionId'] as String?;
-    if (regionId == null) return const Place(regionId: '', regionName: 'Hudud ko‘rsatilmagan');
+    if (regionId == null) return Place(regionId: '', regionName: tr('Hudud ko‘rsatilmagan'));
     return Place(
       regionId: regionId,
       regionName: json?['regionName'] as String? ?? '',

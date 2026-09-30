@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../design/app_colors.dart';
 import '../domain/media_image.dart';
 import 'app_image.dart';
@@ -49,7 +50,7 @@ class AppAvatar extends StatelessWidget {
       ),
     );
     return Semantics(
-      label: isOnline ? '$name, onlayn' : name,
+      label: isOnline ? tr('{name}, onlayn', {'name': name}) : name,
       image: true,
       excludeSemantics: true,
       child: SizedBox.square(

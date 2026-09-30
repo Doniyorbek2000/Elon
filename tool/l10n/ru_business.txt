@@ -1,0 +1,69 @@
+Qo‘ng‘iroq ||| Позвонить
+Tavsif ||| Описание
+To‘xtatish ||| Приостановить
+Qo‘shish ||| Добавить
+Hali sharhlar yo‘q ||| Отзывов пока нет
+Xizmatlar ||| Услуги
+Foydalanuvchi ||| Пользователь
+Biznes profil ||| Бизнес-профиль
+Biznesingizni Bozor’da tanishtiring ||| Представьте свой бизнес на Bozor
+Biznes profil yaratish ||| Создать бизнес-профиль
+Menejer qo‘shish ||| Добавить менеджера
+Telefon raqami ||| Номер телефона
+Menejer qo‘shildi ||| Менеджер добавлен
+Ma’lumotlarni tahrirlash ||| Редактировать данные
+Tasdiqlashni so‘rash ||| Запросить подтверждение
+Belgi faqat moderator tekshiruvidan so‘ng beriladi ||| Значок выдаётся только после проверки модератором
+So‘rov yuborildi ||| Запрос отправлен
+Do‘kon sahifasi ||| Страница магазина
+Ochiq · havolani ulashing ||| Открыта · поделитесь ссылкой
+Jamoa ||| Команда
+{managerCount} / {maxManagers} menejer ||| Менеджеров: {managerCount} из {maxManagers}
+Olib tashlash ||| Удалить
+Menejer olib tashlandi ||| Менеджер удалён
+Nom kamida 2 ta belgidan iborat bo‘lsin ||| Название должно содержать не менее 2 символов
+Saqlandi ||| Сохранено
+Biznes ma’lumotlari ||| Данные бизнеса
+Biznes nomi ||| Название бизнеса
+Telefon ||| Телефон
+Veb-sayt ||| Веб-сайт
+Manzil ||| Адрес
+Ish vaqti ||| Часы работы
+Du–Sh 09:00–19:00 ||| Пн–Сб 09:00–19:00
+Hudud: {label} ||| Регион: {label}
+Nomni o‘zgartirsangiz, tasdiqlash qayta tekshiriladi. ||| При смене названия подтверждение будет проверено заново.
+Do‘kon ||| Магазин
+{p0} — Bozor.uz ||| {p0} — Bozor.uz
+Tasdiqlangan biznes ||| Проверенный бизнес
+Biznes ||| Бизнес
+{activeListings} ta faol e’lon ||| Активных объявлений: {activeListings}
+Sayt ||| Сайт
+E’lonlar ||| Объявления
+Hozircha e’lonlar yo‘q ||| Объявлений пока нет
+Vakansiyalar ||| Вакансии
+A’zo: {p0} ||| На сайте с {p0}
+Sarlavha ||| Заголовок
+Matn ||| Текст
+E’lon statistikasi ||| Статистика объявления
+{d} kun ||| {d} дн.
+Jami: {lifetimeViews} ko‘rish · {lifetimeFavorites} sevimli ||| Всего: просмотров — {lifetimeViews}, в избранном — {lifetimeFavorites}
+Kunlik ko‘rishlar ||| Просмотры по дням
+Ko‘rishlar ||| Просмотры
+Sevimlilar ||| Избранное
+Raqam ko‘rildi ||| Номер показан
+Chatlar ||| Чаты
+Ulashishlar ||| Поделились
+Egasi ||| Владелец
+Menejer ||| Менеджер
+Tasdiqlangan ||| Подтверждён
+Tekshiruvda ||| На проверке
+Rad etilgan ||| Отклонено
+Qoralama ||| Черновик
+Faol ||| Активно
+To‘xtatilgan ||| Приостановлено
+faol e’lon ||| активных объявлений
+Jami ||| Итого
+Bepul ||| Бесплатно
+Tayyor ||| Готово
+App Store ||| App Store
+Google Play ||| Google Play

@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Android 13+: runtime permission required to show push notifications. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Coarse location is enough to resolve the user's district; precise GPS is never required. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />

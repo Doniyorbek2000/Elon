@@ -14,7 +14,6 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
 
 import { AuthUser, CurrentUser, MaybeUser, OptionalAuth, Public } from '../../common/auth.decorators';
 import { CursorQuery } from '../../common/pagination';
@@ -29,21 +28,6 @@ import {
 import { ServicesService } from './services.service';
 
 @ApiTags('services')
-class FeaturedProvidersQuery {
-  @IsIn(['region', 'category'])
-  placement!: 'region' | 'category';
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(64)
-  region?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(64)
-  category?: string;
-}
-
 @Controller()
 class ServicesController {
   constructor(private readonly services: ServicesService) {}
@@ -54,25 +38,10 @@ class ServicesController {
   categories() {
     return this.services.categories();
   }
-
   @OptionalAuth()
   @Get('providers')
   search(@Query() query: ProviderSearchQuery, @MaybeUser() viewer?: AuthUser) {
     return this.services.search(query, viewer);
-  }
-
-  /** Paid TOP providers for the same search (labeled block). */
-  @OptionalAuth()
-  @Get('providers/promoted')
-  promoted(@Query() query: ProviderSearchQuery, @MaybeUser() viewer?: AuthUser) {
-    return this.services.promoted(query, viewer);
-  }
-
-  /** Featured providers for a region or category placement. */
-  @Public()
-  @Get('providers/featured')
-  featured(@Query() query: FeaturedProvidersQuery) {
-    return this.services.featured(query.placement, query);
   }
 
   @OptionalAuth()

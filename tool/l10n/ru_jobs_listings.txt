@@ -1,0 +1,174 @@
+Rezyume ||| Резюме
+Shikoyat ||| Жалоба
+Tajriba ||| Опыт
+{experienceYears} yil ||| Лет: {experienceYears}
+Kutilayotgan maosh ||| Желаемая зарплата
+Hudud ||| Регион
+Ko‘nikmalar ||| Навыки
+Qulay bandlik ||| Удобная занятость
+O‘zi haqida ||| О себе
+Yangilangan: {p0} ||| Обновлено: {p0}
+{experienceYears} yil tajriba ||| Опыт: {experienceYears} лет
+Vakansiya ||| Вакансия
+{p0} ko‘rish ||| Просмотров: {p0}
+Vazifalar ||| Обязанности
+Talablar ||| Требования
+Ish joyi ||| Место работы
+Ish beruvchi ||| Работодатель
+Kompaniya haqida ||| О компании
+Pasport va karta ma’lumotlarini chatda yubormang. ||| Не отправляйте в чате паспортные данные и данные карты.
+Suhbatni ish joyida yoki ofisda o‘tkazing. ||| Проводите собеседование на месте работы или в офисе.
+Vakansiya ustidan shikoyat qilish ||| Пожаловаться на вакансию
+Ariza topshirish ||| Откликнуться
+Ariza: {label} · {p1} ||| Отклик: {label} · {p1}
+Arizangiz yuborildi! Ish beruvchi javobini kuting. ||| Отклик отправлен! Ожидайте ответа работодателя.
+O‘zingiz haqingizda qisqacha: tajriba, qachondan ishlay olasiz… ||| Коротко о себе: опыт, когда можете приступить…
+Ish beruvchi ismingiz va telefon raqamingizni ko‘radi. ||| Работодатель увидит ваше имя и номер телефона.
+Mening vakansiyalarim ||| Мои вакансии
+Vakansiyalar yo‘q ||| Вакансий нет
+Xodim kerak bo‘lsa, vakansiya joylang — arizalar shu yerda ko‘rinadi. ||| Нужен сотрудник — разместите вакансию, отклики появятся здесь.
+Vakansiya joylash ||| Разместить вакансию
+{p0} ta ariza · {p1} ||| Откликов: {p0} · {p1}
+Holat yangilandi: {label} ||| Статус обновлён: {label}
+Amallar ||| Действия
+Faollashtirish ||| Активировать
+Xodim topildi ||| Сотрудник найден
+Arxivlash ||| В архив
+Arizalar ||| Отклики
+Arizalar · {title} ||| Отклики · {title}
+Hali ariza yo‘q ||| Откликов пока нет
+Nomzodlar ariza yuborganda shu yerda ko‘rasiz va sizga bildirishnoma keladi. ||| Когда кандидаты откликнутся, вы увидите их здесь и получите уведомление.
+Nomzodga xabar yuborildi: {label} ||| Кандидату отправлено: {label}
+Rezyume yashirilgan ||| Резюме скрыто
+{desiredPosition} · {experienceYears} yil tajriba ||| {desiredPosition} · опыт {experienceYears} лет
+Qaror ||| Решение
+Lavozimni kiriting ||| Укажите должность
+Raqam kiriting ||| Введите число
+Rezyume saqlandi ||| Резюме сохранено
+Mening rezyumem ||| Моё резюме
+Ish qidiraman ||| Ищу работу
+Lavozim ||| Должность
+Tajriba (yil) ||| Опыт (лет)
+Masalan: savdo, 1C, Excel ||| Например: продажи, 1С, Excel
+Kutilayotgan maosh (so‘m) ||| Желаемая зарплата (сум)
+O‘zingiz haqingizda ||| О себе
+Bandlik turi ||| Тип занятости
+Kim ko‘ra oladi ||| Кто может видеть
+Kasb yoki ko‘nikma... ||| Профессия или навык...
+Kasb yoki kompaniya... ||| Профессия или компания...
+Ishchi qidiraman ||| Ищу сотрудника
+Bepul. Hududingizdagi nomzodlar ko‘radi. ||| Бесплатно. Увидят кандидаты в вашем регионе.
+Vakansiya topilmadi ||| Вакансии не найдены
+Filtrlarni o‘zgartiring yoki keyinroq qayta tekshiring. ||| Измените фильтры или загляните позже.
+Nomzod topilmadi ||| Кандидаты не найдены
+Vakansiya joylang — mos nomzodlar o‘zlari bog‘lanadi. ||| Разместите вакансию — подходящие кандидаты свяжутся сами.
+Farqi yo‘q ||| Не важно
+Maosh (dan) ||| Зарплата (от)
+Masalan: 4 000 000 ||| Например: 4 000 000
+Avval yuqori maoshlilar ||| Сначала с высокой зарплатой
+Natijalarni ko‘rsatish ||| Показать результаты
+Yangi ||| Новое
+Maosh: kelishiladi ||| Зарплата: договорная
+{experienceYears} yil tajriba · {shortLabel} · {p2} ||| Опыт {experienceYears} лет · {shortLabel} · {p2}
+Rezyume topilmadi ||| Резюме не найдено
+Siz bu vakansiyaga allaqachon ariza topshirgansiz ||| Вы уже откликнулись на эту вакансию
+Ariza topilmadi ||| Отклик не найден
+Namangan viloyati ||| Наманганская область
+Hudud ko‘rsatilmagan ||| Регион не указан
+O‘chirish ||| Удалить
+Narxni kiriting yoki «Kelishiladi»ni tanlang ||| Укажите цену или выберите «Договорная»
+Sotuvchi ||| Продавец
+{activeListings} ta e’lon ||| Объявлений: {activeListings}
+Yangi e’lon ||| Новое объявление
+Rasm tanlab bo‘lmadi ||| Не удалось выбрать фото
+Qoralama tiklandi ||| Черновик восстановлен
+Yangidan ||| Заново
+E’londan karta raqamini olib tashlang ||| Уберите номер карты из объявления
+Rasmlar yuklanmoqda, biroz kuting… ||| Фото загружаются, подождите…
+Chiqishdan oldin ||| Перед выходом
+Kiritgan ma’lumotlaringiz qoralama sifatida saqlanadi. Keyin davom ettirishingiz mumkin. ||| Введённые данные сохранятся как черновик. Позже можно продолжить.
+Saqlash va chiqish ||| Сохранить и выйти
+Qoralamani o‘chirish ||| Удалить черновик
+Orqaga ||| Назад
+E’lonni joylash ||| Опубликовать объявление
+Davom etish ||| Продолжить
+{p0}-qadam: {label}{p2} ||| Шаг {p0}: {label}{p2}
+, joriy ||| , текущий
+Tekshiruvga yuborildi ||| Отправлено на проверку
+Joylandi ||| Опубликовано
+E’lon tekshiruvga yuborildi ||| Объявление отправлено на проверку
+E’loningiz joylandi! ||| Ваше объявление опубликовано!
+Moderator tekshiruvidan so‘ng e’lon hammaga ko‘rinadi. Sizga bildirishnoma yuboramiz. ||| После проверки модератором объявление увидят все. Мы пришлём уведомление.
+Ko‘proq xaridor topish uchun e’lonni Telegram guruhlaringizda ulashing. ||| Чтобы найти больше покупателей, поделитесь объявлением в своих группах Telegram.
+Vakansiyani ko‘rish ||| Открыть вакансию
+E’lonni ko‘rish ||| Открыть объявление
+Bosh sahifaga qaytish ||| Вернуться на главную
+Kategoriya ||| Категория
+Kategoriyani tanlang ||| Выберите категорию
+Narx bo‘yicha savdolashish mumkin ||| Возможен торг
+Holati ||| Состояние
+Batafsil ma’lumot yozing: holati, xususiyatlari, nima uchun sotilyapti… ||| Опишите подробно: состояние, характеристики, почему продаёте…
+Manzilni tanlang ||| Выберите адрес
+Telefon raqamingiz e’londa ko‘rsatilmaydi — xaridor so‘raganda xavfsiz tarzda beriladi. ||| Ваш номер не показывается в объявлении — он безопасно передаётся по запросу покупателя.
+Rasmlar ||| Фото
+{length} ta ||| {length} шт.
+Xaridorlar e’loningizni shunday ko‘radi ||| Так покупатели увидят ваше объявление
+Tahrirlash ||| Редактировать
+E’lon joylangandan so‘ng moderator tomonidan tekshiriladi (odatda 15 daqiqagacha). ||| После публикации объявление проверяет модератор (обычно до 15 минут).
+E’lon darhol faol bo‘ladi. Qoidalarni buzgan e’lonlar o‘chiriladi. ||| Объявление сразу станет активным. Объявления, нарушающие правила, удаляются.
+Ko‘pi bilan {maxPhotos} ta rasm qo‘shish mumkin ||| Можно добавить не более {maxPhotos} фото
+Rasm qo‘shish ||| Добавить фото
+Galereyadan tanlash ||| Выбрать из галереи
+Bir nechta rasm tanlash mumkin ({remaining} ta qoldi) ||| Можно выбрать несколько фото (осталось {remaining})
+Kamera bilan olish ||| Сделать снимок
+Rasmlarga ruxsat berilmagan. Sozlamalardan ruxsat bering. ||| Нет доступа к фото. Разрешите его в настройках.
+Rasm ||| Фото
+Muqova qilish ||| Сделать обложкой
+Qayta yuklash ||| Загрузить снова
+Birinchi rasm — muqova. Tartibni o‘zgartirish uchun rasmni bosib turing va suring. ||| Первое фото — обложка. Чтобы изменить порядок, удерживайте фото и перетащите.
+Rasmlar asosida sarlavha va tavsifni avtomatik to‘ldirish ||| Автозаполнение заголовка и описания по фото
+Yaxshi rasm uchun maslahatlar ||| Советы для хороших фото
+Mahsulotni turli tomondan ko‘rsating ||| Покажите товар с разных сторон
+Kamchiliklarni yashirmang — ishonch oshadi ||| Не скрывайте недостатки — так больше доверия
+{p0}-rasm{p1}. Amallar uchun bosing ||| Фото {p0}{p1}. Нажмите для действий
+, muqova ||| , обложка
+Oldinga surish ||| Переместить вперёд
+Yuklanmadi ||| Не загружено
+Muqova ||| Обложка
+Sarlavha kamida {titleMinLength} ta belgidan iborat bo‘lsin ||| Заголовок должен содержать не менее {titleMinLength} символов
+Maksimal maosh minimaldan kam bo‘lmasin ||| Максимальная зарплата не должна быть меньше минимальной
+Tavsifni batafsilroq yozing (kamida {descriptionMinLength} belgi) ||| Опишите подробнее (не менее {descriptionMinLength} символов)
+Kamida bitta rasm qo‘shing ||| Добавьте хотя бы одно фото
+Ba’zi rasmlar yuklanmadi — qayta urinib ko‘ring yoki o‘chiring ||| Некоторые фото не загрузились — повторите или удалите их
+Rasmni qayta ishlab bo‘lmadi. Boshqa rasm tanlang ||| Не удалось обработать фото. Выберите другое
+Muddati tugagan ||| Срок истёк
+{km} km ||| {km} км
+{favorites} ta saqlangan ||| В избранном: {favorites}
+Siz joylagan e’lon ||| Ваше объявление
+E’lon ustidan shikoyat qilish ||| Пожаловаться на объявление
+E’lonlarim ||| Мои объявления
+{p0} dan beri ||| С {p0}
+~{responseTimeMinutes} daqiqada javob ||| Отвечает примерно за {responseTimeMinutes} мин.
+Sotuvchi hali tasdiqlanmagan ||| Продавец ещё не подтверждён
+O‘xshash e’lonlar ||| Похожие объявления
+Barcha e’lonlar ||| Все объявления
+Qidirish... ||| Поиск...
+{label} · {radiusKm} km ||| {label} · {radiusKm} км
+{semanticTitle} rasmlari, {p1} / {count}. Kattalashtirish uchun bosing ||| Фото: {semanticTitle}, {p1} из {count}. Нажмите, чтобы увеличить
+Minimal narx maksimaldan katta bo‘lmasin ||| Минимальная цена не должна быть больше максимальной
+Saralash ||| Сортировка
+Narx, so‘m ||| Цена, сум
+Ishlatilgan ||| Б/у
+Masofa ||| Расстояние
+Butun hudud · {areaLabel} ||| Весь регион · {areaLabel}
+Narx kelishiladi ||| Цена договорная
+Hech narsa topilmadi ||| Ничего не найдено
+Filtrlarni o‘zgartirib yoki hududni kengaytirib ko‘ring. ||| Измените фильтры или расширьте регион.
+Internet yo‘q. Saqlangan e’lonlar ko‘rsatilmoqda. ||| Нет интернета. Показаны сохранённые объявления.
+Yangilash ||| Обновить
+E’lon topilmadi yoki o‘chirilgan ||| Объявление не найдено или удалено
+Sotuvchi raqamini yashirgan. Chat orqali yozing. ||| Продавец скрыл номер. Напишите в чат.
+Band qilingan ||| Забронировано
+Sotilgan ||| Продано
+Arxivda ||| В архиве
+Bu rasm qoidalarga zid (nomaqbul kontent). Boshqa rasm tanlang ||| Это фото нарушает правила (недопустимый контент). Выберите другое

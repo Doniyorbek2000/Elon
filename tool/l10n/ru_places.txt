@@ -1,0 +1,93 @@
+Namangan viloyati ||| Наманганская область
+Toshkent shahri ||| Ташкент
+Toshkent viloyati ||| Ташкентская область
+Andijon viloyati ||| Андижанская область
+Farg‘ona viloyati ||| Ферганская область
+Samarqand viloyati ||| Самаркандская область
+Buxoro viloyati ||| Бухарская область
+Xorazm viloyati ||| Хорезмская область
+Qoraqalpog‘iston Respublikasi ||| Республика Каракалпакстан
+Qashqadaryo viloyati ||| Кашкадарьинская область
+Surxondaryo viloyati ||| Сурхандарьинская область
+Jizzax viloyati ||| Джизакская область
+Sirdaryo viloyati ||| Сырдарьинская область
+Navoiy viloyati ||| Навоийская область
+Namangan shahri ||| Наманган
+Chust tumani ||| Чустский район
+Pop tumani ||| Папский район
+Chortoq tumani ||| Чартакский район
+Kosonsoy tumani ||| Касансайский район
+Mingbuloq tumani ||| Мингбулакский район
+Namangan tumani ||| Наманганский район
+Norin tumani ||| Нарынский район
+To‘raqo‘rg‘on tumani ||| Туракурганский район
+Uchqo‘rg‘on tumani ||| Учкурганский район
+Uychi tumani ||| Уйчинский район
+Yangiqo‘rg‘on tumani ||| Янгикурганский район
+Yunusobod tumani ||| Юнусабадский район
+Chilonzor tumani ||| Чиланзарский район
+Mirzo Ulug‘bek tumani ||| Мирзо-Улугбекский район
+Yakkasaroy tumani ||| Яккасарайский район
+Shayxontohur tumani ||| Шайхантахурский район
+Olmazor tumani ||| Алмазарский район
+Mirobod tumani ||| Мирабадский район
+Sergeli tumani ||| Сергелийский район
+Uchtepa tumani ||| Учтепинский район
+Yashnobod tumani ||| Яшнабадский район
+Bektemir tumani ||| Бектемирский район
+Yangihayot tumani ||| Янгихаётский район
+Nurafshon shahri ||| Нурафшан
+Chirchiq shahri ||| Чирчик
+Angren shahri ||| Ангрен
+Olmaliq shahri ||| Алмалык
+Zangiota tumani ||| Зангиатинский район
+Qibray tumani ||| Кибрайский район
+Andijon shahri ||| Андижан
+Asaka tumani ||| Асакинский район
+Xonobod shahri ||| Ханабад
+Shahrixon tumani ||| Шахриханский район
+Baliqchi tumani ||| Балыкчинский район
+Farg‘ona shahri ||| Фергана
+Marg‘ilon shahri ||| Маргилан
+Qo‘qon shahri ||| Коканд
+Quvasoy shahri ||| Кувасай
+Rishton tumani ||| Риштанский район
+Samarqand shahri ||| Самарканд
+Urgut tumani ||| Ургутский район
+Kattaqo‘rg‘on shahri ||| Каттакурган
+Pastdarg‘om tumani ||| Пастдаргомский район
+Buxoro shahri ||| Бухара
+Kogon shahri ||| Каган
+G‘ijduvon tumani ||| Гиждуванский район
+Urganch shahri ||| Ургенч
+Xiva shahri ||| Хива
+Xonqa tumani ||| Ханкинский район
+Nukus shahri ||| Нукус
+Xo‘jayli tumani ||| Ходжейлийский район
+To‘rtko‘l tumani ||| Турткульский район
+Qarshi shahri ||| Карши
+Shahrisabz shahri ||| Шахрисабз
+G‘uzor tumani ||| Гузарский район
+Termiz shahri ||| Термез
+Denov tumani ||| Денауский район
+Sherobod tumani ||| Шерабадский район
+Jizzax shahri ||| Джизак
+G‘allaorol tumani ||| Галляаральский район
+Zomin tumani ||| Зааминский район
+Guliston shahri ||| Гулистан
+Yangiyer shahri ||| Янгиер
+Shirin shahri ||| Ширин
+Navoiy shahri ||| Навои
+Zarafshon shahri ||| Зарафшан
+Karmana tumani ||| Карманинский район
+Chodak ||| Чодак
+Davlatobod ||| Давлатабад
+G‘ova ||| Гува
+Karkidon ||| Каркидон
+Markaz ||| Центр
+Olmos ||| Алмас
+Pungon ||| Пунгон
+Sarvak ||| Сарвак
+Varzik ||| Варзик
+Yangi Namangan ||| Янги Наманган
+Yangi hayot ||| Янги хаёт

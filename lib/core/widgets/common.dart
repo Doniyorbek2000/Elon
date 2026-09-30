@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../design/app_colors.dart';
 import '../design/app_tokens.dart';
 
@@ -275,7 +276,10 @@ class RatingLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     return Semantics(
-      label: 'Reyting ${rating.toStringAsFixed(1)}${count == null ? '' : ', $count ta sharh'}',
+      label: tr('Reyting {p0}{p1}', {
+        'p0': rating.toStringAsFixed(1),
+        'p1': count == null ? '' : tr(', {count} ta sharh', {'count': count}),
+      }),
       excludeSemantics: true,
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -348,7 +352,7 @@ Future<bool> confirmDialog(
       title: Text(title),
       content: Text(message),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Bekor qilish')),
+        TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('Bekor qilish'))),
         TextButton(
           onPressed: () => Navigator.pop(context, true),
           style: destructive ? TextButton.styleFrom(foregroundColor: palette.danger) : null,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../design/app_colors.dart';
 import '../design/app_tokens.dart';
 
@@ -37,7 +38,7 @@ class _ShimmerState extends State<Shimmer> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     final palette = context.palette;
     return Semantics(
-      label: 'Yuklanmoqda',
+      label: tr('Yuklanmoqda'),
       liveRegion: true,
       child: ExcludeSemantics(
         child: AnimatedBuilder(

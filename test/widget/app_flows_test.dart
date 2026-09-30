@@ -1,3 +1,4 @@
+import 'package:bozor/core/l10n/l10n.dart';
 import 'package:bozor/core/storage/key_value_store.dart';
 import 'package:bozor/core/widgets/favorite_button.dart';
 import 'package:bozor/features/chat/presentation/conversation_screen.dart';
@@ -32,6 +33,33 @@ Future<void> tapText(WidgetTester tester, String text, {int index = 0}) async {
 }
 
 void main() {
+  group('Language', () {
+    testWidgets('switching to Russian re-renders the app and is remembered', (tester) async {
+      addTearDown(() => currentLanguage = AppLanguage.uz);
+      final harness = await pumpBozorApp(tester, location: '/account/settings');
+      expect(find.text('Sozlamalar'), findsOneWidget);
+
+      await tapText(tester, 'Til');
+      expect(find.text('Русский'), findsOneWidget);
+      await tapText(tester, 'Русский');
+
+      expect(find.text('Настройки'), findsOneWidget);
+      expect(find.text('Sozlamalar'), findsNothing);
+      expect(harness.store.getString(StoreKeys.language), 'ru');
+
+      harness.router.go('/');
+      await settle(tester);
+      expect(find.text('Главная'), findsWidgets);
+    });
+
+    testWidgets('follows a Russian device on first launch', (tester) async {
+      addTearDown(() => currentLanguage = AppLanguage.uz);
+      expect(AppLanguage.fromDevice(const Locale('ru', 'RU')), AppLanguage.ru);
+      expect(AppLanguage.fromDevice(const Locale('en', 'US')), AppLanguage.uz);
+      expect(AppLanguage.fromDevice(const Locale('uz')), AppLanguage.uz);
+    });
+  });
+
   group('Navigation', () {
     testWidgets('first launch shows onboarding, then location, then home', (tester) async {
       final harness = await pumpBozorApp(tester, onboarded: false);

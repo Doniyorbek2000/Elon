@@ -20,7 +20,6 @@ import { CursorQuery } from '../../common/pagination';
 import {
   ChangeStatusDto,
   CreateListingDto,
-  FeaturedQuery,
   FeedQuery,
   MyListingsQuery,
   RejectDto,
@@ -37,20 +36,6 @@ class ListingsController {
   @Get('listings')
   feed(@Query() query: FeedQuery, @MaybeUser() viewer?: AuthUser) {
     return this.listings.feed(query, viewer);
-  }
-
-  /** Paid TOP/VIP items for the same filters — shown in a labeled block. */
-  @OptionalAuth()
-  @Get('listings/promoted')
-  promoted(@Query() query: FeedQuery, @MaybeUser() viewer?: AuthUser) {
-    return this.listings.promoted(query, viewer);
-  }
-
-  /** Paid featured placements (home / category / region), labeled "Tavsiya". */
-  @OptionalAuth()
-  @Get('listings/featured')
-  featured(@Query() query: FeaturedQuery, @MaybeUser() viewer?: AuthUser) {
-    return this.listings.featured(query, viewer);
   }
 
   @OptionalAuth()

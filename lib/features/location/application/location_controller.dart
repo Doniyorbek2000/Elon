@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 
 import '../../../core/config/app_config.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/key_value_store.dart';
 import '../../auth/application/session_controller.dart';
@@ -108,7 +109,7 @@ class LocationController extends Notifier<LocationSelection> {
     final point = await ref.read(deviceLocationServiceProvider).currentPosition();
     final nearest = ref.read(locationTreeProvider).nearestDistrict(point);
     if (nearest == null || nearest.distanceKm > 150) {
-      throw const PermissionFailure('Joylashuvingiz O‘zbekiston hududidan tashqarida ko‘rinmoqda');
+      throw PermissionFailure(tr('Joylashuvingiz O‘zbekiston hududidan tashqarida ko‘rinmoqda'));
     }
     final selection = LocationSelection(
       regionId: nearest.region.id,
@@ -152,15 +153,15 @@ class GeolocatorLocationService implements DeviceLocationService {
   @override
   Future<GeoPoint> currentPosition() async {
     if (!await Geolocator.isLocationServiceEnabled()) {
-      throw const PermissionFailure('Telefoningizda joylashuv xizmati o‘chirilgan');
+      throw PermissionFailure(tr('Telefoningizda joylashuv xizmati o‘chirilgan'));
     }
     var permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) permission = await Geolocator.requestPermission();
     if (permission == LocationPermission.deniedForever) {
-      throw const PermissionFailure('Joylashuvga ruxsat berilmagan. Sozlamalardan yoqing', permanentlyDenied: true);
+      throw PermissionFailure(tr('Joylashuvga ruxsat berilmagan. Sozlamalardan yoqing'), permanentlyDenied: true);
     }
     if (permission == LocationPermission.denied || permission == LocationPermission.unableToDetermine) {
-      throw const PermissionFailure('Joylashuvga ruxsat berilmadi');
+      throw PermissionFailure(tr('Joylashuvga ruxsat berilmadi'));
     }
     final position = await Geolocator.getCurrentPosition(
       locationSettings: const LocationSettings(accuracy: LocationAccuracy.low, timeLimit: Duration(seconds: 12)),

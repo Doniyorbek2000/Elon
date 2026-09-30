@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 abstract final class StoreKeys {
   static const onboardingCompleted = 'onboarding.completed.v1';
   static const themeMode = 'settings.themeMode';
+  static const language = 'settings.language';
   static const notificationsEnabled = 'settings.notifications';
   static const savedItems = 'saved.items.v1';
   static const recentSearches = 'search.recent.v1';

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../design/app_colors.dart';
 import '../design/app_tokens.dart';
 
@@ -80,7 +81,7 @@ class _ExpandableTextState extends State<ExpandableText> {
               TextButton(
                 style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(0, AppTouch.minTarget)),
                 onPressed: () => setState(() => _expanded = !_expanded),
-                child: Text(_expanded ? 'Yashirish' : 'Ko‘proq'),
+                child: Text(_expanded ? tr('Yashirish') : tr('Ko‘proq')),
               ),
           ],
         );
@@ -91,15 +92,15 @@ class _ExpandableTextState extends State<ExpandableText> {
 
 /// "Xavfsizlik bo‘yicha maslahatlar" callout shown on every detail page.
 class SafetyTipsCard extends StatelessWidget {
-  const SafetyTipsCard({super.key, this.tips = defaultTips});
+  const SafetyTipsCard({super.key, this.tips});
 
-  static const defaultTips = [
+  static List<String> get defaultTips => [
     'Oldindan to‘lov qilmang — avval mahsulotni ko‘ring.',
-    'Uchrashuvni gavjum, xavfsiz joyda belgilang.',
-    'SMS kodlar va karta ma’lumotlarini hech kimga bermang.',
+    tr('Uchrashuvni gavjum, xavfsiz joyda belgilang.'),
+    tr('SMS kodlar va karta ma’lumotlarini hech kimga bermang.'),
   ];
 
-  final List<String> tips;
+  final List<String>? tips;
 
   @override
   Widget build(BuildContext context) {
@@ -115,11 +116,11 @@ class SafetyTipsCard extends StatelessWidget {
             children: [
               Icon(Icons.shield_outlined, color: palette.warning, size: AppIconSize.md),
               const SizedBox(width: AppSpacing.sm),
-              Expanded(child: Text('Xavfsizlik bo‘yicha maslahat', style: text.titleSmall)),
+              Expanded(child: Text(tr('Xavfsizlik bo‘yicha maslahat'), style: text.titleSmall)),
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
-          for (final tip in tips)
+          for (final tip in tips ?? defaultTips)
             Padding(
               padding: const EdgeInsets.only(top: AppSpacing.xs),
               child: Row(

@@ -1,0 +1,35 @@
+name: Device integration
+
+# Runs integration_test/ on an Android emulator. Nightly and on demand: emulators are slow and flaky enough
+# that this should not gate every pull request.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 2 * * *"
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.x
+          cache: true
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - run: flutter pub get
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          script: flutter test integration_test --dart-define=DEMO_MODE=true

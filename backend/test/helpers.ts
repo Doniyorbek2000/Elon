@@ -1,3 +1,4 @@
+import { resetEnvCache } from '../src/config/env';
 import { INestApplication } from '@nestjs/common';
 import { Worker } from 'bullmq';
 import sharp from 'sharp';
@@ -167,4 +168,18 @@ export async function clearOtpCooldown(ctx: TestContext, phone: string): Promise
   const redis = ctx.app.get(RedisService);
   const keys = await redis.client.keys(`otp:*${phone}*`);
   if (keys.length) await redis.client.del(...keys);
+}
+
+/**
+ * Suites that enable optional integrations change process.env. Jest runs them
+ * in one process (--runInBand), so the change must be undone or it leaks into
+ * the suites that assert on the default configuration.
+ */
+export function snapshotEnv(): () => void {
+  const saved = { ...process.env };
+  return () => {
+    for (const key of Object.keys(process.env)) if (!(key in saved)) delete process.env[key];
+    Object.assign(process.env, saved);
+    resetEnvCache();
+  };
 }

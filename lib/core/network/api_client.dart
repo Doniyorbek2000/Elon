@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../config/app_config.dart';
 import '../domain/paged.dart';
 import '../errors/app_failure.dart';
@@ -81,7 +82,7 @@ class ApiClient {
   T _data<T>(JsonMap body) {
     final data = body['data'];
     if (data is T) return data;
-    throw const ServerFailure('Kutilmagan server javobi', statusCode: 200);
+    throw ServerFailure(tr('Kutilmagan server javobi'), statusCode: 200);
   }
 
   Future<JsonMap> _send(Future<Response<Object?>> Function() request) async {
@@ -108,9 +109,9 @@ class ApiClient {
       case DioExceptionType.badResponse:
         return mapErrorResponse(error.response?.statusCode, error.response?.data, error.response?.headers);
       case DioExceptionType.cancel:
-        return const UnknownFailure('So‘rov bekor qilindi');
+        return UnknownFailure(tr('So‘rov bekor qilindi'));
       case DioExceptionType.badCertificate:
-        return const ServerFailure('Xavfsiz ulanib bo‘lmadi');
+        return ServerFailure(tr('Xavfsiz ulanib bo‘lmadi'));
       case DioExceptionType.unknown:
         return error.error is SocketException ? const NetworkFailure() : const UnknownFailure();
     }
@@ -124,7 +125,7 @@ class ApiClient {
     final code = error['code'] as String?;
     final serverMessage = error['message'] as String?;
     final details = error['details'] is Map ? error['details'] as Map<Object?, Object?> : const <Object?, Object?>{};
-    final message = _localizedMessage(code) ?? serverMessage ?? 'Server xatosi';
+    final message = _localizedMessage(code) ?? serverMessage ?? tr('Server xatosi');
     switch (code) {
       case 'LIMIT_REACHED':
         final max = (details['max'] as num?)?.toInt();
@@ -132,13 +133,10 @@ class ApiClient {
         return LimitReachedFailure(_limitMessage(limit, max), limit: limit, max: max);
       case 'FEATURE_DISABLED':
         return const FeatureDisabledFailure();
-      case 'PAYMENT_ROUTE_UNAVAILABLE':
-      case 'PROVIDER_NOT_CONFIGURED':
-        return const PaymentUnavailableFailure();
     }
     switch (status) {
       case 401:
-        return UnauthorizedFailure(_localizedMessage(code) ?? 'Tizimga qayta kiring');
+        return UnauthorizedFailure(_localizedMessage(code) ?? tr('Tizimga qayta kiring'));
       case 403:
         return code == 'BLOCKED' ? const BlockedFailure() : ForbiddenFailure(message);
       case 404:
@@ -146,10 +144,10 @@ class ApiClient {
       case 409:
         return ConflictFailure(message, code: code);
       case 413:
-        return const ValidationFailure('Fayl hajmi juda katta', code: 'PAYLOAD_TOO_LARGE');
+        return ValidationFailure(tr('Fayl hajmi juda katta'), code: 'PAYLOAD_TOO_LARGE');
       case 415:
-        return const ValidationFailure(
-          'Bu fayl turi qo‘llab-quvvatlanmaydi (JPEG, PNG, WebP, HEIC)',
+        return ValidationFailure(
+          tr('Bu fayl turi qo‘llab-quvvatlanmaydi (JPEG, PNG, WebP, HEIC)'),
           code: 'UNSUPPORTED_MEDIA',
         );
       case 400:
@@ -159,12 +157,12 @@ class ApiClient {
         final seconds =
             (details['retryAfterSeconds'] as num?)?.toInt() ?? int.tryParse(headers?.value('retry-after') ?? '');
         return RateLimitFailure(
-          _localizedMessage(code) ?? 'Juda ko‘p so‘rov. Birozdan so‘ng urinib ko‘ring',
+          _localizedMessage(code) ?? tr('Juda ko‘p so‘rov. Birozdan so‘ng urinib ko‘ring'),
           seconds == null ? null : Duration(seconds: seconds),
         );
       default:
         return ServerFailure(
-          status != null && status >= 500 ? 'Serverda nosozlik. Keyinroq urinib ko‘ring' : message,
+          status != null && status >= 500 ? tr('Serverda nosozlik. Keyinroq urinib ko‘ring') : message,
           statusCode: status,
         );
     }
@@ -173,34 +171,31 @@ class ApiClient {
   static Map<String, String> _fieldErrors(Map<Object?, Object?> details) {
     final fields = details['fields'];
     if (fields is Map) return fields.map((key, value) => MapEntry('$key', '$value'));
-    if (details['field'] is String) return {details['field'] as String: 'Noto‘g‘ri qiymat'};
+    if (details['field'] is String) return {details['field'] as String: tr('Noto‘g‘ri qiymat')};
     return const {};
   }
 
   static String _limitMessage(String limit, int? max) {
-    final count = max == null ? '' : ' ($max ta)';
+    final count = max == null ? '' : tr(' ({max} ta)', {'max': max});
     return switch (limit) {
-      'activeListings' => 'Faol e’lonlar chegarasiga yetdingiz$count. Eskisini arxivlang yoki tarifni kengaytiring',
-      'monthlyListings' => 'Shu oy uchun e’lonlar chegarasiga yetdingiz$count',
-      'photos' => 'Rasmlar soni chegaradan oshdi$count',
-      'activeJobs' => 'Faol vakansiyalar chegarasiga yetdingiz$count',
-      'managers' => 'Menejerlar soni chegarasiga yetdingiz$count',
-      _ => 'Tarif chegarasiga yetdingiz$count',
+      'activeListings' => tr('Faol e’lonlar chegarasiga yetdingiz{count}. Eskisini arxivlang', {'count': count}),
+      'monthlyListings' => tr('Shu oy uchun e’lonlar chegarasiga yetdingiz{count}', {'count': count}),
+      'photos' => tr('Rasmlar soni chegaradan oshdi{count}', {'count': count}),
+      'activeJobs' => tr('Faol vakansiyalar chegarasiga yetdingiz{count}', {'count': count}),
+      'managers' => tr('Menejerlar soni chegarasiga yetdingiz{count}', {'count': count}),
+      _ => tr('Chegaraga yetdingiz{count}', {'count': count}),
     };
   }
 
   static String? _localizedMessage(String? code) => switch (code) {
-    'OTP_INVALID' => 'Kod noto‘g‘ri. Qayta urinib ko‘ring',
-    'OTP_EXPIRED' => 'Kod muddati tugadi. Yangi kod so‘rang',
-    'OTP_TOO_MANY_ATTEMPTS' => 'Urinishlar ko‘p bo‘ldi. Yangi kod so‘rang',
-    'OTP_COOLDOWN' => 'Yangi kodni biroz kutib so‘rang',
-    'SESSION_REVOKED' => 'Sessiya tugatildi. Qayta kiring',
-    'TOKEN_EXPIRED' => 'Sessiya muddati tugadi',
-    'NOT_ELIGIBLE' => 'Sharh qoldirish uchun avval usta bilan yozishgan bo‘lishingiz kerak',
-    'BLOCKED' => 'Bu foydalanuvchi bilan yozishib bo‘lmaydi',
-    'COUPON_INVALID' => 'Promo kod yaroqsiz',
-    'INSUFFICIENT_CREDITS' => 'Kreditlar yetarli emas',
-    'PRICE_UNAVAILABLE' => 'Bu xizmat hozircha sotuvda emas',
+    'OTP_INVALID' => tr('Kod noto‘g‘ri. Qayta urinib ko‘ring'),
+    'OTP_EXPIRED' => tr('Kod muddati tugadi. Yangi kod so‘rang'),
+    'OTP_TOO_MANY_ATTEMPTS' => tr('Urinishlar ko‘p bo‘ldi. Yangi kod so‘rang'),
+    'OTP_COOLDOWN' => tr('Yangi kodni biroz kutib so‘rang'),
+    'SESSION_REVOKED' => tr('Sessiya tugatildi. Qayta kiring'),
+    'TOKEN_EXPIRED' => tr('Sessiya muddati tugadi'),
+    'NOT_ELIGIBLE' => tr('Sharh qoldirish uchun avval usta bilan yozishgan bo‘lishingiz kerak'),
+    'BLOCKED' => tr('Bu foydalanuvchi bilan yozishib bo‘lmaydi'),
     _ => null,
   };
 }
@@ -254,7 +249,7 @@ class AuthInterceptor extends QueuedInterceptor {
   Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     final token = await tokens.accessToken;
     if (token != null) options.headers[HttpHeaders.authorizationHeader] = 'Bearer $token';
-    options.headers[HttpHeaders.acceptLanguageHeader] = 'uz';
+    options.headers[HttpHeaders.acceptLanguageHeader] = currentLanguage.code;
     handler.next(options);
   }
 
@@ -295,7 +290,7 @@ class AuthInterceptor extends QueuedInterceptor {
       final data = response.data?['data'] as JsonMap?;
       final access = data?['accessToken'] as String?;
       final refresh = data?['refreshToken'] as String?;
-      if (access == null || refresh == null) throw const ServerFailure('Kutilmagan server javobi');
+      if (access == null || refresh == null) throw ServerFailure(tr('Kutilmagan server javobi'));
       await tokens.save(accessToken: access, refreshToken: refresh);
       return access;
     } on DioException catch (error) {

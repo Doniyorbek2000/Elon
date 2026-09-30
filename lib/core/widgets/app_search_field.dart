@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../design/app_colors.dart';
 import '../design/app_tokens.dart';
 import 'badges.dart';
@@ -11,7 +12,7 @@ class AppSearchField extends StatelessWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.hint = 'Nima qidiryapsiz?',
+    this.hint,
     this.readOnly = false,
     this.autofocus = false,
     this.onTap,
@@ -24,7 +25,9 @@ class AppSearchField extends StatelessWidget {
 
   final TextEditingController? controller;
   final FocusNode? focusNode;
-  final String hint;
+  final String? hint;
+
+  String get _hint => hint ?? tr('Nima qidiryapsiz?');
   final bool readOnly;
   final bool autofocus;
   final VoidCallback? onTap;
@@ -40,7 +43,7 @@ class AppSearchField extends StatelessWidget {
     final field = readOnly
         ? Semantics(
             button: true,
-            label: hint,
+            label: _hint,
             excludeSemantics: true,
             child: Material(
               color: palette.surfaceMuted,
@@ -57,7 +60,7 @@ class AppSearchField extends StatelessWidget {
                       const SizedBox(width: AppSpacing.md),
                       Expanded(
                         child: Text(
-                          hint,
+                          _hint,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: palette.textTertiary),
@@ -93,7 +96,7 @@ class AppSearchField extends StatelessWidget {
                 dimension: AppTouch.inputHeight,
                 child: Icon(
                   Icons.tune_rounded,
-                  semanticLabel: 'Filtrlar',
+                  semanticLabel: tr('Filtrlar'),
                   color: activeFilters > 0 ? palette.primary : palette.textSecondary,
                 ),
               ),
@@ -112,12 +115,12 @@ class AppSearchField extends StatelessWidget {
     onSubmitted: onSubmitted,
     textInputAction: TextInputAction.search,
     decoration: InputDecoration(
-      hintText: hint,
+      hintText: _hint,
       prefixIcon: const Icon(Icons.search_rounded),
       suffixIcon: !showClear
           ? null
           : IconButton(
-              tooltip: 'Tozalash',
+              tooltip: tr('Tozalash'),
               icon: const Icon(Icons.close_rounded),
               onPressed: () {
                 controller?.clear();

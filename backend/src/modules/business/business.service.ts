@@ -22,9 +22,7 @@ import { PrismaService } from '../../infra/prisma.service';
 import { jobCardSelect, presentJobCard } from '../jobs/job.presenter';
 import { listingCardSelect, presentListingCard } from '../listings/listing.presenter';
 import { LocationsService } from '../locations/locations.service';
-import { MonetizationConfig } from '../monetization/config.service';
-import { EntitlementService } from '../monetization/entitlements.service';
-import { PromotionService } from '../monetization/promotion.service';
+import { LIMITS } from '../limits/limits.module';
 import { presentProviderCard, providerCardSelect } from '../services/provider.presenter';
 import { AddMemberDto, BusinessDto, UpdateBusinessDto } from './business.dto';
 
@@ -36,17 +34,13 @@ const businessInclude = {
 
 /**
  * Business accounts: one business per owner, OWNER + MANAGER roles only.
- * Verification is set exclusively by admins. The public storefront is an
- * entitlement of the owner's plan.
+ * Verification is set exclusively by admins. The storefront is free.
  */
 @Injectable()
 export class BusinessService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly locations: LocationsService,
-    private readonly entitlements: EntitlementService,
-    private readonly config: MonetizationConfig,
-    private readonly promotions: PromotionService,
   ) {}
 
   private async assertLogo(userId: string, logoId?: string) {
@@ -64,7 +58,6 @@ export class BusinessService {
   }
 
   async create(user: AuthUser, dto: BusinessDto) {
-    if (!(await this.config.enabled('businessAccounts'))) throw AppError.featureDisabled('businessAccounts');
     // One business per person, whether as owner or as someone's manager.
     if (await this.prisma.businessMember.findFirst({ where: { userId: user.userId } })) {
       throw AppError.conflict('You already belong to a business');
@@ -99,7 +92,6 @@ export class BusinessService {
       });
       return business;
     });
-    await this.entitlements.invalidate([user.userId]);
     return this.mine(user.userId, business.id);
   }
 
@@ -124,21 +116,15 @@ export class BusinessService {
       where: { id: member.businessId },
       include: businessInclude,
     });
-    const effective = await this.entitlements.effectivePlan(business.ownerId);
     return {
       ...(await this.present(business)),
       myRole: apiEnum(member.role),
+      maxManagers: LIMITS.managersPerBusiness,
       members: business.members.map((m) => ({
         userId: m.userId,
         name: m.user.profile?.displayName ?? '',
         role: apiEnum(m.role),
       })),
-      plan: {
-        id: effective.plan.id,
-        title: effective.plan.title,
-        storefront: effective.plan.storefront,
-        maxManagers: effective.plan.maxManagers,
-      },
     };
   }
 
@@ -184,7 +170,7 @@ export class BusinessService {
   async addManager(userId: string, dto: AddMemberDto) {
     const member = await this.membership(userId);
     if (member.role !== BusinessRole.OWNER) throw AppError.forbidden('Only the owner manages members');
-    const maxManagers = await this.entitlements.maxManagers(userId);
+    const maxManagers = LIMITS.managersPerBusiness;
     const managers = await this.prisma.businessMember.count({
       where: { businessId: member.businessId, role: BusinessRole.MANAGER },
     });
@@ -200,7 +186,6 @@ export class BusinessService {
     await this.prisma.businessMember.create({
       data: { businessId: member.businessId, userId: target.id, role: BusinessRole.MANAGER },
     });
-    await this.entitlements.invalidate([target.id]);
     return this.mine(userId, member.businessId);
   }
 
@@ -211,7 +196,6 @@ export class BusinessService {
       where: { businessId: member.businessId, userId: managerId, role: BusinessRole.MANAGER },
     });
     if (!count) throw AppError.notFound('Member');
-    await this.entitlements.invalidate([managerId]);
     return this.mine(userId, member.businessId);
   }
 
@@ -222,8 +206,7 @@ export class BusinessService {
       where: { id, status: BusinessStatus.ACTIVE },
       include: businessInclude,
     });
-    if (!business || !(await this.entitlements.canUseStorefront(business.ownerId)))
-      throw AppError.notFound('Business');
+    if (!business) throw AppError.notFound('Business');
     return business;
   }
 
@@ -278,12 +261,8 @@ export class BusinessService {
       take: take + 1,
     });
     const page = keysetPage(rows, take, (r) => r.rankedAt ?? r.createdAt);
-    const badges = await this.promotions.badges(
-      'LISTING',
-      page.items.map((r) => r.id),
-    );
     return new Page(
-      page.items.map((r) => presentListingCard(r, { badges: badges.get(r.id) })),
+      page.items.map((r) => presentListingCard(r)),
       page.nextCursor,
     );
   }
@@ -305,7 +284,7 @@ export class BusinessService {
     verification: BusinessVerification;
     createdAt: Date;
   }) {
-    const [logo, region, district, effective] = await Promise.all([
+    const [logo, region, district] = await Promise.all([
       business.logoId
         ? this.prisma.media.findUnique({ where: { id: business.logoId }, select: mediaSelect })
         : null,
@@ -313,7 +292,6 @@ export class BusinessService {
       business.districtId
         ? this.prisma.district.findUnique({ where: { id: business.districtId }, select: { name: true } })
         : null,
-      this.entitlements.effectivePlan(business.ownerId),
     ]);
     return {
       id: business.id,
@@ -336,7 +314,7 @@ export class BusinessService {
       /** Admin-verified only; never purchasable. */
       verified: business.verification === BusinessVerification.VERIFIED,
       verification: apiEnum(business.verification),
-      businessBadge: effective.plan.businessBadge,
+      businessBadge: business.verification === BusinessVerification.VERIFIED,
       memberSince: business.createdAt,
       shareUrl: `${env().WEB_BASE_URL}/business/${business.id}`,
     };

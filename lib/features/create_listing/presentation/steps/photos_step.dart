@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/design/app_colors.dart';
 import '../../../../core/design/app_tokens.dart';
 import '../../../../core/domain/media_image.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/widgets/app_image.dart';
 import '../../../../core/widgets/common.dart';
 import '../../../../core/widgets/sheets.dart';
@@ -24,13 +25,16 @@ class PhotosStep extends ConsumerWidget {
     final controller = ref.read(createListingProvider.notifier);
     final remaining = controller.remainingPhotoSlots;
     if (remaining <= 0) {
-      showAppSnack(context, 'Ko‘pi bilan ${ListingDraft.maxPhotos} ta rasm qo‘shish mumkin');
+      showAppSnack(
+        context,
+        tr('Ko‘pi bilan {maxPhotos} ta rasm qo‘shish mumkin', {'maxPhotos': ListingDraft.maxPhotos}),
+      );
       return;
     }
     final source = await showAppSheet<_Source>(
       context,
       builder: (context) => SheetScaffold(
-        title: 'Rasm qo‘shish',
+        title: tr('Rasm qo‘shish'),
         body: Padding(
           padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.xl),
           child: Column(
@@ -38,13 +42,13 @@ class PhotosStep extends ConsumerWidget {
             children: [
               ListTile(
                 leading: const ToneIcon(icon: Icons.photo_library_rounded, tone: AccentTone.blue, size: 40),
-                title: const Text('Galereyadan tanlash'),
-                subtitle: Text('Bir nechta rasm tanlash mumkin ($remaining ta qoldi)'),
+                title: Text(tr('Galereyadan tanlash')),
+                subtitle: Text(tr('Bir nechta rasm tanlash mumkin ({remaining} ta qoldi)', {'remaining': remaining})),
                 onTap: () => Navigator.pop(context, _Source.gallery),
               ),
               ListTile(
                 leading: const ToneIcon(icon: Icons.photo_camera_rounded, tone: AccentTone.green, size: 40),
-                title: const Text('Kamera bilan olish'),
+                title: Text(tr('Kamera bilan olish')),
                 onTap: () => Navigator.pop(context, _Source.camera),
               ),
             ],
@@ -65,7 +69,7 @@ class PhotosStep extends ConsumerWidget {
       final denied = error.code.contains('denied') || error.code.contains('access');
       showAppSnack(
         context,
-        denied ? 'Rasmlarga ruxsat berilmagan. Sozlamalardan ruxsat bering.' : 'Rasm tanlab bo‘lmadi',
+        denied ? tr('Rasmlarga ruxsat berilmagan. Sozlamalardan ruxsat bering.') : tr('Rasm tanlab bo‘lmadi'),
         icon: Icons.no_photography_outlined,
       );
     }
@@ -76,7 +80,7 @@ class PhotosStep extends ConsumerWidget {
     await showAppSheet<void>(
       context,
       builder: (context) => SheetScaffold(
-        title: 'Rasm',
+        title: tr('Rasm'),
         body: Padding(
           padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.xl),
           child: Column(
@@ -85,7 +89,7 @@ class PhotosStep extends ConsumerWidget {
               if (index > 0)
                 ListTile(
                   leading: const Icon(Icons.star_rounded),
-                  title: const Text('Muqova qilish'),
+                  title: Text(tr('Muqova qilish')),
                   onTap: () {
                     controller.makeCover(photo.id);
                     Navigator.pop(context);
@@ -94,7 +98,7 @@ class PhotosStep extends ConsumerWidget {
               if (photo.failed)
                 ListTile(
                   leading: const Icon(Icons.refresh_rounded),
-                  title: const Text('Qayta yuklash'),
+                  title: Text(tr('Qayta yuklash')),
                   onTap: () {
                     controller.retryUpload(photo.id);
                     Navigator.pop(context);
@@ -102,7 +106,7 @@ class PhotosStep extends ConsumerWidget {
                 ),
               ListTile(
                 leading: Icon(Icons.delete_outline_rounded, color: context.palette.danger),
-                title: Text('O‘chirish', style: TextStyle(color: context.palette.danger)),
+                title: Text(tr('O‘chirish'), style: TextStyle(color: context.palette.danger)),
                 onTap: () {
                   controller.removePhoto(photo.id);
                   Navigator.pop(context);
@@ -133,7 +137,7 @@ class PhotosStep extends ConsumerWidget {
             Expanded(
               child: Text.rich(
                 TextSpan(
-                  text: 'Rasmlar',
+                  text: tr('Rasmlar'),
                   children: [
                     if (required)
                       TextSpan(
@@ -150,7 +154,7 @@ class PhotosStep extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.xs),
         Text(
-          'Birinchi rasm — muqova. Tartibni o‘zgartirish uchun rasmni bosib turing va suring.',
+          tr('Birinchi rasm — muqova. Tartibni o‘zgartirish uchun rasmni bosib turing va suring.'),
           style: text.bodySmall,
         ),
         const SizedBox(height: AppSpacing.lg),
@@ -192,7 +196,7 @@ class PhotosStep extends ConsumerWidget {
               children: [
                 Icon(Icons.auto_awesome_rounded, color: palette.primary),
                 const SizedBox(width: AppSpacing.md),
-                const Expanded(child: Text('Rasmlar asosida sarlavha va tavsifni avtomatik to‘ldirish')),
+                Expanded(child: Text(tr('Rasmlar asosida sarlavha va tavsifni avtomatik to‘ldirish'))),
               ],
             ),
           ),
@@ -204,12 +208,12 @@ class PhotosStep extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Yaxshi rasm uchun maslahatlar', style: text.titleSmall),
+              Text(tr('Yaxshi rasm uchun maslahatlar'), style: text.titleSmall),
               const SizedBox(height: AppSpacing.sm),
-              for (final tip in const [
+              for (final tip in [
                 'Kunduzi, yorug‘ joyda suratga oling',
-                'Mahsulotni turli tomondan ko‘rsating',
-                'Kamchiliklarni yashirmang — ishonch oshadi',
+                tr('Mahsulotni turli tomondan ko‘rsating'),
+                tr('Kamchiliklarni yashirmang — ishonch oshadi'),
               ])
                 Padding(
                   padding: const EdgeInsets.only(top: AppSpacing.xs),
@@ -265,11 +269,11 @@ class _DraggablePhoto extends StatelessWidget {
         ),
         childWhenDragging: Opacity(opacity: 0.3, child: tile),
         child: Semantics(
-          label: '${index + 1}-rasm${index == 0 ? ', muqova' : ''}. Amallar uchun bosing',
+          label: tr('{p0}-rasm{p1}. Amallar uchun bosing', {'p0': index + 1, 'p1': index == 0 ? tr(', muqova') : ''}),
           button: true,
           customSemanticsActions: {
-            if (index > 0) const CustomSemanticsAction(label: 'Oldinga surish'): () => onMove(index, index - 1),
-            const CustomSemanticsAction(label: 'O‘chirish'): onRemove,
+            if (index > 0) CustomSemanticsAction(label: tr('Oldinga surish')): () => onMove(index, index - 1),
+            CustomSemanticsAction(label: tr('O‘chirish')): onRemove,
           },
           child: GestureDetector(
             onTap: onTap,
@@ -305,7 +309,7 @@ class _PhotoTile extends StatelessWidget {
                 color: Colors.black.withValues(alpha: 0.45),
                 child: Center(
                   child: photo.failed
-                      ? const Icon(Icons.refresh_rounded, color: Colors.white, semanticLabel: 'Yuklanmadi')
+                      ? Icon(Icons.refresh_rounded, color: Colors.white, semanticLabel: tr('Yuklanmadi'))
                       : SizedBox.square(
                           dimension: 34,
                           child: CircularProgressIndicator(
@@ -313,7 +317,7 @@ class _PhotoTile extends StatelessWidget {
                             strokeWidth: 3,
                             color: Colors.white,
                             backgroundColor: Colors.white24,
-                            semanticsLabel: 'Yuklanmoqda',
+                            semanticsLabel: tr('Yuklanmoqda'),
                             semanticsValue: '${(photo.progress * 100).round()}%',
                           ),
                         ),
@@ -326,14 +330,17 @@ class _PhotoTile extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
                   decoration: BoxDecoration(color: palette.primary, borderRadius: AppRadii.pillAll),
-                  child: Text('Muqova', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white)),
+                  child: Text(
+                    tr('Muqova'),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white),
+                  ),
                 ),
               ),
             PositionedDirectional(
               top: 0,
               end: 0,
               child: IconButton(
-                tooltip: 'O‘chirish',
+                tooltip: tr('O‘chirish'),
                 onPressed: onRemove,
                 icon: Container(
                   padding: const EdgeInsets.all(3),
@@ -361,7 +368,7 @@ class _AddPhotoTile extends StatelessWidget {
     final palette = context.palette;
     return Semantics(
       button: true,
-      label: 'Rasm qo‘shish',
+      label: tr('Rasm qo‘shish'),
       excludeSemantics: true,
       child: SizedBox.square(
         dimension: size,
@@ -380,7 +387,7 @@ class _AddPhotoTile extends StatelessWidget {
                 Icon(Icons.add_a_photo_rounded, color: palette.primary),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'Rasm qo‘shish',
+                  tr('Rasm qo‘shish'),
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(color: palette.primary),

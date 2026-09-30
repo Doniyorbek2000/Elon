@@ -1,0 +1,235 @@
+Ilova server manzilisiz yig‘ilgan (API_BASE_URL). Iltimos, ilovaning rasmiy versiyasini o‘rnating. ||| Приложение собрано без адреса сервера (API_BASE_URL). Установите официальную версию приложения.
+Bosh sahifa ||| Главная
+Qidiruv ||| Поиск
+Chat ||| Чат
+Profil ||| Профиль
+E’lon joylash ||| Подать объявление
+{label}, {badge} ta o‘qilmagan ||| {label}, непрочитанных: {badge}
+Sahifa topilmadi ||| Страница не найдена
+Havola eskirgan yoki noto‘g‘ri bo‘lishi mumkin. ||| Ссылка устарела или указана неверно.
+Bosh sahifaga ||| На главную
+Kategoriyalar ||| Категории
+Kategoriya qidirish... ||| Поиск категории...
+Kategoriya topilmadi ||| Категория не найдена
+Ha ||| Да
+Yo‘q ||| Нет
+{label} kiritilishi shart ||| Поле «{label}» обязательно
+Ro‘yxatdan tanlang ||| Выберите из списка
+Faqat raqam kiriting ||| Введите только число
+Kamida {min} ||| Не менее {min}
+Ko‘pi bilan {max} ||| Не более {max}
+Maosh ||| Зарплата
+Narx ||| Цена
+Kelishiladi ||| Договорная
+Ulashish ||| Поделиться
+Yuborish ||| Отправить
+Saqlash ||| Сохранить
+Ish ||| Работа
+Barchasi ||| Все
+Filtrlar ||| Фильтры
+Tozalash ||| Очистить
+so‘m ||| сум
+{p0} dan ||| от {p0}
+Raqam yashirilgan. Chat orqali yozing. ||| Номер скрыт. Напишите в чат.
+Raqamni to‘liq kiriting: 90 123 45 67 ||| Введите номер полностью: 90 123 45 67
+6 xonali kodni kiriting ||| Введите 6-значный код
+Kirish ||| Войти
+SMS kodni kiriting ||| Введите код из SMS
+Telefon raqamingiz ||| Ваш номер телефона
++998 {text} raqamiga 6 xonali kod yuborildi ||| 6-значный код отправлен на номер +998 {text}
+Raqamingiz tasdiqlangach, e’lon joylash, chat va ariza topshirish ochiladi. ||| После подтверждения номера станут доступны объявления, чат и отклики.
+Raqamni o‘zgartirish ||| Изменить номер
+Qayta yuborish ({_secondsLeft}) ||| Отправить снова ({_secondsLeft})
+Qayta yuborish ||| Отправить снова
+Demo rejim: haqiqiy SMS yuborilmaydi. Kod — {demoCode} ||| Демо-режим: настоящее SMS не отправляется. Код — {demoCode}
+Test server: SMS yuborilmadi. Kod — {devCode} ||| Тестовый сервер: SMS не отправлено. Код — {devCode}
+Tasdiqlash ||| Подтвердить
+Kod olish ||| Получить код
+Kodni hech kimga aytmang — Bozor.uz xodimlari uni hech qachon so‘ramaydi. ||| Никому не сообщайте код — сотрудники Bozor.uz никогда его не спрашивают.
+Telefon raqami noto‘g‘ri ||| Неверный номер телефона
+Kod noto‘g‘ri. Qayta urinib ko‘ring ||| Неверный код. Попробуйте ещё раз
+Ko‘proq ||| Ещё
+Shikoyat qilish ||| Пожаловаться
+Bloklash ||| Заблокировать
+Onlayn ||| В сети
+Sharh qoldirish uchun avval usta bilan yozishgan bo‘lishingiz kerak ||| Чтобы оставить отзыв, сначала напишите мастеру в чате
+Bekor qilish ||| Отмена
+Tasdiqlanmagan ||| Не подтверждён
+Bildirishnomalar ||| Уведомления
+Blokdan chiqarish ||| Разблокировать
+Yopish ||| Закрыть
+Telegram’da ulashish ||| Поделиться в Telegram
+Yuklanmoqda ||| Загрузка
+iPhone 14, haydovchi, santexnik... ||| iPhone 14, водитель, сантехник...
+Oxirgi qidiruvlar ||| Недавние запросы
+Ommabop qidiruvlar ||| Популярные запросы
+Bo‘limlar ||| Разделы
+Bozor ||| Объявления
+Barcha kategoriyalar ||| Все категории
+Vakansiyalar va rezyumelar ||| Вакансии и резюме
+Ustalar va mutaxassislar ||| Мастера и специалисты
+bo‘yicha qidirish ||| поиск по запросу
+«{query}» bo‘yicha hech narsa topilmadi ||| По запросу «{query}» ничего не найдено
+So‘zni qisqartiring yoki boshqa hududni tanlang. ||| Сократите запрос или выберите другой регион.
+Hammasi ({length}) ||| Все ({length})
+Natijalar:  ||| Результаты: 
+Foydalanuvchilar ||| Пользователи
+Bu bo‘limda natija yo‘q ||| В этом разделе нет результатов
+Kvartira ijaraga ||| Аренда квартиры
+Santexnik ||| Сантехник
+Haydovchi kerak ||| Нужен водитель
+Konditsioner ||| Кондиционер
+Sement ||| Цемент
+Repetitor ||| Репетитор
+{p0} gacha ||| до {p0}
+Qayta urinish ||| Повторить
+Hudud aniqlanmadi ||| Регион не определён
+Joylashuv: {label} ||| Местоположение: {label}
+Joylashuvni aniqlab bo‘lmadi ||| Не удалось определить местоположение
+Hududingizni tanlang ||| Выберите ваш регион
+Manzil tanlash ||| Выбор адреса
+O‘tkazib yuborish ||| Пропустить
+Viloyat, tuman yoki mahalla... ||| Область, район или махалля...
+Qidiruv radiusi ||| Радиус поиска
+Butun hudud ||| Весь регион
+Butun {p0} ||| Весь регион: {p0}
+Butun {name} ||| Весь район: {name}
+Aniqlanmoqda… ||| Определяем…
+Joriy joylashuvni aniqlash ||| Определить текущее местоположение
+Aniq manzil saqlanmaydi — faqat tuman aniqlanadi ||| Точный адрес не сохраняется — определяется только район
+Sozlamalarni ochish ||| Открыть настройки
+Yoki quyidagi ro‘yxatdan qo‘lda tanlang. ||| Или выберите вручную из списка ниже.
+O‘zbekiston ||| Узбекистан
+Hudud topilmadi ||| Регион не найден
+Nomini boshqacha yozib ko‘ring (masalan: Chust, Chortoq). ||| Попробуйте написать название иначе (например: Чуст, Чартак).
+Joylashuvingiz O‘zbekiston hududidan tashqarida ko‘rinmoqda ||| Похоже, вы находитесь за пределами Узбекистана
+Telefoningizda joylashuv xizmati o‘chirilgan ||| На телефоне отключена служба геолокации
+Joylashuvga ruxsat berilmagan. Sozlamalardan yoqing ||| Нет доступа к геолокации. Включите его в настройках
+Joylashuvga ruxsat berilmadi ||| Доступ к геолокации не предоставлен
+Bu sizning e’loningiz ||| Это ваше объявление
+Chatni ochib bo‘lmadi. Qayta urinib ko‘ring. ||| Не удалось открыть чат. Попробуйте ещё раз.
+Ehtiyot bo‘ling ||| Будьте осторожны
+Baribir yuborish ||| Всё равно отправить
+Xabar yuborilmadi. Qayta urinib ko‘ring. ||| Сообщение не отправлено. Попробуйте ещё раз.
+Rasm yuborilmadi ||| Не удалось отправить фото
+yozmoqda… ||| печатает…
+Profilni ko‘rish ||| Открыть профиль
+Qayta yuborish uchun ikki marta bosing ||| Нажмите дважды, чтобы отправить снова
+Oldindan to‘lov qilmang va karta ma’lumotlarini yubormang. Shubhali xabarlar haqida xabar bering. ||| Не делайте предоплату и не отправляйте данные карты. Сообщайте о подозрительных сообщениях.
+o‘qildi ||| прочитано
+Suhbatdosh yozmoqda ||| Собеседник печатает
+Rasm yuborish ||| Отправить фото
+Xabar yozing... ||| Напишите сообщение...
+Siz bu foydalanuvchini bloklagansiz ||| Вы заблокировали этого пользователя
+Chatlar uchun tizimga kiring ||| Войдите, чтобы пользоваться чатами
+Sotuvchilar, ish beruvchilar va ustalar bilan xavfsiz yozishing. ||| Безопасно общайтесь с продавцами, работодателями и мастерами.
+Hali chatlar yo‘q ||| Чатов пока нет
+E’lon, vakansiya yoki usta sahifasidagi «Chat» tugmasi orqali yozing. ||| Напишите через кнопку «Чат» на странице объявления, вакансии или мастера.
+E’lonlarni ko‘rish ||| Смотреть объявления
+{unreadCount} ta yangi xabar ||| Новых сообщений: {unreadCount}
+Bloklangan ||| Заблокирован
+Suhbatni boshlang ||| Начните беседу
+Chat e’lon, vakansiya yoki usta sahifasidan boshlanadi ||| Чат начинается со страницы объявления, вакансии или мастера
+Noma’lum chat turi ||| Неизвестный тип чата
+Rasm topilmadi ||| Фото не найдено
+Xabar yuborilmadi ||| Сообщение не отправлено
+Suhbat topilmadi ||| Беседа не найдена
+Rahmat, xabaringizni oldim. Tez orada javob beraman. ||| Спасибо, получил ваше сообщение. Скоро отвечу.
+📷 Rasm ||| 📷 Фото
+🔗 E’lon ||| 🔗 Объявление
+Hammasini o‘qilgan deb belgilash ||| Отметить всё как прочитанное
+Bildirishnomalar yo‘q ||| Уведомлений нет
+Yangi xabarlar va narx o‘zgarishlari shu yerda paydo bo‘ladi. ||| Здесь появятся новые сообщения и изменения цен.
+Yaqin atrofdagi e’lonlar ||| Объявления рядом
+Barchasini ko‘rish ||| Смотреть все
+Yaqin atrofda e’lonlar yo‘q ||| Рядом нет объявлений
+Hududni kengaytiring yoki birinchi bo‘lib e’lon joylang. ||| Расширьте регион или подайте первое объявление.
+Hududni o‘zgartirish ||| Изменить регион
+Joylashuv: {label}. O‘zgartirish ||| Местоположение: {label}. Изменить
+Rahmat! Shikoyatingiz moderatorlarga yuborildi. ||| Спасибо! Ваша жалоба отправлена модераторам.
+Yuborib bo‘lmadi. Qayta urinib ko‘ring. ||| Не удалось отправить. Попробуйте ещё раз.
+Sababni tanlang. Shikoyatlar anonim ko‘rib chiqiladi. ||| Выберите причину. Жалобы рассматриваются анонимно.
+Qo‘shimcha izoh (ixtiyoriy) ||| Дополнительный комментарий (необязательно)
+{name} bloklansinmi? ||| Заблокировать пользователя {name}?
+{name} bloklandi ||| Пользователь {name} заблокирован
+Bloklab bo‘lmadi. Qayta urinib ko‘ring. ||| Не удалось заблокировать. Попробуйте ещё раз.
+Karta raqamini e’londa ko‘rsatmang — firibgarlar undan foydalanishi mumkin. ||| Не указывайте номер карты в объявлении — им могут воспользоваться мошенники.
+Telefon raqamini matnga yozish shart emas — xaridorlar «Qo‘ng‘iroq» tugmasi orqali bog‘lanadi. ||| Указывать телефон в тексте не нужно — покупатели свяжутся через кнопку «Позвонить».
+Tashqi havolalar va Telegram manzillari e’lonni tekshiruvga yuboradi. ||| Внешние ссылки и адреса Telegram отправляют объявление на проверку.
+Oldindan to‘lov talab qilish qoidalarga zid. E’lon moderatsiyadan o‘tadi. ||| Требовать предоплату запрещено правилами. Объявление пройдёт модерацию.
+Sarlavhani katta harflar bilan yozmang — bu o‘qishni qiyinlashtiradi. ||| Не пишите заголовок заглавными буквами — так труднее читать.
+Narx shu turdagi e’lonlardan juda past. Narxni tekshiring. ||| Цена намного ниже, чем в похожих объявлениях. Проверьте цену.
+Juda tez yozyapsiz. Bir necha soniya kuting. ||| Вы пишете слишком быстро. Подождите несколько секунд.
+Karta ma’lumotlarini begonalarga yubormang. Pulni faqat mahsulotni ko‘rgandan keyin to‘lang. ||| Не отправляйте данные карты посторонним. Платите только после осмотра товара.
+Oldindan to‘lov — firibgarlikning eng keng tarqalgan usuli. Ehtiyot bo‘ling. ||| Предоплата — самый распространённый способ мошенничества. Будьте осторожны.
+Sotish va sotib olish ||| Покупка и продажа
+Yaqin joydagi ishlar ||| Работа рядом
+Ustalar va xizmatlar ||| Мастера и услуги
+Hududingizdagi hamma narsa\nbitta ilovada ||| Всё в вашем регионе\nв одном приложении
+Boshlash ||| Начать
+Bepul. Ro‘yxatdan o‘tmasdan ko‘rishingiz mumkin. ||| Бесплатно. Смотреть можно без регистрации.
+Kutilmagan server javobi ||| Неожиданный ответ сервера
+So‘rov bekor qilindi ||| Запрос отменён
+Xavfsiz ulanib bo‘lmadi ||| Не удалось установить безопасное соединение
+Server xatosi ||| Ошибка сервера
+Tizimga qayta kiring ||| Войдите в систему снова
+Fayl hajmi juda katta ||| Файл слишком большой
+Bu fayl turi qo‘llab-quvvatlanmaydi (JPEG, PNG, WebP, HEIC) ||| Этот тип файла не поддерживается (JPEG, PNG, WebP, HEIC)
+Juda ko‘p so‘rov. Birozdan so‘ng urinib ko‘ring ||| Слишком много запросов. Попробуйте чуть позже
+Serverda nosozlik. Keyinroq urinib ko‘ring ||| Сбой на сервере. Попробуйте позже
+Noto‘g‘ri qiymat ||| Неверное значение
+ ({max} ta) |||  ({max})
+Shu oy uchun e’lonlar chegarasiga yetdingiz{count} ||| Вы достигли лимита объявлений на этот месяц{count}
+Rasmlar soni chegaradan oshdi{count} ||| Превышено допустимое число фото{count}
+Faol vakansiyalar chegarasiga yetdingiz{count} ||| Вы достигли лимита активных вакансий{count}
+Menejerlar soni chegarasiga yetdingiz{count} ||| Вы достигли лимита числа менеджеров{count}
+Kod muddati tugadi. Yangi kod so‘rang ||| Срок действия кода истёк. Запросите новый код
+Urinishlar ko‘p bo‘ldi. Yangi kod so‘rang ||| Слишком много попыток. Запросите новый код
+Yangi kodni biroz kutib so‘rang ||| Подождите немного и запросите новый код
+Sessiya tugatildi. Qayta kiring ||| Сеанс завершён. Войдите снова
+Sessiya muddati tugadi ||| Срок действия сеанса истёк
+Bu foydalanuvchi bilan yozishib bo‘lmaydi ||| Переписка с этим пользователем невозможна
+Qurilma ||| Устройство
+Telefon tasdiqlangan ||| Телефон подтверждён
+Shaxsi tasdiqlangan ||| Личность подтверждена
+Biznes tasdiqlangan ||| Бизнес подтверждён
+Tavsiya ||| Рекомендуем
+Shoshilinch ||| Срочно
+Suhbat asosida ||| По договорённости
+hozirgina ||| только что
+kecha ||| вчера
+Bugun ||| Сегодня
+Kecha ||| Вчера
+Yaqinda faol edi ||| Недавно был(а) в сети
+{p0} faol edi ||| Был(а) в сети: {p0}
+{p0} km ||| {p0} км
+Bozor.uz logotipi ||| Логотип Bozor.uz
+Nima qidiryapsiz? ||| Что вы ищете?
+Bog‘lanish ||| Связаться
+Raqam yuklanmoqda… ||| Загружаем номер…
+Qo‘ng‘iroq qilib bo‘lmadi ||| Не удалось позвонить
+Qo‘ng‘iroq qilish ||| Позвонить
+Saqlanganlardan olib tashlash ||| Убрать из сохранённых
+Yashirish ||| Скрыть
+Uchrashuvni gavjum, xavfsiz joyda belgilang. ||| Назначайте встречу в людном безопасном месте.
+SMS kodlar va karta ma’lumotlarini hech kimga bermang. ||| Никому не сообщайте коды из SMS и данные карты.
+Xavfsizlik bo‘yicha maslahat ||| Совет по безопасности
+{name}, onlayn ||| {name}, в сети
+Reyting {p0}{p1} ||| Рейтинг {p0}{p1}
+, {count} ta sharh ||| , отзывов: {count}
+Internet aloqasi yo‘q ||| Нет подключения к интернету
+Ulanishni tekshirib, qayta urinib ko‘ring. Saqlangan ma’lumotlar ko‘rinib turadi. ||| Проверьте подключение и попробуйте ещё раз. Сохранённые данные остаются доступны.
+Server javob bermadi ||| Сервер не отвечает
+Topilmadi ||| Не найдено
+Nimadir xato ketdi ||| Что-то пошло не так
+Yana yuklashda xato. Qayta urinish ||| Ошибка при загрузке. Повторить
+Hammasi ko‘rsatildi ||| Показано всё
+Ulashib bo‘lmadi. Qayta urinib ko‘ring. ||| Не удалось поделиться. Попробуйте ещё раз.
+Havola ko‘rinishi: {title} ||| Предпросмотр ссылки: {title}
+Havola nusxalandi ||| Ссылка скопирована
+Nusxalash ||| Копировать
+Boshqa ||| Другое
+
+Faol e’lonlar chegarasiga yetdingiz{count}. Eskisini arxivlang ||| Вы достигли лимита активных объявлений{count}. Архивируйте старое
+Chegaraga yetdingiz{count} ||| Вы достигли лимита{count}
+Biznes profil, do‘kon sahifasi va statistika bepul. ||| Бизнес-профиль, страница магазина и статистика бесплатны.

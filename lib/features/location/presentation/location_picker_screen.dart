@@ -9,6 +9,7 @@ import '../../../app/router/routes.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/widgets/app_search_field.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/state_views.dart';
@@ -84,7 +85,7 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
       if (widget.pickOnly) {
         final point = await ref.read(deviceLocationServiceProvider).currentPosition();
         final nearest = ref.read(locationTreeProvider).nearestDistrict(point);
-        if (nearest == null) throw const PermissionFailure('Hudud aniqlanmadi');
+        if (nearest == null) throw PermissionFailure(tr('Hudud aniqlanmadi'));
         await _finish(
           LocationSelection(
             regionId: nearest.region.id,
@@ -100,7 +101,7 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
       final selection = await controller.useDeviceLocation();
       if (_radius != selection.radiusKm) await controller.setRadius(_radius);
       if (!mounted) return;
-      showAppSnack(context, 'Joylashuv: ${selection.label}', icon: Icons.my_location_rounded);
+      showAppSnack(context, tr('Joylashuv: {label}', {'label': selection.label}), icon: Icons.my_location_rounded);
       if (widget.onboarding) {
         context.go(AppRoutes.home);
       } else {
@@ -110,7 +111,7 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
       if (!mounted) return;
       setState(() {
         _gps = _GpsState.failed;
-        _gpsError = error is AppFailure ? error : const PermissionFailure('Joylashuvni aniqlab bo‘lmadi');
+        _gpsError = error is AppFailure ? error : PermissionFailure(tr('Joylashuvni aniqlab bo‘lmadi'));
       });
     }
   }
@@ -139,10 +140,10 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: !widget.onboarding,
-          title: Text(widget.onboarding ? 'Hududingizni tanlang' : 'Manzil tanlash'),
+          title: Text(widget.onboarding ? tr('Hududingizni tanlang') : tr('Manzil tanlash')),
           actions: [
             if (widget.onboarding)
-              TextButton(onPressed: () => context.go(AppRoutes.home), child: const Text('O‘tkazib yuborish')),
+              TextButton(onPressed: () => context.go(AppRoutes.home), child: Text(tr('O‘tkazib yuborish'))),
           ],
         ),
         body: ContentWidth(
@@ -152,7 +153,7 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
                 padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0),
                 child: AppSearchField(
                   controller: _search,
-                  hint: 'Viloyat, tuman yoki mahalla...',
+                  hint: tr('Viloyat, tuman yoki mahalla...'),
                   onChanged: (value) => setState(() => _query = value),
                 ),
               ),
@@ -177,7 +178,7 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
                           ),
                           if (!widget.pickOnly) ...[
                             const SizedBox(height: AppSpacing.xl),
-                            Text('Qidiruv radiusi', style: text.titleSmall),
+                            Text(tr('Qidiruv radiusi'), style: text.titleSmall),
                             const SizedBox(height: AppSpacing.sm),
                             Wrap(
                               spacing: AppSpacing.sm,
@@ -185,7 +186,7 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
                               children: [
                                 for (final km in <int?>[null, ...listingRadiusOptionsKm])
                                   ChoiceChip(
-                                    label: Text(km == null ? 'Butun hudud' : '$km km'),
+                                    label: Text(km == null ? tr('Butun hudud') : tr('{km} km', {'km': km})),
                                     selected: _radius == km,
                                     labelStyle: text.labelMedium?.copyWith(
                                       color: _radius == km ? palette.onPrimary : palette.textPrimary,
@@ -227,7 +228,7 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
       return [
         for (final r in tree.regions)
           _LevelTile(
-            title: r.name,
+            title: tr(r.name),
             selected: current.regionId == r.id,
             hasChildren: r.districts.isNotEmpty,
             onTap: () => setState(() => _region = r),
@@ -237,14 +238,18 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
     if (district == null) {
       return [
         _LevelTile(
-          title: 'Butun ${region.name.toLowerCase().replaceAll(' viloyati', ' viloyati bo‘ylab')}',
+          title: tr('Butun {p0}', {
+            'p0': currentLanguage == AppLanguage.ru
+                ? tr(region.name)
+                : region.name.toLowerCase().replaceAll(' viloyati', ' viloyati bo‘ylab'),
+          }),
           icon: Icons.select_all_rounded,
           selected: current.regionId == region.id && current.districtId == null,
           onTap: () => _finish(_selection(region)),
         ),
         for (final d in region.districts)
           _LevelTile(
-            title: d.name,
+            title: tr(d.name),
             selected: current.districtId == d.id && current.localityId == null,
             hasChildren: d.localities.isNotEmpty,
             onTap: d.localities.isEmpty ? () => _finish(_selection(region, d)) : () => setState(() => _district = d),
@@ -253,14 +258,14 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
     }
     return [
       _LevelTile(
-        title: 'Butun ${district.name}',
+        title: tr('Butun {name}', {'name': tr(district.name)}),
         icon: Icons.select_all_rounded,
         selected: current.districtId == district.id && current.localityId == null,
         onTap: () => _finish(_selection(region, district)),
       ),
       for (final l in district.localities)
         _LevelTile(
-          title: l.name,
+          title: tr(l.name),
           selected: current.localityId == l.id,
           onTap: () => _finish(_selection(region, district, l)),
         ),
@@ -307,11 +312,11 @@ class _GpsCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      state == _GpsState.locating ? 'Aniqlanmoqda…' : 'Joriy joylashuvni aniqlash',
+                      state == _GpsState.locating ? tr('Aniqlanmoqda…') : tr('Joriy joylashuvni aniqlash'),
                       style: text.titleSmall?.copyWith(color: palette.primary),
                     ),
                     const SizedBox(height: 2),
-                    Text('Aniq manzil saqlanmaydi — faqat tuman aniqlanadi', style: text.bodySmall),
+                    Text(tr('Aniq manzil saqlanmaydi — faqat tuman aniqlanadi'), style: text.bodySmall),
                   ],
                 ),
               ),
@@ -321,9 +326,9 @@ class _GpsCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.md),
             Text(error!.message, style: text.bodySmall?.copyWith(color: palette.danger)),
             if (permanentlyDenied)
-              TextButton(onPressed: onOpenSettings, child: const Text('Sozlamalarni ochish'))
+              TextButton(onPressed: onOpenSettings, child: Text(tr('Sozlamalarni ochish')))
             else
-              Text('Yoki quyidagi ro‘yxatdan qo‘lda tanlang.', style: text.bodySmall),
+              Text(tr('Yoki quyidagi ro‘yxatdan qo‘lda tanlang.'), style: text.bodySmall),
           ],
         ],
       ),
@@ -355,7 +360,7 @@ class _Breadcrumbs extends StatelessWidget {
     return Wrap(
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        crumb('O‘zbekiston', region == null ? null : onRoot, active: region == null),
+        crumb(tr('O‘zbekiston'), region == null ? null : onRoot, active: region == null),
         if (region != null) ...[
           separator,
           crumb(region!.name, district == null ? null : onRegion, active: district == null),
@@ -416,13 +421,17 @@ class _SearchResults extends StatelessWidget {
   final LocationTree tree;
   final ValueChanged<LocationSelection> onSelect;
 
+  /// Matches the Uzbek source name or its translation, so both spellings find a place.
+  bool _matches(List<String> tokens, String name) =>
+      SearchNormalizer.matches(tokens, name) || SearchNormalizer.matches(tokens, tr(name));
+
   @override
   Widget build(BuildContext context) {
     final tokens = SearchNormalizer.tokens(query);
     final results = <(String, String, LocationSelection)>[];
     for (final region in tree.regions) {
       final regionSelection = LocationSelection(regionId: region.id, regionName: region.name);
-      if (SearchNormalizer.matches(tokens, region.name)) results.add((region.name, 'O‘zbekiston', regionSelection));
+      if (_matches(tokens, region.name)) results.add((tr(region.name), tr('O‘zbekiston'), regionSelection));
       for (final district in region.districts) {
         final districtSelection = LocationSelection(
           regionId: region.id,
@@ -430,14 +439,14 @@ class _SearchResults extends StatelessWidget {
           districtId: district.id,
           districtName: district.name,
         );
-        if (SearchNormalizer.matches(tokens, district.name)) {
-          results.add((district.name, region.name, districtSelection));
+        if (_matches(tokens, district.name)) {
+          results.add((tr(district.name), tr(region.name), districtSelection));
         }
         for (final locality in district.localities) {
-          if (SearchNormalizer.matches(tokens, locality.name)) {
+          if (_matches(tokens, locality.name)) {
             results.add((
-              locality.name,
-              '${district.name}, ${region.name}',
+              tr(locality.name),
+              '${tr(district.name)}, ${tr(region.name)}',
               LocationSelection(
                 regionId: region.id,
                 regionName: region.name,
@@ -452,10 +461,10 @@ class _SearchResults extends StatelessWidget {
       }
     }
     if (results.isEmpty) {
-      return const EmptyState(
+      return EmptyState(
         icon: Icons.location_off_outlined,
-        title: 'Hudud topilmadi',
-        message: 'Nomini boshqacha yozib ko‘ring (masalan: Chust, Chortoq).',
+        title: tr('Hudud topilmadi'),
+        message: tr('Nomini boshqacha yozib ko‘ring (masalan: Chust, Chortoq).'),
         compact: true,
       );
     }

@@ -3,6 +3,7 @@ import 'dart:async';
 import '../../../core/domain/media_image.dart';
 import '../../../core/domain/public_profile.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../data/demo/demo_database.dart';
 import '../domain/chat.dart';
 
@@ -54,7 +55,7 @@ class DemoChatRepository implements ChatRepository {
   @override
   Future<Conversation> getConversation(String conversationId) async {
     await _db.roundTrip(0.3);
-    return _db.conversations[conversationId] ?? (throw const NotFoundFailure('Suhbat topilmadi'));
+    return _db.conversations[conversationId] ?? (throw NotFoundFailure(tr('Suhbat topilmadi')));
   }
 
   @override
@@ -96,8 +97,8 @@ class DemoChatRepository implements ChatRepository {
 
   Future<void> _send(String conversationId, ChatMessage message) async {
     final conversation = _db.conversations[conversationId];
-    if (conversation == null) throw const NotFoundFailure('Suhbat topilmadi');
-    if (conversation.isBlocked) throw const ValidationFailure('Siz bu foydalanuvchini bloklagansiz');
+    if (conversation == null) throw NotFoundFailure(tr('Suhbat topilmadi'));
+    if (conversation.isBlocked) throw ValidationFailure(tr('Siz bu foydalanuvchini bloklagansiz'));
     _append(conversationId, message);
     await _db.roundTrip(0.4);
     _setDelivery(conversationId, message.id, DeliveryState.delivered);
@@ -113,7 +114,7 @@ class DemoChatRepository implements ChatRepository {
             id: _db.nextId('m'),
             conversationId: conversationId,
             senderId: conversation.peer.id,
-            text: 'Rahmat, xabaringizni oldim. Tez orada javob beraman.',
+            text: tr('Rahmat, xabaringizni oldim. Tez orada javob beraman.'),
             sentAt: _clock(),
           ),
         );

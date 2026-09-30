@@ -28,7 +28,5 @@ Object.assign(process.env, {
   S3_SECRET_ACCESS_KEY: process.env.TEST_S3_SECRET_ACCESS_KEY ?? 'bozor_dev_secret_key',
   S3_FORCE_PATH_STYLE: 'true',
   PUSH_PROVIDER: 'log',
-  PAYMENT_DEV_ENABLED: 'true',
-  PAYMENT_DEV_SECRET: process.env.PAYMENT_DEV_SECRET_TEST ?? secret(),
   SWAGGER_ENABLED: 'false',
 });

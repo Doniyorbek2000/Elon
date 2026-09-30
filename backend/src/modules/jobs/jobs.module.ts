@@ -29,14 +29,6 @@ class JobsController {
   search(@Query() query: JobSearchQuery, @MaybeUser() viewer?: AuthUser) {
     return this.jobs.search(query, viewer);
   }
-
-  /** Paid TOP vacancies matching the same filters (labeled block). */
-  @OptionalAuth()
-  @Get('jobs/promoted')
-  promoted(@Query() query: JobSearchQuery, @MaybeUser() viewer?: AuthUser) {
-    return this.jobs.promoted(query, viewer);
-  }
-
   @OptionalAuth()
   @Get('jobs/:id')
   detail(@Param('id', ParseUUIDPipe) id: string, @Req() request: Request, @MaybeUser() viewer?: AuthUser) {

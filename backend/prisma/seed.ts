@@ -2,22 +2,6 @@ import { AttributeType, CategoryKind, PrismaClient, PriceMode } from '@prisma/cl
 
 import { CATEGORY_TREE, CategorySeed, HOME_SHORTCUTS, SERVICE_CATEGORIES } from './data/categories';
 import locations from './data/locations.json';
-import { PLAN_SEEDS, PRODUCT_SEEDS } from './data/monetization';
-
-const FLAG_KEYS = [
-  'monetization',
-  'listingTop',
-  'listingVip',
-  'listingBump',
-  'featuredListings',
-  'premiumJobs',
-  'featuredServices',
-  'businessAccounts',
-  'businessPlans',
-  'ads',
-  'coupons',
-  'promotionCredits',
-];
 
 /**
  * Reference data only (locations, categories, attributes, service
@@ -150,27 +134,10 @@ async function seedServiceCategories(prisma: PrismaClient): Promise<void> {
   }
 }
 
-/** Create-only: admin changes to flags, plans and products are preserved. */
-async function seedMonetization(prisma: PrismaClient): Promise<void> {
-  for (const key of FLAG_KEYS) {
-    await prisma.featureFlag.upsert({ where: { key }, create: { key, enabled: false }, update: {} });
-  }
-  for (const plan of PLAN_SEEDS)
-    await prisma.plan.upsert({ where: { id: plan.id }, create: plan, update: {} });
-  for (const [index, product] of PRODUCT_SEEDS.entries()) {
-    await prisma.promotionProduct.upsert({
-      where: { id: product.id },
-      create: { ...product, placement: product.placement ?? 'NONE', active: false, sortOrder: index },
-      update: {},
-    });
-  }
-}
-
 export async function seedReferenceData(prisma: PrismaClient): Promise<void> {
   await seedLocations(prisma);
   for (const [index, root] of CATEGORY_TREE.entries()) await seedCategory(prisma, root, null, index);
   await seedServiceCategories(prisma);
-  await seedMonetization(prisma);
 }
 
 async function main(prisma: PrismaClient): Promise<void> {

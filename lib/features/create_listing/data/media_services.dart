@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/config/feature_flags.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/network/api_client.dart';
 import '../domain/media_upload.dart';
 
@@ -63,12 +64,22 @@ class RemoteMediaUploadService implements MediaUploadService {
     // Renditions are generated asynchronously; wait briefly so the preview
     // and feed card have real images. Processing failures surface here.
     var status = media['status'] as String?;
+    String? failureReason;
     final deadline = DateTime.now().add(_processingTimeout);
     while (status == 'processing' && DateTime.now().isBefore(deadline)) {
       await Future<void>.delayed(pollInterval);
-      status = (await _api.get<JsonMap>('/media/$id'))['status'] as String?;
+      final state = await _api.get<JsonMap>('/media/$id');
+      status = state['status'] as String?;
+      failureReason = state['failureReason'] as String?;
     }
-    if (status == 'failed') throw const ValidationFailure('Rasmni qayta ishlab bo‘lmadi. Boshqa rasm tanlang');
+    if (status == 'failed') {
+      throw ValidationFailure(
+        failureReason == 'content_policy'
+            ? tr('Bu rasm qoidalarga zid (nomaqbul kontent). Boshqa rasm tanlang')
+            : tr('Rasmni qayta ishlab bo‘lmadi. Boshqa rasm tanlang'),
+        code: failureReason,
+      );
+    }
     yield UploadProgress(fraction: 1, remoteId: id);
   }
 }

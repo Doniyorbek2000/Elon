@@ -1,4 +1,3 @@
-import { BadgeOptions, presentBadges } from '../../common/badges';
 import { AccountType, Prisma, VerificationLevel } from '@prisma/client';
 
 import { presentPlace, presentUser, publicUserSelect } from '../../common/presenters';
@@ -22,8 +21,6 @@ export const jobCardSelect = {
   publishedAt: true,
   createdAt: true,
   viewCount: true,
-  boostTier: true,
-  boostUntil: true,
   regionId: true,
   districtId: true,
   lat: true,
@@ -64,7 +61,7 @@ function company(row: CardRow) {
 
 export function presentJobCard(
   row: CardRow,
-  options: { isFavorite?: boolean; distanceKm?: number | null } & BadgeOptions = {},
+  options: { isFavorite?: boolean; distanceKm?: number | null } = {},
 ) {
   return {
     id: row.id,
@@ -82,7 +79,6 @@ export function presentJobCard(
     currency: apiEnum(row.salaryCurrency),
     salaryNegotiable: row.salaryNegotiable,
     status: apiEnum(row.status),
-    ...presentBadges(row, options),
     views: row.viewCount,
     employer: presentUser(row.employer),
     description: '',
@@ -96,7 +92,7 @@ export function presentJobCard(
 export function presentJobDetail(
   row: DetailRow,
   webBaseUrl: string,
-  options: { isFavorite?: boolean; isOwner?: boolean; myApplication?: unknown } & BadgeOptions = {},
+  options: { isFavorite?: boolean; isOwner?: boolean; myApplication?: unknown } = {},
 ) {
   return {
     ...presentJobCard(row, options),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/config/app_config.dart';
 import '../core/design/app_theme.dart';
+import '../core/l10n/l10n.dart';
 import '../core/push/push_registration.dart';
 import '../features/settings/application/settings_controller.dart';
 import 'router/app_router.dart';
@@ -15,8 +16,10 @@ class BozorApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (ref.watch(appConfigProvider).isMisconfigured) return const _MisconfiguredApp();
     final router = ref.watch(appRouterProvider);
+    final language = ref.watch(languageProvider);
     // Keeps push token registration in sync with the signed-in account.
     ref.watch(pushRegistrationProvider);
+    ref.watch(languageSyncProvider);
     return MaterialApp.router(
       title: 'Bozor.uz',
       debugShowCheckedModeBanner: false,
@@ -25,7 +28,7 @@ class BozorApp extends ConsumerWidget {
       themeMode: ref.watch(themeModeProvider),
       themeAnimationDuration: const Duration(milliseconds: 220),
       routerConfig: router,
-      locale: const Locale('uz'),
+      locale: language.locale,
       supportedLocales: const [Locale('uz'), Locale('ru'), Locale('en')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       builder: (context, child) {
@@ -34,7 +37,8 @@ class BozorApp extends ConsumerWidget {
         final mediaQuery = MediaQuery.of(context);
         return MediaQuery(
           data: mediaQuery.copyWith(textScaler: mediaQuery.textScaler.clamp(maxScaleFactor: 2)),
-          child: child ?? const SizedBox.shrink(),
+          // Strings are resolved when widgets build; a new key rebuilds every screen in the new language.
+          child: KeyedSubtree(key: ValueKey(language), child: child ?? const SizedBox.shrink()),
         );
       },
     );
@@ -49,13 +53,13 @@ class _MisconfiguredApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
     debugShowCheckedModeBanner: false,
     theme: AppTheme.light(),
-    home: const Scaffold(
+    home: Scaffold(
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: EdgeInsets.all(24),
+            padding: const EdgeInsets.all(24),
             child: Text(
-              'Ilova server manzilisiz yig‘ilgan (API_BASE_URL). Iltimos, ilovaning rasmiy versiyasini o‘rnating.',
+              tr('Ilova server manzilisiz yig‘ilgan (API_BASE_URL). Iltimos, ilovaning rasmiy versiyasini o‘rnating.'),
               textAlign: TextAlign.center,
             ),
           ),

@@ -6,6 +6,7 @@ import '../../../app/router/routes.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_icons.dart';
 import '../../../core/design/app_tokens.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/widgets/app_search_field.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/state_views.dart';
@@ -46,7 +47,12 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     if (tokens.isEmpty) return tree.roots;
     final matches = <Category>[];
     void visit(Category category) {
-      if (SearchNormalizer.matches(tokens, '${category.name} ${category.subtitle ?? ''}')) matches.add(category);
+      if (SearchNormalizer.matches(
+        tokens,
+        '${category.name} ${tr(category.name)} ${category.subtitle ?? ''} ${tr(category.subtitle ?? '')}',
+      )) {
+        matches.add(category);
+      }
       category.children.forEach(visit);
     }
 
@@ -59,7 +65,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     final tree = ref.watch(categoryTreeProvider);
     final categories = _visible(tree);
     return Scaffold(
-      appBar: AppBar(title: const Text('Kategoriyalar')),
+      appBar: AppBar(title: Text(tr('Kategoriyalar'))),
       body: ContentWidth(
         child: Column(
           children: [
@@ -67,13 +73,13 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
               padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.sm),
               child: AppSearchField(
                 controller: _controller,
-                hint: 'Kategoriya qidirish...',
+                hint: tr('Kategoriya qidirish...'),
                 onChanged: (value) => setState(() => _filter = value),
               ),
             ),
             Expanded(
               child: categories.isEmpty
-                  ? const EmptyState(icon: Icons.category_outlined, title: 'Kategoriya topilmadi', compact: true)
+                  ? EmptyState(icon: Icons.category_outlined, title: tr('Kategoriya topilmadi'), compact: true)
                   : ListView.separated(
                       padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.xs, AppSpacing.lg, AppSpacing.xxl),
                       itemCount: categories.length,
@@ -83,7 +89,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                         final parent = tree.parentOf(category.id);
                         return _CategoryRow(
                           category: category,
-                          subtitle: parent == null ? category.subtitle : parent.name,
+                          subtitle: tr(parent == null ? category.subtitle ?? '' : parent.name),
                           onTap: () => openCategory(context, category),
                         );
                       },
@@ -118,7 +124,7 @@ class _CategoryRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(category.name, style: text.titleSmall),
+                Text(tr(category.name), style: text.titleSmall),
                 if (subtitle != null) ...[
                   const SizedBox(height: 2),
                   Text(subtitle!, style: text.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),

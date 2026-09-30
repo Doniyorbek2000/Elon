@@ -5,6 +5,8 @@ import '../../../core/domain/money.dart';
 import '../../../core/domain/paged.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/storage/feed_cache.dart';
+import '../../../core/storage/key_value_store.dart';
 import '../../../core/utils/clock.dart';
 import '../../../data/demo/demo_database.dart';
 import '../../../data/demo/demo_seed.dart';
@@ -26,6 +28,7 @@ final listingRepositoryProvider = Provider<ListingRepository>((ref) {
   }
   return RemoteListingRepository(
     ref.watch(apiClientProvider),
+    cache: FeedCache(ref.watch(keyValueStoreProvider)),
     location: () {
       final selection = ref.read(locationProvider);
       final point = selection.fromDevice ? selection.point : null;

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../design/app_colors.dart';
 import '../design/app_tokens.dart';
-import '../domain/promotion.dart';
 import '../domain/public_profile.dart';
 
 /// Rendered only for server-asserted verification — never inferred locally.
@@ -86,29 +85,6 @@ class StatusPill extends StatelessWidget {
       ),
     );
   }
-}
-
-class PromotionBadge extends StatelessWidget {
-  const PromotionBadge({super.key, required this.type, this.dense = true});
-
-  final PromotionType type;
-  final bool dense;
-
-  @override
-  Widget build(BuildContext context) => StatusPill(
-    label: type.badge,
-    dense: dense,
-    style: switch (type) {
-      PromotionType.vip => PillStyle.vip,
-      PromotionType.top || PromotionType.featured => PillStyle.warning,
-      PromotionType.urgent => PillStyle.danger,
-    },
-    icon: switch (type) {
-      PromotionType.vip => Icons.diamond_rounded,
-      PromotionType.urgent => Icons.bolt_rounded,
-      _ => null,
-    },
-  );
 }
 
 /// Small red counter for tabs/icons. Hidden at zero.

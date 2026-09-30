@@ -6,6 +6,7 @@ import '../../../core/config/app_config.dart';
 import '../../../core/domain/money.dart';
 import '../../../core/domain/place.dart';
 import '../../../core/domain/public_profile.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/sharing/share_service.dart';
 import '../../../core/storage/key_value_store.dart';
 import '../../../core/utils/formatters.dart';
@@ -183,34 +184,37 @@ class CreateListingController extends Notifier<ListingDraft> {
     final draft = state;
     switch (step) {
       case CreateStep.details:
-        if (draft.categoryId == null) errors[DraftField.category] = 'Kategoriyani tanlang';
+        if (draft.categoryId == null) errors[DraftField.category] = tr('Kategoriyani tanlang');
         final title = draft.title.trim();
         if (title.length < ListingDraft.titleMinLength) {
-          errors[DraftField.title] = 'Sarlavha kamida ${ListingDraft.titleMinLength} ta belgidan iborat bo‘lsin';
+          errors[DraftField.title] = tr('Sarlavha kamida {titleMinLength} ta belgidan iborat bo‘lsin', {
+            'titleMinLength': ListingDraft.titleMinLength,
+          });
         }
         final priceMode = schema.priceMode;
         if (priceMode == PriceMode.required && !draft.negotiable && (draft.price == null || draft.price! <= 0)) {
-          errors[DraftField.price] = 'Narxni kiriting yoki «Kelishiladi»ni tanlang';
+          errors[DraftField.price] = tr('Narxni kiriting yoki «Kelishiladi»ni tanlang');
         }
         if (priceMode == PriceMode.salary &&
             draft.price != null &&
             draft.priceMax != null &&
             draft.priceMax! < draft.price!) {
-          errors[DraftField.price] = 'Maksimal maosh minimaldan kam bo‘lmasin';
+          errors[DraftField.price] = tr('Maksimal maosh minimaldan kam bo‘lmasin');
         }
         if (draft.description.trim().length < ListingDraft.descriptionMinLength) {
-          errors[DraftField.description] =
-              'Tavsifni batafsilroq yozing (kamida ${ListingDraft.descriptionMinLength} belgi)';
+          errors[DraftField.description] = tr('Tavsifni batafsilroq yozing (kamida {descriptionMinLength} belgi)', {
+            'descriptionMinLength': ListingDraft.descriptionMinLength,
+          });
         }
-        if (draft.place == null) errors[DraftField.place] = 'Manzilni tanlang';
+        if (draft.place == null) errors[DraftField.place] = tr('Manzilni tanlang');
         for (final field in schema.fields) {
           final error = field.validate(draft.attributes[field.key]);
           if (error != null) errors[DraftField.attribute(field.key)] = error;
         }
       case CreateStep.photos:
-        if (schema.photosRequired && draft.photos.isEmpty) errors[DraftField.photos] = 'Kamida bitta rasm qo‘shing';
+        if (schema.photosRequired && draft.photos.isEmpty) errors[DraftField.photos] = tr('Kamida bitta rasm qo‘shing');
         if (draft.uploadsFailed) {
-          errors[DraftField.photos] = 'Ba’zi rasmlar yuklanmadi — qayta urinib ko‘ring yoki o‘chiring';
+          errors[DraftField.photos] = tr('Ba’zi rasmlar yuklanmadi — qayta urinib ko‘ring yoki o‘chiring');
         }
       case CreateStep.review:
         errors
@@ -302,7 +306,7 @@ class CreateListingController extends Notifier<ListingDraft> {
       target: ShareTarget.listing,
       id: listing.id,
       title: listing.title,
-      subtitle: listing.price == null ? 'Kelishiladi' : Formatters.money(listing.price!),
+      subtitle: listing.price == null ? tr('Kelishiladi') : Formatters.money(listing.price!),
       place: listing.place,
       image: listing.cover,
       pendingReview: underReview,
