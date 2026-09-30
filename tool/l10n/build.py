@@ -62,6 +62,11 @@ def main():
         out.append(f"  {dart_string(key)}: {dart_string(entries[key])},")
     out.append('};')
     open(os.path.join(ROOT, 'lib/core/l10n/ru.dart'), 'w', encoding='utf-8').write('\n'.join(out) + '\n')
+    try:  # keep the generated file formatted so `dart format --set-exit-if-changed` stays green
+        import subprocess
+        subprocess.run(['dart', 'format', os.path.join(ROOT, 'lib/core/l10n/ru.dart')], check=False, capture_output=True)
+    except OSError:
+        pass
     print(f'{len(entries)} entries, {len(problems)} problems')
     sys.exit(1 if problems else 0)
 
