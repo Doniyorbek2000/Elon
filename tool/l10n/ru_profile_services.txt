@@ -1,0 +1,129 @@
+Ismni kiriting ||| Введите имя
+Kasbni kiriting ||| Укажите профессию
+Kamida 20 belgi yozing ||| Напишите не менее 20 символов
+Kamida bitta yo‘nalish tanlang ||| Выберите хотя бы одно направление
+Profil saqlandi ||| Профиль сохранён
+Usta profilim ||| Мой профиль мастера
+Profilingiz mijozlarga qanday ko‘rinadi ||| Как клиенты видят ваш профиль
+Ism yoki usta nomi ||| Имя или название мастера
+Kasb ||| Профессия
+Masalan: Santexnik ||| Например: Сантехник
+Xizmatlaringiz haqida ||| О ваших услугах
+Yo‘nalishlar ||| Направления
+Xizmat ko‘rsatish hududi ||| Зона обслуживания
+O‘zgartirish ||| Изменить
+Profil yaratish ||| Создать профиль
+Xizmatlar va narxlar ||| Услуги и цены
+Hali xizmat qo‘shilmagan ||| Услуги ещё не добавлены
+Xizmat nomini kiriting ||| Введите название услуги
+Yangi xizmat ||| Новая услуга
+Nomi ||| Название
+Masalan: Kran almashtirish ||| Например: Замена крана
+Narx turi ||| Тип цены
+Narx (so‘m) ||| Цена (сум)
+Birlik ||| Единица
+Masalan: xizmat uchun, soatiga ||| Например: за услугу, за час
+Rahmat! Sharhingiz qabul qilindi ||| Спасибо! Ваш отзыв принят
+Ustani baholang ||| Оцените мастера
+Ish sifati, vaqtida kelgani… ||| Качество работы, пунктуальность…
+Bajarilgan ||| Выполнено
+{completedJobs} ta ish ||| Выполнено работ: {completedJobs}
+Xizmat haqida ||| Об услуге
+Xizmat hududi ||| Зона обслуживания
+Portfolio ||| Портфолио
+Sharhlar ||| Отзывы
+Sharh qoldirish ||| Оставить отзыв
+To‘liq to‘lovni ish tugagach qiling. ||| Оплачивайте полностью после завершения работы.
+Ish tugagach, ustaga sharh qoldiring. ||| После завершения работы оставьте мастеру отзыв.
+Portfolio rasmi {p0} ||| Фото из портфолио {p0}
+{rating} yulduz ||| Звёзд: {rating}
+Usta yoki xizmat qidirish... ||| Поиск мастера или услуги...
+Reytingi yuqori ustalar ||| Мастера с высоким рейтингом
+Barcha ustalar ||| Все мастера
+Usta topilmadi ||| Мастера не найдены
+Boshqa filtr yoki kategoriyani tanlab ko‘ring. ||| Попробуйте другой фильтр или категорию.
+O‘z xizmatingizni joylang ||| Разместите свою услугу
+reyting {p0}, {reviewCount} sharh ||| рейтинг {p0}, отзывов: {reviewCount}
+{p0} dan{p1} ||| от {p0}{p1}
+Avval usta profilini yarating ||| Сначала создайте профиль мастера
+{name} — Bozor.uz ||| {name} — Bozor.uz
+A’zo ||| На сайте
+Faol e’lonlar ||| Активные объявления
+Reyting ||| Рейтинг
+Javob beradi ||| Отвечает
+Javob vaqti ||| Время ответа
+~{responseTimeMinutes} daq ||| ~{responseTimeMinutes} мин
+Faol e’lonlar yo‘q ||| Активных объявлений нет
+Sozlamalar ||| Настройки
+Bozor.uz’ga xush kelibsiz ||| Добро пожаловать в Bozor.uz
+E’lon joylash, chat va ariza topshirish uchun telefon raqamingiz bilan kiring. ||| Войдите по номеру телефона, чтобы подавать объявления, общаться в чате и откликаться на вакансии.
+ID: {displayId} ||| ID: {displayId}
+Profilni tahrirlash ||| Редактировать профиль
+Raqamni tasdiqlang ||| Подтвердите номер
+Mening e’lonlarim ||| Мои объявления
+Saqlanganlar ||| Сохранённое
+Mening arizalarim ||| Мои отклики
+Vakansiyalarim va arizalar ||| Мои вакансии и отклики
+Yordam ||| Помощь
+Chiqish ||| Выйти
+Hisobdan chiqasizmi? ||| Выйти из аккаунта?
+Saqlangan e’lonlar va qoralamalar shu qurilmada qoladi. ||| Сохранённые объявления и черновики останутся на этом устройстве.
+Ishlar ||| Работа
+Ustalar ||| Мастера
+Saqlangan e’lonlar yo‘q ||| Сохранённых объявлений нет
+Saqlangan vakansiyalar yo‘q ||| Сохранённых вакансий нет
+Saqlangan ustalar yo‘q ||| Сохранённых мастеров нет
+Yoqqan narsalarni ♥ belgisi bilan saqlang — ular shu yerda turadi. ||| Сохраняйте понравившееся значком ♥ — оно появится здесь.
+Ko‘rib chiqish ||| Проверка
+Yangilab bo‘lmadi ||| Не удалось обновить
+E’lon o‘chirilsinmi? ||| Удалить объявление?
+Bu amalni qaytarib bo‘lmaydi. ||| Это действие нельзя отменить.
+Tekshiruvdagi e’lonlar yo‘q ||| Объявлений на проверке нет
+Arxiv bo‘sh ||| Архив пуст
+Birinchi e’loningizni 1 daqiqada joylang. ||| Разместите первое объявление за 1 минуту.
+Statistika ||| Статистика
+Band qilindi deb belgilash ||| Отметить как забронировано
+Sotildi deb belgilash ||| Отметить как продано
+Yana sotuvga qo‘yish ||| Выставить на продажу снова
+Qayta faollashtirish ||| Активировать снова
+Hali ariza topshirmagansiz ||| Вы ещё не откликались
+Yaqin atrofdagi vakansiyalarni ko‘ring va bir tugma bilan ariza yuboring. ||| Смотрите вакансии рядом и откликайтесь одной кнопкой.
+Yuborilgan: {p0} ||| Отправлено: {p0}
+Arizani qaytarib olish ||| Отозвать отклик
+Arizani qaytarib olasizmi? ||| Отозвать отклик?
+Ish beruvchi arizangizni boshqa ko‘rmaydi. ||| Работодатель больше не увидит ваш отклик.
+Qaytarib olish ||| Отозвать
+Ko‘rinish ||| Оформление
+Tizim ||| Системная
+Yorug‘ ||| Светлая
+Qorong‘i ||| Тёмная
+Yangi xabarlar, narx tushishi, arizalar ||| Новые сообщения, снижение цен, отклики
+Til ||| Язык
+Bloklangan foydalanuvchilar ||| Заблокированные пользователи
+Qidiruv tarixini tozalash ||| Очистить историю поиска
+Qidiruv tarixi tozalandi ||| История поиска очищена
+Maxfiylik siyosati ||| Политика конфиденциальности
+Foydalanish shartlari ||| Условия использования
+Ilova versiyasi ||| Версия приложения
+0.1.0 · demo ||| 0.1.0 · демо
+Bloklanganlar ||| Заблокированные
+Bloklangan foydalanuvchilar yo‘q ||| Заблокированных пользователей нет
+E’lon joylash pullikmi? ||| Платно ли размещать объявления?
+Yo‘q. Hozir barcha e’lonlar, vakansiyalar va xizmatlar bepul joylanadi. ||| Нет. Сейчас все объявления, вакансии и услуги размещаются бесплатно.
+E’lonim nega «Tekshiruvda»? ||| Почему моё объявление «На проверке»?
+Matnda telefon raqami, havola yoki oldindan to‘lov so‘rovi bo‘lsa, moderator tekshiradi. Odatda 15 daqiqa. ||| Если в тексте есть номер телефона, ссылка или просьба о предоплате, объявление проверяет модератор. Обычно 15 минут.
+Telefon raqamim hammaga ko‘rinadimi? ||| Виден ли мой номер телефона всем?
+Yo‘q. Raqamingiz faqat xaridor «Qo‘ng‘iroq» tugmasini bosganda ko‘rsatiladi. ||| Нет. Номер показывается только когда покупатель нажимает «Позвонить».
+Firibgarni qanday aniqlash mumkin? ||| Как распознать мошенника?
+Oldindan to‘lov so‘rash, karta raqami yoki SMS kodni talab qilish — firibgarlik belgilari. Shikoyat qiling. ||| Просьба о предоплате, номере карты или коде из SMS — признаки мошенничества. Отправьте жалобу.
+E’lonni qanday o‘chiraman? ||| Как удалить объявление?
+Profil → Mening e’lonlarim → e’lon yonidagi ⋮ tugmasi → O‘chirish. ||| Профиль → Мои объявления → кнопка ⋮ рядом с объявлением → Удалить.
+Ko‘p so‘raladigan savollar ||| Частые вопросы
+Qo‘llab-quvvatlash (Telegram) ||| Поддержка (Telegram)
+Ism kamida 2 ta harfdan iborat bo‘lsin ||| Имя должно содержать не менее 2 букв
+Profil yangilandi ||| Профиль обновлён
+Saqlab bo‘lmadi ||| Не удалось сохранить
+Rasmni o‘zgartirish ||| Изменить фото
+Ism ||| Имя
+Raqam boshqa foydalanuvchilarga faqat so‘ralganda ko‘rsatiladi ||| Номер показывается другим пользователям только по запросу
+Foydalanuvchi topilmadi ||| Пользователь не найден

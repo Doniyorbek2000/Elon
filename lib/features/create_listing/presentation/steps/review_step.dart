@@ -5,6 +5,7 @@ import '../../../../core/design/app_colors.dart';
 import '../../../../core/design/app_tokens.dart';
 import '../../../../core/domain/media_image.dart';
 import '../../../../core/domain/public_profile.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/clock.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/common.dart';
@@ -26,7 +27,7 @@ class ReviewStep extends ConsumerWidget {
     final now = ref.read(clockProvider)();
     return Listing(
       id: 'preview',
-      title: draft.title.trim().isEmpty ? 'Sarlavha' : draft.title.trim(),
+      title: draft.title.trim().isEmpty ? tr('Sarlavha') : draft.title.trim(),
       description: draft.description,
       categoryId: draft.categoryId ?? 'other',
       images: [for (final p in draft.photos) MediaImage.local(p.id, p.localPath)],
@@ -52,28 +53,36 @@ class ReviewStep extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
 
     final priceLabel = switch (draft) {
-      ListingDraft(price: null, negotiable: true) => 'Kelishiladi',
+      ListingDraft(price: null, negotiable: true) => tr('Kelishiladi'),
       ListingDraft(price: null) => '—',
       _ when schema.priceLabel == 'Maosh' => Formatters.salaryRange(draft.price, draft.priceMax, draft.currency),
       _ => '${Formatters.money(draft.money!)}${draft.negotiable ? ' · kelishiladi' : ''}',
     };
 
     final rows = <(String, String, CreateStep)>[
-      ('Kategoriya', [?tree.parentOf(draft.categoryId ?? '')?.name, ?category?.name].join(' › '), CreateStep.details),
-      ('Sarlavha', draft.title, CreateStep.details),
+      (
+        tr('Kategoriya'),
+        [?tree.parentOf(draft.categoryId ?? '')?.name, ?category?.name].join(' › '),
+        CreateStep.details,
+      ),
+      (tr('Sarlavha'), draft.title, CreateStep.details),
       (schema.priceLabel, priceLabel, CreateStep.details),
-      if (draft.condition != null) ('Holati', draft.condition!.label, CreateStep.details),
+      if (draft.condition != null) (tr('Holati'), draft.condition!.label, CreateStep.details),
       for (final field in schema.fields)
         if (draft.attributes[field.key] case final String value)
-          (field.label, field.unit == null ? value : '$value ${field.unit}', CreateStep.details),
-      ('Manzil', draft.place?.fullLabel ?? '—', CreateStep.details),
-      ('Rasmlar', '${draft.photos.length} ta', CreateStep.photos),
+          (
+            tr(field.label),
+            field.unit == null ? trValue(value) : '${trValue(value)} ${tr(field.unit!)}',
+            CreateStep.details,
+          ),
+      (tr('Manzil'), draft.place?.fullLabel ?? '—', CreateStep.details),
+      (tr('Rasmlar'), tr('{length} ta', {'length': draft.photos.length}), CreateStep.photos),
     ];
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xxxl),
       children: [
-        Text('Xaridorlar e’loningizni shunday ko‘radi', style: text.titleSmall),
+        Text(tr('Xaridorlar e’loningizni shunday ko‘radi'), style: text.titleSmall),
         const SizedBox(height: AppSpacing.md),
         if (draft.place != null)
           Center(
@@ -101,7 +110,7 @@ class ReviewStep extends ConsumerWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  trailing: TextButton(onPressed: () => controller.goTo(step), child: const Text('Tahrirlash')),
+                  trailing: TextButton(onPressed: () => controller.goTo(step), child: Text(tr('Tahrirlash'))),
                 ),
             ],
           ),
@@ -111,7 +120,7 @@ class ReviewStep extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Tavsif', style: text.bodySmall),
+              Text(tr('Tavsif'), style: text.bodySmall),
               const SizedBox(height: AppSpacing.xs),
               Text(draft.description, style: text.bodyMedium, maxLines: 6, overflow: TextOverflow.ellipsis),
             ],
@@ -138,8 +147,8 @@ class ReviewStep extends ConsumerWidget {
             Expanded(
               child: Text(
                 moderation
-                    ? 'E’lon joylangandan so‘ng moderator tomonidan tekshiriladi (odatda 15 daqiqagacha).'
-                    : 'E’lon darhol faol bo‘ladi. Qoidalarni buzgan e’lonlar o‘chiriladi.',
+                    ? tr('E’lon joylangandan so‘ng moderator tomonidan tekshiriladi (odatda 15 daqiqagacha).')
+                    : tr('E’lon darhol faol bo‘ladi. Qoidalarni buzgan e’lonlar o‘chiriladi.'),
                 style: text.bodySmall,
               ),
             ),

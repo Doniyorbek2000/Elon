@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../design/app_colors.dart';
 import '../design/app_tokens.dart';
 import '../domain/public_profile.dart';
@@ -43,7 +44,7 @@ class _ContactSheetState extends ConsumerState<_ContactSheet> {
     final text = Theme.of(context).textTheme;
     final palette = context.palette;
     return SheetScaffold(
-      title: 'Bog‘lanish',
+      title: tr('Bog‘lanish'),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.lg),
         child: FutureBuilder<String>(
@@ -91,7 +92,7 @@ class _ContactSheetState extends ConsumerState<_ContactSheet> {
                           AnimatedSwitcher(
                             duration: AppMotion.of(context, AppMotion.fast),
                             child: Text(
-                              phone == null ? 'Raqam yuklanmoqda…' : Formatters.phone(phone),
+                              phone == null ? tr('Raqam yuklanmoqda…') : Formatters.phone(phone),
                               key: ValueKey(phone),
                               style: text.titleMedium?.copyWith(
                                 fontFeatures: const [FontFeature.tabularFigures()],
@@ -115,15 +116,17 @@ class _ContactSheetState extends ConsumerState<_ContactSheet> {
                           if (ok) {
                             Navigator.pop(context);
                           } else {
-                            showAppSnack(context, 'Qo‘ng‘iroq qilib bo‘lmadi');
+                            showAppSnack(context, tr('Qo‘ng‘iroq qilib bo‘lmadi'));
                           }
                         },
                   icon: const Icon(Icons.call_rounded),
-                  label: const Text('Qo‘ng‘iroq qilish'),
+                  label: Text(tr('Qo‘ng‘iroq qilish')),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(
-                  'Qo‘ng‘iroq qilganingizda «Bozor.uz’dagi e’lon bo‘yicha» deb ayting. Oldindan to‘lov so‘ralsa — ehtiyot bo‘ling.',
+                  tr(
+                    'Qo‘ng‘iroq qilganingizda «Bozor.uz’dagi e’lon bo‘yicha» deb ayting. Oldindan to‘lov so‘ralsa — ehtiyot bo‘ling.',
+                  ),
                   textAlign: TextAlign.center,
                   style: text.bodySmall,
                 ),

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/design/app_colors.dart';
 import '../../core/design/app_tokens.dart';
+import '../../core/l10n/l10n.dart';
 import '../../core/widgets/badges.dart';
 import '../../features/chat/application/chat_providers.dart';
 import '../router/routes.dart';
@@ -17,11 +18,11 @@ class _NavItem {
   final IconData selectedIcon;
 }
 
-const _items = [
-  _NavItem('Bosh sahifa', Icons.home_outlined, Icons.home_rounded),
-  _NavItem('Qidiruv', Icons.search_rounded, Icons.saved_search_rounded),
-  _NavItem('Chat', Icons.chat_bubble_outline_rounded, Icons.chat_bubble_rounded),
-  _NavItem('Profil', Icons.person_outline_rounded, Icons.person_rounded),
+List<_NavItem> get _items => [
+  _NavItem(tr('Bosh sahifa'), Icons.home_outlined, Icons.home_rounded),
+  _NavItem(tr('Qidiruv'), Icons.search_rounded, Icons.saved_search_rounded),
+  _NavItem(tr('Chat'), Icons.chat_bubble_outline_rounded, Icons.chat_bubble_rounded),
+  _NavItem(tr('Profil'), Icons.person_outline_rounded, Icons.person_rounded),
 ];
 
 /// Persistent tab scaffold. Tabs keep their state (IndexedStack via
@@ -61,7 +62,7 @@ class AppShell extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                 child: FloatingActionButton(
                   heroTag: 'rail-create',
-                  tooltip: 'E’lon joylash',
+                  tooltip: tr('E’lon joylash'),
                   elevation: 0,
                   backgroundColor: palette.primary,
                   foregroundColor: palette.onPrimary,
@@ -149,10 +150,10 @@ class _BottomBar extends StatelessWidget {
                   child: Center(
                     child: Semantics(
                       button: true,
-                      label: 'E’lon joylash',
+                      label: tr('E’lon joylash'),
                       excludeSemantics: true,
                       child: Tooltip(
-                        message: 'E’lon joylash',
+                        message: tr('E’lon joylash'),
                         child: Material(
                           color: palette.primary,
                           shape: const CircleBorder(),
@@ -205,7 +206,7 @@ class _TabButton extends StatelessWidget {
     return Semantics(
       selected: selected,
       button: true,
-      label: badge > 0 ? '${item.label}, $badge ta o‘qilmagan' : item.label,
+      label: badge > 0 ? tr('{label}, {badge} ta o‘qilmagan', {'label': item.label, 'badge': badge}) : item.label,
       excludeSemantics: true,
       child: InkResponse(
         onTap: onTap,

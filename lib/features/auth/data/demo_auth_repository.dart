@@ -1,6 +1,7 @@
 import '../../../core/domain/media_image.dart';
 import '../../../core/domain/public_profile.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../data/demo/demo_database.dart';
 import '../domain/auth.dart';
 
@@ -20,7 +21,7 @@ class DemoAuthRepository implements AuthRepository {
   Future<OtpChallenge> requestCode(String phone) async {
     await _db.roundTrip();
     if (!RegExp(r'^998\d{9}$').hasMatch(phone)) {
-      throw const ValidationFailure('Telefon raqami noto‘g‘ri');
+      throw ValidationFailure(tr('Telefon raqami noto‘g‘ri'));
     }
     return const OtpChallenge(resendIn: Duration(seconds: 60), expiresIn: Duration(minutes: 5), devCode: demoCode);
   }
@@ -28,7 +29,7 @@ class DemoAuthRepository implements AuthRepository {
   @override
   Future<CurrentUser> verifyCode({required String phone, required String code}) async {
     await _db.roundTrip();
-    if (code != demoCode) throw const ValidationFailure('Kod noto‘g‘ri. Qayta urinib ko‘ring');
+    if (code != demoCode) throw ValidationFailure(tr('Kod noto‘g‘ri. Qayta urinib ko‘ring'));
     final base = _db.seed.currentUser;
     final user = CurrentUser(
       id: base.id,

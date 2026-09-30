@@ -27,9 +27,6 @@ The app's base URL is `--dart-define=API_BASE_URL=https://api.example.uz/api/v1`
 | 403 | `BLOCKED` | `BlockedFailure` |
 | 403 | `LIMIT_REACHED` (`details: {limit, max}`) | `LimitReachedFailure(limit, max)` |
 | 403 | `FEATURE_DISABLED` | `FeatureDisabledFailure` |
-| 422 / 503 | `PAYMENT_ROUTE_UNAVAILABLE`, `PROVIDER_NOT_CONFIGURED` | `PaymentUnavailableFailure` |
-| 422 | `COUPON_INVALID`, `INSUFFICIENT_CREDITS`, `PRICE_UNAVAILABLE` | `ValidationFailure(code)` |
-| 401 | `SIGNATURE_INVALID` (payment webhooks only) | — |
 | 404 | `NOT_FOUND` (also for resources you may not see — no existence oracle) | `NotFoundFailure` |
 | 409 | `CONFLICT`, `INVALID_STATE` | `ConflictFailure(code)` |
 | 413 / 415 | `PAYLOAD_TOO_LARGE`, `UNSUPPORTED_MEDIA` | `ValidationFailure` |
@@ -67,14 +64,7 @@ The app's base URL is `--dart-define=API_BASE_URL=https://api.example.uz/api/v1`
 | Chat | `POST /conversations` (`contextType = listing\|job\|service\|candidate`, `contextId`; the peer is derived server-side; deduplicated per context and pair), `GET /conversations`, `GET /conversations/unread-count`, `GET /conversations/:id`, `GET /conversations/:id/messages` (newest first), `POST /conversations/:id/messages` (`type = text\|image\|listingShare`, `clientId` for idempotent retries), `POST /conversations/:id/read\|delivered\|archive` |
 | Notifications | `GET /notifications` (meta includes `unreadCount`), `GET /notifications/unread-count`, `POST /notifications/:id/read`, `POST /notifications/read-all`, `PUT/DELETE /push-devices` |
 | Safety | `POST /reports` (idempotent per reporter+target; escalates to moderation at 3 reports), `GET /blocks`, `PUT/DELETE /blocks/:userId` |
-| Config | `GET /config` → `{ flags, freePlan }` (public; all flags default `false`) |
-| Catalog | `GET /catalog/plans`, `GET /catalog/promotions?target=listing\|job\|provider\|business&targetId&platform` → `{ products[{id, kind, durationDays, title, price{amountMinor, amount, currency}, creditCost}], eligibility{eligible, bumpAvailableAt}, providers[], credits }` |
-| Checkout | `POST /checkout/quote`, `POST /checkout` (`productId\|planPriceId, targetId?, couponCode?, provider, platform, idempotencyKey` — no price/status/user fields accepted) → purchase + `action{type: redirect\|store\|none}`; `GET /me/purchases[/:id]`, `POST /me/purchases/:id/cancel` |
-| Plans & credits | `GET /me/entitlements`, `GET /me/subscriptions`, `POST /me/subscriptions/:id/cancel`, `GET /me/credits`, `GET /me/promotions`, `GET /me/promotions/:id/stats`, `GET /me/listings/:id/stats?days` |
-| Paid blocks | `GET /listings/promoted` (same filters as `/listings`), `GET /listings/featured?placement=home\|category\|region`, `GET /jobs/promoted`, `GET /providers/promoted`, `GET /providers/featured?placement=region\|category`, `GET /ads?region&district&category`, `POST /ads/:id/events` (`impression\|click`, deduplicated). Cards carry `promotion`, `badges[]`, `sponsored`. |
-| Business | `POST /businesses`, `GET/PATCH /me/business`, `POST /me/business/verification`, `POST/DELETE /me/business/members[/:userId]`, `GET /businesses/:id` (storefront), `GET /businesses/:id/listings`, `POST/GET /me/business/campaigns`, `POST /me/business/campaigns/:id/pause\|resume` |
-| Payments (provider side) | `POST /payments/webhooks/:provider` (signature-verified raw body) |
-| Admin | `/admin/monetization/*` — flags, settings, products/prices, plans/prices, coupons, businesses, campaigns, activations, credits (ADMIN); payments, refunds, revenue, reconcile (ADMIN or FINANCE). All mutations audited. |
+| Business | `POST /businesses`, `GET/PATCH /me/business`, `POST /me/business/verification`, `POST/DELETE /me/business/members[/:userId]`, `GET /businesses/:id` (storefront), `GET /businesses/:id/listings`, `GET /me/listings/:id/stats?days` (free) |
 | Health | `GET /health/live`, `GET /health/ready` (database, Redis, storage; 503 when degraded) |
 
 ## Realtime (Socket.IO)

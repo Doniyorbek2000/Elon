@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/domain/media_image.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/sharing/share_service.dart';
 import '../../../core/sharing/share_sheet.dart';
 import '../../../core/utils/clock.dart';
@@ -81,7 +82,7 @@ class _ProviderView extends ConsumerWidget {
         title: Text(provider.profession),
         actions: [
           IconButton(
-            tooltip: 'Ulashish',
+            tooltip: tr('Ulashish'),
             icon: const Icon(Icons.ios_share_rounded),
             onPressed: () => showShareSheet(
               context,
@@ -91,7 +92,7 @@ class _ProviderView extends ConsumerWidget {
                 title: '${provider.name} — ${provider.profession}',
                 subtitle: provider.priceFrom == null
                     ? null
-                    : '${Formatters.money(provider.priceFrom!).replaceAll(' ', ' ')} dan',
+                    : tr('{p0} dan', {'p0': Formatters.money(provider.priceFrom!).replaceAll(' ', ' ')}),
                 location: provider.place.shortLabel,
                 image: profile.avatar,
                 url: ref.read(deepLinksProvider).web(ShareTarget.provider, provider.id),
@@ -100,14 +101,14 @@ class _ProviderView extends ConsumerWidget {
           ),
           FavoriteButton(kind: SavedKind.provider, id: provider.id),
           PopupMenuButton<String>(
-            tooltip: 'Ko‘proq',
+            tooltip: tr('Ko‘proq'),
             onSelected: (value) {
               if (value == 'report') showReportSheet(context, type: ReportTargetType.provider, targetId: provider.id);
               if (value == 'block') confirmAndBlock(context, ref, userId: profile.id, name: provider.name);
             },
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 'report', child: Text('Shikoyat qilish')),
-              PopupMenuItem(value: 'block', child: Text('Bloklash')),
+            itemBuilder: (_) => [
+              PopupMenuItem(value: 'report', child: Text(tr('Shikoyat qilish'))),
+              PopupMenuItem(value: 'block', child: Text(tr('Bloklash'))),
             ],
           ),
         ],
@@ -162,25 +163,31 @@ class _ProviderView extends ConsumerWidget {
                   child: Row(
                     children: [
                       Expanded(
-                        child: InfoTile(label: 'Tajriba', value: '${provider.experienceYears} yil'),
-                      ),
-                      Expanded(
-                        child: InfoTile(label: 'Bajarilgan', value: '${provider.completedJobs} ta ish'),
+                        child: InfoTile(
+                          label: tr('Tajriba'),
+                          value: tr('{experienceYears} yil', {'experienceYears': provider.experienceYears}),
+                        ),
                       ),
                       Expanded(
                         child: InfoTile(
-                          label: 'Narx',
+                          label: tr('Bajarilgan'),
+                          value: tr('{completedJobs} ta ish', {'completedJobs': provider.completedJobs}),
+                        ),
+                      ),
+                      Expanded(
+                        child: InfoTile(
+                          label: tr('Narx'),
                           value: provider.priceFrom == null
-                              ? 'Kelishiladi'
-                              : '${Formatters.money(provider.priceFrom!)} dan',
+                              ? tr('Kelishiladi')
+                              : tr('{p0} dan', {'p0': Formatters.money(provider.priceFrom!)}),
                         ),
                       ),
                     ],
                   ),
                 ),
-                DetailSection(title: 'Xizmat haqida', child: ExpandableText(provider.description)),
+                DetailSection(title: tr('Xizmat haqida'), child: ExpandableText(provider.description)),
                 DetailSection(
-                  title: 'Xizmat hududi',
+                  title: tr('Xizmat hududi'),
                   child: Wrap(
                     spacing: AppSpacing.sm,
                     runSpacing: AppSpacing.sm,
@@ -192,17 +199,17 @@ class _ProviderView extends ConsumerWidget {
                 ),
                 if (provider.portfolio.isNotEmpty)
                   DetailSection(
-                    title: 'Portfolio',
+                    title: tr('Portfolio'),
                     child: _PortfolioGrid(images: provider.portfolio, onOpen: (i) => _openPortfolio(context, i)),
                   ),
                 DetailSection(
-                  title: 'Sharhlar',
+                  title: tr('Sharhlar'),
                   trailing: RatingLabel(rating: provider.rating, count: provider.reviewCount),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (provider.reviews.isEmpty)
-                        Text('Hali sharhlar yo‘q', style: text.bodySmall)
+                        Text(tr('Hali sharhlar yo‘q'), style: text.bodySmall)
                       else
                         for (final review in provider.reviews)
                           Padding(
@@ -217,17 +224,17 @@ class _ProviderView extends ConsumerWidget {
                             }
                           },
                           icon: const Icon(Icons.rate_review_outlined),
-                          label: const Text('Sharh qoldirish'),
+                          label: Text(tr('Sharh qoldirish')),
                         ),
                     ],
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                const SafetyTipsCard(
+                SafetyTipsCard(
                   tips: [
                     'Ish hajmi va narxni oldindan kelishib oling.',
-                    'To‘liq to‘lovni ish tugagach qiling.',
-                    'Ish tugagach, ustaga sharh qoldiring.',
+                    tr('To‘liq to‘lovni ish tugagach qiling.'),
+                    tr('Ish tugagach, ustaga sharh qoldiring.'),
                   ],
                 ),
               ],
@@ -245,7 +252,7 @@ class _ProviderView extends ConsumerWidget {
               loadPhone: () => ref.read(servicesRepositoryProvider).revealPhone(provider.id),
             ),
             icon: const Icon(Icons.call_rounded),
-            label: const Text('Qo‘ng‘iroq'),
+            label: Text(tr('Qo‘ng‘iroq')),
           ),
           FilledButton.icon(
             onPressed: () => startChat(
@@ -256,12 +263,14 @@ class _ProviderView extends ConsumerWidget {
                 subject: ConversationSubject.service,
                 refId: provider.id,
                 title: '${provider.name} — ${provider.profession}',
-                subtitle: provider.priceFrom == null ? null : '${Formatters.money(provider.priceFrom!)} dan',
+                subtitle: provider.priceFrom == null
+                    ? null
+                    : tr('{p0} dan', {'p0': Formatters.money(provider.priceFrom!)}),
                 image: profile.avatar,
               ),
             ),
             icon: const Icon(Icons.chat_bubble_rounded),
-            label: const Text('Chat'),
+            label: Text(tr('Chat')),
           ),
         ],
       ),
@@ -288,7 +297,7 @@ class _PortfolioGrid extends StatelessWidget {
             for (final (index, image) in images.indexed)
               Semantics(
                 button: true,
-                label: 'Portfolio rasmi ${index + 1}',
+                label: tr('Portfolio rasmi {p0}', {'p0': index + 1}),
                 excludeSemantics: true,
                 child: GestureDetector(
                   onTap: () => onOpen(index),
@@ -329,7 +338,7 @@ class _ReviewCard extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Expanded(child: Text(review.authorName, style: text.titleSmall)),
               Semantics(
-                label: '${review.rating} yulduz',
+                label: tr('{rating} yulduz', {'rating': review.rating}),
                 excludeSemantics: true,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

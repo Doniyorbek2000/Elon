@@ -10,6 +10,7 @@ import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/domain/media_image.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/utils/clock.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_image.dart';
@@ -110,9 +111,9 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     if (check.verdict == MessageVerdict.warn) {
       final proceed = await confirmDialog(
         context,
-        title: 'Ehtiyot bo‘ling',
+        title: tr('Ehtiyot bo‘ling'),
         message: check.message!,
-        confirmLabel: 'Baribir yuborish',
+        confirmLabel: tr('Baribir yuborish'),
       );
       if (!proceed || !mounted) return;
     }
@@ -124,7 +125,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     } on Object {
       if (!mounted) return;
       _input.text = text;
-      showAppSnack(context, 'Xabar yuborilmadi. Qayta urinib ko‘ring.', icon: Icons.error_outline_rounded);
+      showAppSnack(context, tr('Xabar yuborilmadi. Qayta urinib ko‘ring.'), icon: Icons.error_outline_rounded);
     }
   }
 
@@ -139,7 +140,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
             MediaImage.local('chat_${DateTime.now().microsecondsSinceEpoch}', paths.first),
           );
     } on Object {
-      if (mounted) showAppSnack(context, 'Rasm yuborilmadi');
+      if (mounted) showAppSnack(context, tr('Rasm yuborilmadi'));
     }
   }
 
@@ -164,7 +165,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
       ConversationSubject.job => ref.read(jobRepositoryProvider).revealJobPhone(subject!.refId),
       ConversationSubject.candidate => ref.read(jobRepositoryProvider).revealCandidatePhone(subject!.refId),
       ConversationSubject.service => ref.read(servicesRepositoryProvider).revealPhone(subject!.refId),
-      _ => Future.error(const NotFoundFailure('Raqam yashirilgan. Chat orqali yozing.')),
+      _ => Future.error(NotFoundFailure(tr('Raqam yashirilgan. Chat orqali yozing.'))),
     };
   }
 
@@ -202,7 +203,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     final messages = ref.watch(messagesProvider(conversation.id));
     final peer = conversation.peer;
     final status = typing
-        ? 'yozmoqda…'
+        ? tr('yozmoqda…')
         : Formatters.presence(isOnline: peer.isOnline, lastActiveAt: peer.lastActiveAt, now: now);
 
     return Scaffold(
@@ -236,12 +237,12 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
         ),
         actions: [
           IconButton(
-            tooltip: 'Qo‘ng‘iroq',
+            tooltip: tr('Qo‘ng‘iroq'),
             icon: Icon(Icons.call_rounded, color: palette.primary),
             onPressed: () => showContactSheet(context, person: peer, loadPhone: () => _revealPeerPhone(conversation)),
           ),
           PopupMenuButton<String>(
-            tooltip: 'Ko‘proq',
+            tooltip: tr('Ko‘proq'),
             onSelected: (value) {
               switch (value) {
                 case 'profile':
@@ -253,9 +254,12 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
               }
             },
             itemBuilder: (_) => [
-              const PopupMenuItem(value: 'profile', child: Text('Profilni ko‘rish')),
-              PopupMenuItem(value: 'block', child: Text(conversation.isBlocked ? 'Blokdan chiqarish' : 'Bloklash')),
-              const PopupMenuItem(value: 'report', child: Text('Shikoyat qilish')),
+              PopupMenuItem(value: 'profile', child: Text(tr('Profilni ko‘rish'))),
+              PopupMenuItem(
+                value: 'block',
+                child: Text(conversation.isBlocked ? tr('Blokdan chiqarish') : tr('Bloklash')),
+              ),
+              PopupMenuItem(value: 'report', child: Text(tr('Shikoyat qilish'))),
             ],
           ),
         ],
@@ -440,13 +444,25 @@ class _MessageList extends ConsumerWidget {
           if (rowIndex > rows.length) return _SafetyBanner(onDismiss: onDismissSafety);
           return switch (rows[rowIndex]) {
             _DayRow(:final label) => _DaySeparator(label: label),
-            final _MessageRow row => GestureDetector(
-              onTap: row.isMine && row.message.delivery == DeliveryState.failed ? () => onRetry(row.message) : null,
-              child: _Bubble(message: row.message, isMine: row.isMine, grouped: row.groupedWithNext),
-            ),
+            final _MessageRow row => _retryable(row),
           };
         },
       ),
+    );
+  }
+}
+
+/// Failed outgoing messages are tappable to retry; expose that to screen readers too.
+extension on _MessageList {
+  Widget _retryable(_MessageRow row) {
+    final bubble = _Bubble(message: row.message, isMine: row.isMine, grouped: row.groupedWithNext);
+    final failed = row.isMine && row.message.delivery == DeliveryState.failed;
+    if (!failed) return bubble;
+    return Semantics(
+      button: true,
+      hint: tr('Qayta yuborish uchun ikki marta bosing'),
+      onTap: () => onRetry(row.message),
+      child: GestureDetector(onTap: () => onRetry(row.message), child: bubble),
     );
   }
 }
@@ -490,12 +506,12 @@ class _SafetyBanner extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
-              'Oldindan to‘lov qilmang va karta ma’lumotlarini yubormang. Shubhali xabarlar haqida xabar bering.',
+              tr('Oldindan to‘lov qilmang va karta ma’lumotlarini yubormang. Shubhali xabarlar haqida xabar bering.'),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(color: palette.textPrimary),
             ),
           ),
           IconButton(
-            tooltip: 'Yopish',
+            tooltip: tr('Yopish'),
             onPressed: onDismiss,
             icon: const Icon(Icons.close_rounded, size: AppIconSize.sm),
           ),
@@ -527,7 +543,7 @@ class _Bubble extends StatelessWidget {
       DeliveryState.sending => (Icons.schedule_rounded, 'yuborilmoqda'),
       DeliveryState.sent => (Icons.check_rounded, 'yuborildi'),
       DeliveryState.delivered => (Icons.done_all_rounded, 'yetkazildi'),
-      DeliveryState.read => (Icons.done_all_rounded, 'o‘qildi'),
+      DeliveryState.read => (Icons.done_all_rounded, tr('o‘qildi')),
       DeliveryState.failed => (Icons.error_outline_rounded, 'yuborilmadi'),
     };
 
@@ -623,7 +639,7 @@ class _TypingBubbleState extends State<_TypingBubble> with SingleTickerProviderS
   Widget build(BuildContext context) {
     final palette = context.palette;
     return Semantics(
-      label: 'Suhbatdosh yozmoqda',
+      label: tr('Suhbatdosh yozmoqda'),
       child: Align(
         alignment: AlignmentDirectional.centerStart,
         child: Container(
@@ -682,7 +698,11 @@ class _Composer extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              IconButton(tooltip: 'Rasm yuborish', onPressed: onAttach, icon: const Icon(Icons.attach_file_rounded)),
+              IconButton(
+                tooltip: tr('Rasm yuborish'),
+                onPressed: onAttach,
+                icon: const Icon(Icons.attach_file_rounded),
+              ),
               Expanded(
                 child: TextField(
                   controller: controller,
@@ -692,11 +712,11 @@ class _Composer extends StatelessWidget {
                   buildCounter: (_, {required currentLength, required isFocused, maxLength}) => null,
                   textCapitalization: TextCapitalization.sentences,
                   keyboardType: TextInputType.multiline,
-                  decoration: const InputDecoration(
-                    hintText: 'Xabar yozing...',
-                    border: OutlineInputBorder(borderRadius: AppRadii.xlAll, borderSide: BorderSide.none),
-                    enabledBorder: OutlineInputBorder(borderRadius: AppRadii.xlAll, borderSide: BorderSide.none),
-                    contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+                  decoration: InputDecoration(
+                    hintText: tr('Xabar yozing...'),
+                    border: const OutlineInputBorder(borderRadius: AppRadii.xlAll, borderSide: BorderSide.none),
+                    enabledBorder: const OutlineInputBorder(borderRadius: AppRadii.xlAll, borderSide: BorderSide.none),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
                   ),
                 ),
               ),
@@ -709,7 +729,7 @@ class _Composer extends StatelessWidget {
                     duration: AppMotion.of(context, AppMotion.fast),
                     scale: enabled ? 1 : 0.9,
                     child: IconButton.filled(
-                      tooltip: 'Yuborish',
+                      tooltip: tr('Yuborish'),
                       onPressed: enabled ? onSend : null,
                       style: IconButton.styleFrom(
                         backgroundColor: palette.primary,
@@ -750,8 +770,8 @@ class _BlockedBar extends StatelessWidget {
             children: [
               Icon(Icons.block_rounded, color: palette.danger),
               const SizedBox(width: AppSpacing.sm),
-              const Expanded(child: Text('Siz bu foydalanuvchini bloklagansiz')),
-              TextButton(onPressed: onUnblock, child: const Text('Blokdan chiqarish')),
+              Expanded(child: Text(tr('Siz bu foydalanuvchini bloklagansiz'))),
+              TextButton(onPressed: onUnblock, child: Text(tr('Blokdan chiqarish'))),
             ],
           ),
         ),

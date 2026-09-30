@@ -71,6 +71,6 @@ export class ProviderSearchQuery extends CursorQuery {
   @IsOptional() @Type(() => Number) @IsIn([1, 5, 10, 25, 50]) radius?: number;
   @IsOptional() @Type(() => Number) @IsLatitude() lat?: number;
   @IsOptional() @Type(() => Number) @IsLongitude() lng?: number;
-  @IsOptional() @IsIn(['all', 'online', 'top', 'topRated']) filter?: string;
+  @IsOptional() @IsIn(['all', 'online', 'topRated']) filter?: string;
   @IsOptional() @IsIn(['rating', 'newest', 'nearest']) sort?: string;
 }

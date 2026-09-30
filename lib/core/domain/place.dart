@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../l10n/l10n.dart';
+
 /// Denormalized location attached to content (listing, job, provider).
 /// IDs reference the location tree; names are cached for display.
 @immutable
@@ -22,23 +24,23 @@ class Place {
   final double? latitude;
   final double? longitude;
 
+  /// Display name without the administrative suffix ("Chust tumani" → "Chust", "Чустский район" → "Чустский").
+  static String _short(String name) => tr(name).replaceAll(RegExp(r'\s+(viloyati|tumani|shahri|область|район)$'), '');
+
   /// "Chust, Namangan" — the short label used on cards.
   String get shortLabel {
     final district = districtName;
-    final region = regionName.replaceAll(' viloyati', '').replaceAll(' shahri', '');
+    final region = _short(regionName);
     if (district == null) return region;
-    final cleanDistrict = district.replaceAll(' tumani', '').replaceAll(' shahri', '');
+    final cleanDistrict = _short(district);
     return cleanDistrict == region ? cleanDistrict : '$cleanDistrict, $region';
   }
 
   /// "Chust" — tightest label for dense cards.
-  String get compactLabel {
-    String clean(String v) => v.replaceAll(' tumani', '').replaceAll(' shahri', '').replaceAll(' viloyati', '');
-    return clean(districtName ?? regionName);
-  }
+  String get compactLabel => _short(districtName ?? regionName);
 
   /// "Karkidon, Chust tumani, Namangan viloyati"
-  String get fullLabel => [?localityName, ?districtName, regionName].join(', ');
+  String get fullLabel => [?localityName, ?districtName, regionName].map(tr).join(', ');
 
   factory Place.fromJson(Map<String, dynamic> json) => Place(
     regionId: json['regionId'] as String,

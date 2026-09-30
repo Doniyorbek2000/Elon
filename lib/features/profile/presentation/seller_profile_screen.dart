@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/domain/public_profile.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/sharing/share_service.dart';
 import '../../../core/sharing/share_sheet.dart';
 import '../../../core/utils/clock.dart';
@@ -60,18 +61,18 @@ class _SellerView extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(business ? 'Do‘kon' : 'Sotuvchi'),
+        title: Text(business ? tr('Do‘kon') : tr('Sotuvchi')),
         actions: [
           IconButton(
-            tooltip: 'Ulashish',
+            tooltip: tr('Ulashish'),
             icon: const Icon(Icons.ios_share_rounded),
             onPressed: () => showShareSheet(
               context,
               SharePayload(
                 target: ShareTarget.seller,
                 id: profile.id,
-                title: '${profile.name} — Bozor.uz',
-                subtitle: '${profile.activeListings} ta e’lon',
+                title: tr('{name} — Bozor.uz', {'name': profile.name}),
+                subtitle: tr('{activeListings} ta e’lon', {'activeListings': profile.activeListings}),
                 image: profile.avatar,
                 url: ref.read(deepLinksProvider).web(ShareTarget.seller, profile.id),
               ),
@@ -79,14 +80,14 @@ class _SellerView extends ConsumerWidget {
           ),
           if (!isMe)
             PopupMenuButton<String>(
-              tooltip: 'Ko‘proq',
+              tooltip: tr('Ko‘proq'),
               onSelected: (value) {
                 if (value == 'report') showReportSheet(context, type: ReportTargetType.user, targetId: profile.id);
                 if (value == 'block') confirmAndBlock(context, ref, userId: profile.id, name: profile.name);
               },
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 'report', child: Text('Shikoyat qilish')),
-                PopupMenuItem(value: 'block', child: Text('Bloklash')),
+              itemBuilder: (_) => [
+                PopupMenuItem(value: 'report', child: Text(tr('Shikoyat qilish'))),
+                PopupMenuItem(value: 'block', child: Text(tr('Bloklash'))),
               ],
             ),
         ],
@@ -118,7 +119,7 @@ class _SellerView extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.sm),
                   profile.verification.isVerified
                       ? VerifiedBadge(level: profile.verification, showLabel: true)
-                      : const StatusPill(label: 'Tasdiqlanmagan', icon: Icons.info_outline_rounded),
+                      : StatusPill(label: tr('Tasdiqlanmagan'), icon: Icons.info_outline_rounded),
                   const SizedBox(height: AppSpacing.xl),
                   SurfaceCard(
                     color: palette.surfaceMuted,
@@ -128,24 +129,32 @@ class _SellerView extends ConsumerWidget {
                       spacing: AppSpacing.lg,
                       runSpacing: AppSpacing.md,
                       children: [
-                        InfoTile(label: 'A’zo', value: '${Formatters.monthYear(profile.memberSince)} dan'),
-                        InfoTile(label: 'Faol e’lonlar', value: '${profile.activeListings}'),
+                        InfoTile(
+                          label: tr('A’zo'),
+                          value: tr('{p0} dan', {'p0': Formatters.monthYear(profile.memberSince)}),
+                        ),
+                        InfoTile(label: tr('Faol e’lonlar'), value: '${profile.activeListings}'),
                         if (profile.rating != null)
                           InfoTile(
-                            label: 'Reyting',
+                            label: tr('Reyting'),
                             value: '★ ${profile.rating!.toStringAsFixed(1)} (${profile.reviewCount})',
                           ),
                         if (profile.responseRate != null)
-                          InfoTile(label: 'Javob beradi', value: '${(profile.responseRate! * 100).round()}%'),
+                          InfoTile(label: tr('Javob beradi'), value: '${(profile.responseRate! * 100).round()}%'),
                         if (profile.responseTimeMinutes != null)
-                          InfoTile(label: 'Javob vaqti', value: '~${profile.responseTimeMinutes} daq'),
+                          InfoTile(
+                            label: tr('Javob vaqti'),
+                            value: tr('~{responseTimeMinutes} daq', {
+                              'responseTimeMinutes': profile.responseTimeMinutes,
+                            }),
+                          ),
                       ],
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
-                  const Align(
+                  Align(
                     alignment: AlignmentDirectional.centerStart,
-                    child: SectionHeader(title: 'E’lonlar'),
+                    child: SectionHeader(title: tr('E’lonlar')),
                   ),
                 ],
               ),
@@ -155,7 +164,7 @@ class _SellerView extends ConsumerWidget {
             query: ListingQuery(sellerId: profile.id),
             gutter: gutter,
             heroPrefix: 'seller-${profile.id}',
-            empty: const EmptyState(icon: Icons.inventory_2_outlined, title: 'Faol e’lonlar yo‘q', compact: true),
+            empty: EmptyState(icon: Icons.inventory_2_outlined, title: tr('Faol e’lonlar yo‘q'), compact: true),
           ),
           const SliverSafeArea(
             top: false,

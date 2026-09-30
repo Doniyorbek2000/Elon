@@ -23,23 +23,6 @@ abstract interface class BusinessRepository {
   Future<PageResult<Listing>> storefrontListings(String id, {String? cursor});
 
   Future<ListingStats> listingStats(String listingId, {int? days});
-
-  Future<List<MyPromotion>> myPromotions();
-
-  Future<PromotionResults> promotionResults(String activationId);
-
-  Future<List<AdCampaign>> campaigns();
-
-  Future<AdCampaign> createCampaign({
-    required String title,
-    required String body,
-    required String destination,
-    required String destinationId,
-    String? regionId,
-    String? categoryId,
-  });
-
-  Future<AdCampaign> setCampaignPaused(String id, {required bool paused});
 }
 
 class RemoteBusinessRepository implements BusinessRepository {
@@ -88,46 +71,6 @@ class RemoteBusinessRepository implements BusinessRepository {
   @override
   Future<ListingStats> listingStats(String listingId, {int? days}) async =>
       ListingStats.fromJson(await _api.get<JsonMap>('/me/listings/$listingId/stats', query: {'days': days}));
-
-  @override
-  Future<List<MyPromotion>> myPromotions() async => [
-    for (final p in await _api.get<List<dynamic>>('/me/promotions')) MyPromotion.fromJson(p as JsonMap),
-  ];
-
-  @override
-  Future<PromotionResults> promotionResults(String activationId) async =>
-      PromotionResults.fromJson(await _api.get<JsonMap>('/me/promotions/$activationId/stats'));
-
-  @override
-  Future<List<AdCampaign>> campaigns() async => [
-    for (final c in await _api.get<List<dynamic>>('/me/business/campaigns')) AdCampaign.fromJson(c as JsonMap),
-  ];
-
-  @override
-  Future<AdCampaign> createCampaign({
-    required String title,
-    required String body,
-    required String destination,
-    required String destinationId,
-    String? regionId,
-    String? categoryId,
-  }) async => AdCampaign.fromJson(
-    await _api.post<JsonMap>(
-      '/me/business/campaigns',
-      body: {
-        'title': title.trim(),
-        'body': body.trim(),
-        'destination': destination,
-        'destinationId': destinationId,
-        'regionId': ?regionId,
-        'categoryId': ?categoryId,
-      },
-    ),
-  );
-
-  @override
-  Future<AdCampaign> setCampaignPaused(String id, {required bool paused}) async =>
-      AdCampaign.fromJson(await _api.post<JsonMap>('/me/business/campaigns/$id/${paused ? 'pause' : 'resume'}'));
 }
 
 /// Demo builds have no business accounts (nothing is simulated).
@@ -162,26 +105,4 @@ class UnavailableBusinessRepository implements BusinessRepository {
 
   @override
   Future<ListingStats> listingStats(String listingId, {int? days}) => throw _off;
-
-  @override
-  Future<List<MyPromotion>> myPromotions() async => const [];
-
-  @override
-  Future<PromotionResults> promotionResults(String activationId) => throw _off;
-
-  @override
-  Future<List<AdCampaign>> campaigns() async => const [];
-
-  @override
-  Future<AdCampaign> createCampaign({
-    required String title,
-    required String body,
-    required String destination,
-    required String destinationId,
-    String? regionId,
-    String? categoryId,
-  }) => throw _off;
-
-  @override
-  Future<AdCampaign> setCampaignPaused(String id, {required bool paused}) => throw _off;
 }

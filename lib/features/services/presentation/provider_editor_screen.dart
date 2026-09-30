@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/routes.dart';
-import '../../../core/config/feature_flags.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/sheets.dart';
@@ -14,8 +14,6 @@ import '../../../core/widgets/state_views.dart';
 import '../../auth/application/session_controller.dart';
 import '../../catalog/application/catalog_providers.dart';
 import '../../location/application/location_controller.dart';
-import '../../monetization/domain/monetization.dart';
-import '../../monetization/presentation/promote_sheet.dart';
 import '../application/services_providers.dart';
 import '../domain/service_provider.dart';
 
@@ -60,10 +58,10 @@ class _ProviderEditorScreenState extends ConsumerState<ProviderEditorScreen> {
 
   Future<void> _save() async {
     final errors = <String, String>{
-      if (_name.text.trim().length < 2) 'displayName': 'Ismni kiriting',
-      if (_profession.text.trim().length < 2) 'profession': 'Kasbni kiriting',
-      if (_description.text.trim().length < 20) 'description': 'Kamida 20 belgi yozing',
-      if (_categoryIds.isEmpty) 'categoryIds': 'Kamida bitta yo‘nalish tanlang',
+      if (_name.text.trim().length < 2) 'displayName': tr('Ismni kiriting'),
+      if (_profession.text.trim().length < 2) 'profession': tr('Kasbni kiriting'),
+      if (_description.text.trim().length < 20) 'description': tr('Kamida 20 belgi yozing'),
+      if (_categoryIds.isEmpty) 'categoryIds': tr('Kamida bitta yo‘nalish tanlang'),
     };
     setState(() => _errors = errors);
     if (errors.isNotEmpty) return;
@@ -82,7 +80,7 @@ class _ProviderEditorScreenState extends ConsumerState<ProviderEditorScreen> {
             ),
           );
       ref.invalidate(myProviderProvider);
-      if (mounted) showAppSnack(context, 'Profil saqlandi');
+      if (mounted) showAppSnack(context, tr('Profil saqlandi'));
     } on Object catch (error) {
       final failure = error.asFailure();
       if (!mounted) return;
@@ -100,7 +98,7 @@ class _ProviderEditorScreenState extends ConsumerState<ProviderEditorScreen> {
     final categories = ref.watch(serviceCategoriesProvider);
     final location = ref.watch(locationProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Usta profilim')),
+      appBar: AppBar(title: Text(tr('Usta profilim'))),
       body: ref
           .watch(myProviderProvider)
           .when(
@@ -120,35 +118,25 @@ class _ProviderEditorScreenState extends ConsumerState<ProviderEditorScreen> {
                           children: [
                             Icon(Icons.visibility_outlined, color: palette.primary),
                             const SizedBox(width: AppSpacing.md),
-                            const Expanded(child: Text('Profilingiz mijozlarga qanday ko‘rinadi')),
+                            Expanded(child: Text(tr('Profilingiz mijozlarga qanday ko‘rinadi'))),
                             const Icon(Icons.chevron_right_rounded),
                           ],
                         ),
                       ),
-                    if (provider != null && ref.watch(featureFlagsProvider).canPromoteProviders) ...[
-                      const SizedBox(height: AppSpacing.sm),
-                      OutlinedButton.icon(
-                        onPressed: () => showPromoteSheet(
-                          context,
-                          target: PromotionTarget.provider,
-                          targetId: provider.id,
-                          itemTitle: provider.name,
-                        ),
-                        icon: const Icon(Icons.trending_up_rounded),
-                        label: const Text('Ko‘proq mijoz toping'),
-                      ),
-                    ],
                     const SizedBox(height: AppSpacing.lg),
                     TextField(
                       controller: _name,
-                      decoration: InputDecoration(labelText: 'Ism yoki usta nomi', errorText: _errors['displayName']),
+                      decoration: InputDecoration(
+                        labelText: tr('Ism yoki usta nomi'),
+                        errorText: _errors['displayName'],
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.md),
                     TextField(
                       controller: _profession,
                       decoration: InputDecoration(
-                        labelText: 'Kasb',
-                        hintText: 'Masalan: Santexnik',
+                        labelText: tr('Kasb'),
+                        hintText: tr('Masalan: Santexnik'),
                         errorText: _errors['profession'],
                       ),
                     ),
@@ -156,7 +144,7 @@ class _ProviderEditorScreenState extends ConsumerState<ProviderEditorScreen> {
                     TextField(
                       controller: _experience,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'Tajriba (yil)'),
+                      decoration: InputDecoration(labelText: tr('Tajriba (yil)')),
                     ),
                     const SizedBox(height: AppSpacing.md),
                     TextField(
@@ -165,11 +153,11 @@ class _ProviderEditorScreenState extends ConsumerState<ProviderEditorScreen> {
                       maxLines: 8,
                       maxLength: 3000,
                       decoration: InputDecoration(
-                        labelText: 'Xizmatlaringiz haqida',
+                        labelText: tr('Xizmatlaringiz haqida'),
                         errorText: _errors['description'],
                       ),
                     ),
-                    Text('Yo‘nalishlar', style: text.titleSmall),
+                    Text(tr('Yo‘nalishlar'), style: text.titleSmall),
                     const SizedBox(height: AppSpacing.sm),
                     Wrap(
                       spacing: AppSpacing.sm,
@@ -177,7 +165,7 @@ class _ProviderEditorScreenState extends ConsumerState<ProviderEditorScreen> {
                       children: [
                         for (final category in categories)
                           FilterChip(
-                            label: Text(category.name),
+                            label: Text(tr(category.name)),
                             selected: _categoryIds.contains(category.id),
                             onSelected: (value) => setState(() {
                               if (value && _categoryIds.length < 5) {
@@ -199,10 +187,10 @@ class _ProviderEditorScreenState extends ConsumerState<ProviderEditorScreen> {
                       contentPadding: EdgeInsets.zero,
                       leading: const Icon(Icons.place_outlined),
                       title: Text(location.label),
-                      subtitle: const Text('Xizmat ko‘rsatish hududi'),
+                      subtitle: Text(tr('Xizmat ko‘rsatish hududi')),
                       trailing: TextButton(
                         onPressed: () => context.push(AppRoutes.location),
-                        child: const Text('O‘zgartirish'),
+                        child: Text(tr('O‘zgartirish')),
                       ),
                     ),
                     const SizedBox(height: AppSpacing.md),
@@ -210,19 +198,19 @@ class _ProviderEditorScreenState extends ConsumerState<ProviderEditorScreen> {
                       onPressed: _saving ? null : _save,
                       child: _saving
                           ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                          : Text(provider == null ? 'Profil yaratish' : 'Saqlash'),
+                          : Text(provider == null ? tr('Profil yaratish') : tr('Saqlash')),
                     ),
                     if (provider != null) ...[
                       const SizedBox(height: AppSpacing.xxl),
                       SectionHeader(
-                        title: 'Xizmatlar va narxlar',
-                        actionLabel: 'Qo‘shish',
+                        title: tr('Xizmatlar va narxlar'),
+                        actionLabel: tr('Qo‘shish'),
                         onAction: () => _addOffering(context, provider),
                         padding: EdgeInsets.zero,
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       if (provider.offerings.isEmpty)
-                        Text('Hali xizmat qo‘shilmagan', style: text.bodySmall)
+                        Text(tr('Hali xizmat qo‘shilmagan'), style: text.bodySmall)
                       else
                         for (final offering in provider.offerings)
                           ListTile(
@@ -234,7 +222,7 @@ class _ProviderEditorScreenState extends ConsumerState<ProviderEditorScreen> {
                                   : '${Formatters.money(offering.priceFrom!)} · ${offering.pricingType.label}',
                             ),
                             trailing: IconButton(
-                              tooltip: 'O‘chirish',
+                              tooltip: tr('O‘chirish'),
                               icon: const Icon(Icons.delete_outline_rounded),
                               onPressed: () => _deleteOffering(offering),
                             ),
@@ -299,11 +287,11 @@ class _OfferingSheetState extends State<_OfferingSheet> {
   void _submit() {
     final price = int.tryParse(_price.text.replaceAll(' ', ''));
     if (_title.text.trim().length < 3) {
-      setState(() => _error = 'Xizmat nomini kiriting');
+      setState(() => _error = tr('Xizmat nomini kiriting'));
       return;
     }
     if (_pricing != PricingType.negotiable && price == null) {
-      setState(() => _error = 'Narxni kiriting yoki «Kelishiladi»ni tanlang');
+      setState(() => _error = tr('Narxni kiriting yoki «Kelishiladi»ni tanlang'));
       return;
     }
     Navigator.of(context).pop(
@@ -329,17 +317,17 @@ class _OfferingSheetState extends State<_OfferingSheet> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Yangi xizmat', style: Theme.of(context).textTheme.titleMedium),
+        Text(tr('Yangi xizmat'), style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: AppSpacing.md),
         TextField(
           controller: _title,
           autofocus: true,
-          decoration: const InputDecoration(labelText: 'Nomi', hintText: 'Masalan: Kran almashtirish'),
+          decoration: InputDecoration(labelText: tr('Nomi'), hintText: tr('Masalan: Kran almashtirish')),
         ),
         const SizedBox(height: AppSpacing.md),
         DropdownButtonFormField<PricingType>(
           initialValue: _pricing,
-          decoration: const InputDecoration(labelText: 'Narx turi'),
+          decoration: InputDecoration(labelText: tr('Narx turi')),
           items: [for (final type in PricingType.values) DropdownMenuItem(value: type, child: Text(type.label))],
           onChanged: (value) => setState(() => _pricing = value ?? _pricing),
         ),
@@ -348,12 +336,12 @@ class _OfferingSheetState extends State<_OfferingSheet> {
           TextField(
             controller: _price,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: 'Narx (so‘m)'),
+            decoration: InputDecoration(labelText: tr('Narx (so‘m)')),
           ),
           const SizedBox(height: AppSpacing.md),
           TextField(
             controller: _unit,
-            decoration: const InputDecoration(labelText: 'Birlik', hintText: 'Masalan: xizmat uchun, soatiga'),
+            decoration: InputDecoration(labelText: tr('Birlik'), hintText: tr('Masalan: xizmat uchun, soatiga')),
           ),
         ],
         if (_error != null) ...[
@@ -361,7 +349,7 @@ class _OfferingSheetState extends State<_OfferingSheet> {
           Text(_error!, style: TextStyle(color: context.palette.danger)),
         ],
         const SizedBox(height: AppSpacing.lg),
-        FilledButton(onPressed: _submit, child: const Text('Qo‘shish')),
+        FilledButton(onPressed: _submit, child: Text(tr('Qo‘shish'))),
       ],
     ),
   );
@@ -374,7 +362,7 @@ Future<void> showReviewSheet(BuildContext context, WidgetRef ref, {required Serv
   try {
     await ref.read(servicesRepositoryProvider).submitReview(provider.id, rating: result.$1, text: result.$2);
     ref.invalidate(providerDetailProvider(provider.id));
-    if (context.mounted) showAppSnack(context, 'Rahmat! Sharhingiz qabul qilindi');
+    if (context.mounted) showAppSnack(context, tr('Rahmat! Sharhingiz qabul qilindi'));
   } on Object catch (error) {
     if (context.mounted) showAppSnack(context, error.asFailure().message, icon: Icons.info_outline_rounded);
   }
@@ -411,7 +399,7 @@ class _ReviewSheetState extends State<_ReviewSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Ustani baholang', style: Theme.of(context).textTheme.titleMedium),
+          Text(tr('Ustani baholang'), style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: AppSpacing.md),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -433,12 +421,12 @@ class _ReviewSheetState extends State<_ReviewSheet> {
             minLines: 2,
             maxLines: 5,
             maxLength: 1000,
-            decoration: const InputDecoration(hintText: 'Ish sifati, vaqtida kelgani…'),
+            decoration: InputDecoration(hintText: tr('Ish sifati, vaqtida kelgani…')),
           ),
           const SizedBox(height: AppSpacing.md),
           FilledButton(
             onPressed: _rating == 0 ? null : () => Navigator.of(context).pop((_rating, _text.text)),
-            child: const Text('Yuborish'),
+            child: Text(tr('Yuborish')),
           ),
         ],
       ),

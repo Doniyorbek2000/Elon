@@ -13,7 +13,7 @@ import { AuthGuard } from './modules/auth/auth.guard';
 import { AuthModule } from './modules/auth/auth.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { ChatModule } from './modules/chat/chat.module';
-import { MonetizationModule } from './modules/monetization/monetization.module';
+import { LimitsModule } from './modules/limits/limits.module';
 import { BusinessModule } from './modules/business/business.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { FavoritesModule } from './modules/favorites/favorites.module';
@@ -46,7 +46,7 @@ export const domainModules = [
   ResumesModule,
   ServicesModule,
   ChatModule,
-  MonetizationModule,
+  LimitsModule,
   BusinessModule,
   AdminModule,
   HealthModule,
@@ -98,7 +98,11 @@ function prettyTransport() {
       },
     }),
     ThrottlerModule.forRoot([
-      { name: 'default', ttl: 60_000, limit: env().NODE_ENV === 'test' ? 10_000 : 300 },
+      {
+        name: 'default',
+        ttl: 60_000,
+        limit: env().NODE_ENV === 'test' ? 10_000 : env().RATE_LIMIT_PER_MINUTE,
+      },
     ]),
     ...domainModules,
   ],

@@ -1,7 +1,6 @@
 import { Transform, Type } from 'class-transformer';
 import {
   IsDate,
-  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -51,28 +50,6 @@ export class AddMemberDto {
 }
 
 export class StorefrontListingsQuery extends CursorQuery {}
-
-export class CampaignDto {
-  @Transform(trim) @IsString() @Length(3, 60) title!: string;
-  @Transform(trim) @IsString() @Length(3, 160) body!: string;
-  @IsOptional() @IsUUID() imageId?: string;
-  @IsIn(['listing', 'business', 'provider', 'job']) destination!: string;
-  @IsUUID() destinationId!: string;
-  @IsOptional() @IsString() @MaxLength(64) regionId?: string;
-  @IsOptional() @IsString() @MaxLength(64) districtId?: string;
-  @IsOptional() @IsString() @MaxLength(64) categoryId?: string;
-  @IsOptional() @Type(() => Number) @IsInt() @Min(100) @Max(10_000_000) impressionLimit?: number;
-}
-
-export class AdsQuery {
-  @IsOptional() @IsString() @MaxLength(64) region?: string;
-  @IsOptional() @IsString() @MaxLength(64) district?: string;
-  @IsOptional() @IsString() @MaxLength(64) category?: string;
-}
-
-export class AdEventDto {
-  @IsIn(['impression', 'click']) type!: 'impression' | 'click';
-}
 
 export class StatsQuery {
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(90) days?: number;

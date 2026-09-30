@@ -6,6 +6,7 @@ import '../../../app/router/routes.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/domain/public_profile.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/widgets/app_search_field.dart';
 import '../../../core/widgets/avatar.dart';
 import '../../../core/widgets/badges.dart';
@@ -80,7 +81,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final result = await showListingFilterSheet(
       context,
       _filters,
-      areaLabel: location.regionName.replaceAll(' viloyati', ''),
+      areaLabel: tr(location.regionName).replaceAll(RegExp(r' (viloyati|область)$'), ''),
     );
     if (result != null && mounted) setState(() => _filters = result);
   }
@@ -132,7 +133,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   children: [
                     if (submitted != null || _typing.isNotEmpty)
                       IconButton(
-                        tooltip: 'Orqaga',
+                        tooltip: tr('Orqaga'),
                         icon: const Icon(Icons.arrow_back_rounded),
                         onPressed: () {
                           _controller.clear();
@@ -144,7 +145,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       child: AppSearchField(
                         controller: _controller,
                         focusNode: _focus,
-                        hint: 'iPhone 14, haydovchi, santexnik...',
+                        hint: tr('iPhone 14, haydovchi, santexnik...'),
                         activeFilters: _filters.activeFilterCount,
                         onFilterTap: _openFilters,
                         onChanged: (value) => setState(() => _typing = value),
@@ -183,8 +184,8 @@ class _Discovery extends ConsumerWidget {
       children: [
         if (recent.isNotEmpty) ...[
           SectionHeader(
-            title: 'Oxirgi qidiruvlar',
-            actionLabel: 'Tozalash',
+            title: tr('Oxirgi qidiruvlar'),
+            actionLabel: tr('Tozalash'),
             onAction: () => ref.read(recentSearchesProvider.notifier).clear(),
           ),
           for (final query in recent)
@@ -194,14 +195,14 @@ class _Discovery extends ConsumerWidget {
               title: Text(query, style: text.bodyMedium),
               onTap: () => onSearch(query),
               trailing: IconButton(
-                tooltip: 'O‘chirish',
+                tooltip: tr('O‘chirish'),
                 icon: Icon(Icons.close_rounded, size: AppIconSize.sm, color: palette.textTertiary),
                 onPressed: () => ref.read(recentSearchesProvider.notifier).remove(query),
               ),
             ),
           const SizedBox(height: AppSpacing.lg),
         ],
-        const SectionHeader(title: 'Ommabop qidiruvlar'),
+        SectionHeader(title: tr('Ommabop qidiruvlar')),
         const SizedBox(height: AppSpacing.sm),
         Wrap(
           spacing: AppSpacing.sm,
@@ -216,27 +217,27 @@ class _Discovery extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: AppSpacing.xxl),
-        const SectionHeader(title: 'Bo‘limlar'),
+        SectionHeader(title: tr('Bo‘limlar')),
         const SizedBox(height: AppSpacing.sm),
         _ShortcutTile(
           icon: Icons.storefront_rounded,
           tone: AccentTone.blue,
-          title: 'Bozor',
-          subtitle: 'Barcha kategoriyalar',
+          title: tr('Bozor'),
+          subtitle: tr('Barcha kategoriyalar'),
           onTap: () => context.push(AppRoutes.categories),
         ),
         _ShortcutTile(
           icon: Icons.work_rounded,
           tone: AccentTone.green,
-          title: 'Ish',
-          subtitle: 'Vakansiyalar va rezyumelar',
+          title: tr('Ish'),
+          subtitle: tr('Vakansiyalar va rezyumelar'),
           onTap: () => context.push(AppRoutes.jobs),
         ),
         _ShortcutTile(
           icon: Icons.handyman_rounded,
           tone: AccentTone.orange,
-          title: 'Xizmatlar',
-          subtitle: 'Ustalar va mutaxassislar',
+          title: tr('Xizmatlar'),
+          subtitle: tr('Ustalar va mutaxassislar'),
           onTap: () => context.push(AppRoutes.services),
         ),
       ],
@@ -289,7 +290,7 @@ class _Suggestions extends ConsumerWidget {
           title: Text.rich(
             TextSpan(
               text: '«$query» ',
-              children: const [TextSpan(text: 'bo‘yicha qidirish')],
+              children: [TextSpan(text: tr('bo‘yicha qidirish'))],
             ),
           ),
           onTap: onSubmit,
@@ -384,8 +385,8 @@ class _ResultsList extends StatelessWidget {
     if (data.isEmpty) {
       return EmptyState(
         icon: Icons.search_off_rounded,
-        title: '«$query» bo‘yicha hech narsa topilmadi',
-        message: 'So‘zni qisqartiring yoki boshqa hududni tanlang.',
+        title: tr('«{query}» bo‘yicha hech narsa topilmadi', {'query': query}),
+        message: tr('So‘zni qisqartiring yoki boshqa hududni tanlang.'),
       );
     }
     final all = scope == SearchScope.all;
@@ -404,7 +405,7 @@ class _ResultsList extends StatelessWidget {
         if (all)
           SectionHeader(
             title: title,
-            actionLabel: items.length > preview ? 'Hammasi (${items.length})' : null,
+            actionLabel: items.length > preview ? tr('Hammasi ({length})', {'length': items.length}) : null,
             onAction: () => onScope(target),
             padding: const EdgeInsets.only(top: AppSpacing.md),
           ),
@@ -425,7 +426,7 @@ class _ResultsList extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: AppSpacing.sm),
             child: Text.rich(
               TextSpan(
-                text: 'Natijalar: ',
+                text: tr('Natijalar: '),
                 children: [
                   TextSpan(
                     text: '«${data.correctedQuery}»',
@@ -438,16 +439,16 @@ class _ResultsList extends StatelessWidget {
           ),
         ...section(
           SearchScope.listings,
-          'E’lonlar',
+          tr('E’lonlar'),
           data.listings,
           (l) => ListingTile(listing: l, heroPrefix: 'search'),
           spacing: 0,
         ),
-        ...section(SearchScope.jobs, 'Ishlar', data.jobs, (j) => JobCard(job: j)),
-        ...section(SearchScope.services, 'Xizmatlar', data.providers, (p) => ProviderTile(provider: p)),
-        ...section(SearchScope.users, 'Foydalanuvchilar', data.users, (u) => _UserTile(user: u)),
+        ...section(SearchScope.jobs, tr('Ishlar'), data.jobs, (j) => JobCard(job: j)),
+        ...section(SearchScope.services, tr('Xizmatlar'), data.providers, (p) => ProviderTile(provider: p)),
+        ...section(SearchScope.users, tr('Foydalanuvchilar'), data.users, (u) => _UserTile(user: u)),
         if (!all && _scopeEmpty())
-          const EmptyState(icon: Icons.search_off_rounded, title: 'Bu bo‘limda natija yo‘q', compact: true),
+          EmptyState(icon: Icons.search_off_rounded, title: tr('Bu bo‘limda natija yo‘q'), compact: true),
       ],
     );
   }
@@ -486,7 +487,10 @@ class _UserTile extends StatelessWidget {
                     VerifiedBadge(level: user.verification),
                   ],
                 ),
-                Text('${user.activeListings} ta faol e’lon', style: Theme.of(context).textTheme.bodySmall),
+                Text(
+                  tr('{activeListings} ta faol e’lon', {'activeListings': user.activeListings}),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ],
             ),
           ),

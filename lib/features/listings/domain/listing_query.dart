@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/l10n/l10n.dart';
 import 'listing.dart';
 
 enum ListingSort {
@@ -9,9 +10,11 @@ enum ListingSort {
   popular('Eng mashhur'),
   nearest('Yaqin');
 
-  const ListingSort(this.label);
+  const ListingSort(this._label);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
 }
 
 /// Radius options. `null` radius on a query means "whole selected area".

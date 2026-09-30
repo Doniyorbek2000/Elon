@@ -5,7 +5,9 @@ import { IsIn, IsOptional, IsString, Length, MaxLength } from 'class-validator';
 import { AuthUser, MaybeUser, OptionalAuth, Public } from '../../common/auth.decorators';
 import { presentUser, publicUserSelect } from '../../common/presenters';
 import { normalizeQuery, normalizeText, searchTokens } from '../../common/text';
+import { env } from '../../config/env';
 import { PrismaService } from '../../infra/prisma.service';
+import { MeilisearchSearchProvider } from './meilisearch.provider';
 import { CategoriesService } from '../categories/categories.service';
 import { jobCardSelect, presentJobCard } from '../jobs/job.presenter';
 import { listingCardSelect, presentListingCard } from '../listings/listing.presenter';
@@ -203,6 +205,19 @@ class SearchController {
 
 @Module({
   controllers: [SearchController],
-  providers: [SearchService, { provide: SEARCH_PROVIDER, useClass: PostgresSearchProvider }],
+  providers: [
+    SearchService,
+    PostgresSearchProvider,
+    MeilisearchSearchProvider,
+    {
+      provide: SEARCH_PROVIDER,
+      inject: [PostgresSearchProvider, MeilisearchSearchProvider],
+      useFactory: (
+        postgres: PostgresSearchProvider,
+        meilisearch: MeilisearchSearchProvider,
+      ): SearchProvider => (env().SEARCH_PROVIDER === 'meilisearch' ? meilisearch : postgres),
+    },
+  ],
+  exports: [SEARCH_PROVIDER],
 })
 export class SearchModule {}

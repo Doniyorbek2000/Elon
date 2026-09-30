@@ -3,16 +3,16 @@ import 'package:flutter/foundation.dart';
 import '../../../core/domain/media_image.dart';
 import '../../../core/domain/money.dart';
 import '../../../core/domain/place.dart';
-import '../../../core/domain/promotion.dart';
 import '../../../core/domain/public_profile.dart';
+import '../../../core/l10n/l10n.dart';
 
 enum ItemCondition {
   newItem,
   used;
 
   String get label => switch (this) {
-    ItemCondition.newItem => 'Yangi',
-    ItemCondition.used => 'Ishlatilgan',
+    ItemCondition.newItem => tr('Yangi'),
+    ItemCondition.used => tr('Ishlatilgan'),
   };
 
   /// Wire value used by the API (`new` | `used`).
@@ -38,14 +38,14 @@ enum ListingStatus {
   archived;
 
   String get label => switch (this) {
-    ListingStatus.draft => 'Qoralama',
-    ListingStatus.active => 'Faol',
-    ListingStatus.pendingReview => 'Tekshiruvda',
-    ListingStatus.reserved => 'Band qilingan',
-    ListingStatus.rejected => 'Rad etilgan',
-    ListingStatus.sold => 'Sotilgan',
-    ListingStatus.expired => 'Muddati tugagan',
-    ListingStatus.archived => 'Arxivda',
+    ListingStatus.draft => tr('Qoralama'),
+    ListingStatus.active => tr('Faol'),
+    ListingStatus.pendingReview => tr('Tekshiruvda'),
+    ListingStatus.reserved => tr('Band qilingan'),
+    ListingStatus.rejected => tr('Rad etilgan'),
+    ListingStatus.sold => tr('Sotilgan'),
+    ListingStatus.expired => tr('Muddati tugagan'),
+    ListingStatus.archived => tr('Arxivda'),
   };
 
   static ListingStatus parse(Object? value) =>
@@ -83,7 +83,6 @@ class Listing {
     this.attributes = const [],
     this.views = 0,
     this.favorites = 0,
-    this.promotion,
     this.status = ListingStatus.active,
     this.distanceKm,
     this.shareUrl,
@@ -106,7 +105,6 @@ class Listing {
   final List<ListingAttribute> attributes;
   final int views;
   final int favorites;
-  final Promotion? promotion;
   final ListingStatus status;
 
   /// Filled by the backend for proximity queries.
@@ -120,28 +118,26 @@ class Listing {
 
   MediaImage? get cover => images.isEmpty ? null : images.first;
 
-  Listing copyWith({int? views, int? favorites, ListingStatus? status, double? distanceKm, Promotion? promotion}) =>
-      Listing(
-        id: id,
-        title: title,
-        description: description,
-        categoryId: categoryId,
-        images: images,
-        place: place,
-        publishedAt: publishedAt,
-        seller: seller,
-        price: price,
-        negotiable: negotiable,
-        condition: condition,
-        attributes: attributes,
-        views: views ?? this.views,
-        favorites: favorites ?? this.favorites,
-        promotion: promotion ?? this.promotion,
-        status: status ?? this.status,
-        distanceKm: distanceKm ?? this.distanceKm,
-        shareUrl: shareUrl,
-        rejectReason: rejectReason,
-      );
+  Listing copyWith({int? views, int? favorites, ListingStatus? status, double? distanceKm}) => Listing(
+    id: id,
+    title: title,
+    description: description,
+    categoryId: categoryId,
+    images: images,
+    place: place,
+    publishedAt: publishedAt,
+    seller: seller,
+    price: price,
+    negotiable: negotiable,
+    condition: condition,
+    attributes: attributes,
+    views: views ?? this.views,
+    favorites: favorites ?? this.favorites,
+    status: status ?? this.status,
+    distanceKm: distanceKm ?? this.distanceKm,
+    shareUrl: shareUrl,
+    rejectReason: rejectReason,
+  );
 
   factory Listing.fromJson(Map<String, dynamic> json) => Listing(
     id: json['id'] as String,
@@ -164,7 +160,6 @@ class Listing {
     ],
     views: json['views'] as int? ?? 0,
     favorites: json['favorites'] as int? ?? 0,
-    promotion: Promotion.fromJson(json),
     status: ListingStatus.parse(json['status']),
     distanceKm: (json['distanceKm'] as num?)?.toDouble(),
     shareUrl: json['shareUrl'] as String?,

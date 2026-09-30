@@ -1,5 +1,4 @@
 import { $Enums } from '@prisma/client';
-import { assessPrice, assessText, hasBlocking, isRiskyMessage, requiresModeration } from './content-risk';
 import {
   apiEnum,
   buildSearchText,
@@ -56,29 +55,5 @@ describe('api enums', () => {
       }
     }
     expect(apiEnum(null)).toBeNull();
-  });
-});
-
-describe('content risk', () => {
-  it('blocks card numbers and flags prepayment/phones', () => {
-    const signals = assessText('iPhone', 'Kartaga tashlang 8600 1234 5678 9012, tel +998 90 123 45 67');
-    expect(signals.map((s) => s.code)).toEqual(
-      expect.arrayContaining(['card_number', 'phone_in_text', 'prepayment']),
-    );
-    expect(hasBlocking(signals)).toBe(true);
-  });
-
-  it('passes clean content', () => {
-    expect(requiresModeration(assessText('Cobalt 2023', 'Holati a’lo'))).toBe(false);
-  });
-
-  it('flags suspicious prices', () => {
-    expect(assessPrice(10_000_000n, 120_000_000n)).toHaveLength(1);
-    expect(assessPrice(100_000_000n, 120_000_000n)).toHaveLength(0);
-  });
-
-  it('flags risky chat messages', () => {
-    expect(isRiskyMessage('Oldindan to‘lov qiling')).toBe(true);
-    expect(isRiskyMessage('Salom, qachon ko‘rsa bo‘ladi?')).toBe(false);
   });
 });

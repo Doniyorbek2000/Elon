@@ -2,6 +2,7 @@ import '../../../core/design/app_colors.dart';
 import '../../../core/domain/place.dart';
 import '../../../core/domain/public_profile.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../data/demo/demo_database.dart';
 import '../../search/domain/search_normalizer.dart';
 import '../domain/job.dart';
@@ -22,7 +23,6 @@ class DemoJobRepository implements JobRepository {
   Future<List<Job>> searchJobs(JobQuery query) async {
     await _db.roundTrip();
     final tokens = SearchNormalizer.tokens(query.text);
-    final now = _clock();
     final results = _db.jobs.where((job) {
       if (query.types.isNotEmpty && !query.types.contains(job.employmentType)) return false;
       if (query.experience != null && job.experience != query.experience) return false;
@@ -30,11 +30,9 @@ class DemoJobRepository implements JobRepository {
       if (!_inArea(job.place.regionId, job.place.districtId, query)) return false;
       return SearchNormalizer.matches(tokens, '${job.title} ${job.company.name} ${job.description}');
     }).toList();
-    int promoted(Job j) => j.promotion?.isActive(now) ?? false ? 1 : 0;
     results.sort((a, b) {
       if (query.sortBySalary) return b.salarySortKey.compareTo(a.salarySortKey);
-      final byPromotion = promoted(b).compareTo(promoted(a));
-      return byPromotion != 0 ? byPromotion : b.publishedAt.compareTo(a.publishedAt);
+      return b.publishedAt.compareTo(a.publishedAt);
     });
     return results;
   }
@@ -64,7 +62,7 @@ class DemoJobRepository implements JobRepository {
   @override
   Future<Job> getJob(String id) async {
     await _db.roundTrip(0.6);
-    return _db.jobs.where((j) => j.id == id).firstOrNull ?? (throw const NotFoundFailure('Vakansiya topilmadi'));
+    return _db.jobs.where((j) => j.id == id).firstOrNull ?? (throw NotFoundFailure(tr('Vakansiya topilmadi')));
   }
 
   @override
@@ -81,14 +79,14 @@ class DemoJobRepository implements JobRepository {
   @override
   Future<CandidateProfile> getCandidate(String id) async {
     await _db.roundTrip(0.6);
-    return _db.candidates.where((c) => c.id == id).firstOrNull ?? (throw const NotFoundFailure('Rezyume topilmadi'));
+    return _db.candidates.where((c) => c.id == id).firstOrNull ?? (throw NotFoundFailure(tr('Rezyume topilmadi')));
   }
 
   @override
   Future<JobApplication> apply({required String jobId, required String applicantId, String? message}) async {
     await _db.roundTrip(1.5);
     if (_db.applications.any((a) => a.job.id == jobId)) {
-      throw const ValidationFailure('Siz bu vakansiyaga allaqachon ariza topshirgansiz');
+      throw ValidationFailure(tr('Siz bu vakansiyaga allaqachon ariza topshirgansiz'));
     }
     final application = JobApplication(
       id: _db.nextId('app'),
@@ -109,7 +107,7 @@ class DemoJobRepository implements JobRepository {
 
   Future<String> _phoneOf(String userId) async {
     await _db.roundTrip(0.4);
-    return _db.seed.phoneBook[userId] ?? (throw const NotFoundFailure('Raqam yashirilgan. Chat orqali yozing.'));
+    return _db.seed.phoneBook[userId] ?? (throw NotFoundFailure(tr('Raqam yashirilgan. Chat orqali yozing.')));
   }
 
   @override
@@ -147,7 +145,7 @@ class DemoJobRepository implements JobRepository {
     await _db.roundTrip(0.6);
     final user = _db.currentUser;
     final index = _db.jobs.indexWhere((j) => j.id == jobId && j.employer.id == user?.id);
-    if (index < 0) throw const NotFoundFailure('Vakansiya topilmadi');
+    if (index < 0) throw NotFoundFailure(tr('Vakansiya topilmadi'));
     final job = _db.jobs[index];
     _db.jobs[index] = Job(
       id: job.id,
@@ -165,7 +163,6 @@ class DemoJobRepository implements JobRepository {
       salaryMin: job.salaryMin,
       salaryMax: job.salaryMax,
       currency: job.currency,
-      promotion: job.promotion,
       views: job.views,
       status: status,
     );
@@ -181,7 +178,7 @@ class DemoJobRepository implements JobRepository {
   @override
   Future<void> setApplicationStatus(String applicationId, ApplicationStatus status) async {
     await _db.roundTrip(0.4);
-    throw const NotFoundFailure('Ariza topilmadi');
+    throw NotFoundFailure(tr('Ariza topilmadi'));
   }
 
   CandidateProfile? _resume;
@@ -202,7 +199,7 @@ class DemoJobRepository implements JobRepository {
       profile: user.toPublic(),
       desiredPosition: draft.title,
       experienceYears: draft.experienceYears,
-      place: const Place(regionId: 'namangan', regionName: 'Namangan viloyati'),
+      place: Place(regionId: 'namangan', regionName: tr('Namangan viloyati')),
       skills: draft.skills,
       about: draft.about,
       updatedAt: _clock(),

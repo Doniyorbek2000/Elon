@@ -11,7 +11,7 @@ plugins {
 //   storePassword=...
 //   keyAlias=upload
 //   keyPassword=...
-// Without it, release builds fall back to debug signing for local testing only.
+// Without it, release builds fail unless ALLOW_DEBUG_SIGNED_RELEASE=true (local testing only).
 val keystoreProperties = Properties().apply {
     val file = rootProject.file("key.properties")
     if (file.exists()) file.inputStream().use { load(it) }
@@ -54,6 +54,15 @@ android {
         release {
             signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
+    }
+
+    // A store build must never be signed with the debug key: fail early instead of shipping it.
+    val isReleaseTask = gradle.startParameter.taskNames.any { it.contains("release", ignoreCase = true) }
+    if (isReleaseTask && keystoreProperties.isEmpty && System.getenv("ALLOW_DEBUG_SIGNED_RELEASE") != "true") {
+        throw GradleException(
+            "android/key.properties is missing: refusing to build a release signed with the debug key. " +
+                "Create it (see the header of this file) or set ALLOW_DEBUG_SIGNED_RELEASE=true for a local test build.",
+        )
     }
 }
 

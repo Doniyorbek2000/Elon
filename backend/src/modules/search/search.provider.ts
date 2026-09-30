@@ -26,6 +26,12 @@ export interface SearchProvider {
   readonly name: string;
   search(kind: SearchKind, query: string, filters: SearchFilters, limit: number): Promise<SearchHit[]>;
   suggestTitles(query: string, limit: number): Promise<string[]>;
+  /**
+   * External engines only: brings the index up to date with the database
+   * (run by the worker every minute). Engines that query the database
+   * directly do not implement it.
+   */
+  sync?(): Promise<{ indexed: number; removed: number }>;
 }
 
 export const SEARCH_PROVIDER = Symbol('SEARCH_PROVIDER');

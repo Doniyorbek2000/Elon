@@ -1,0 +1,142 @@
+Aksessuarlar ||| Аксессуары
+Asbob-uskunalar ||| Инструменты и оборудование
+Avtomat ||| Автомат
+Avtomobil ||| Автомобили
+Avtomobillar, ehtiyot qismlar ||| Автомобили, запчасти
+Avtoturargoh ||| Парковка
+Ayollar kiyimi ||| Женская одежда
+Benzin ||| Бензин
+Bitim turi ||| Тип сделки
+Bog‘ ||| Сад
+Bog‘ uchun ||| Для сада
+Bolalar kiyimi ||| Детская одежда
+Bor ||| Есть
+Boshqa e’lonlar ||| Другие объявления
+Boshqalar ||| Прочее
+Brend ||| Бренд
+Charm salon ||| Кожаный салон
+Chorva ||| Скот
+Chorva, qushlar, uy hayvonlari ||| Скот, птица, домашние животные
+Dekor va gilamlar ||| Декор и ковры
+Dizayn ||| Дизайн
+Dizel ||| Дизель
+Ehtiyot qismlar ||| Запчасти
+Elektr ||| Электро
+Elektrik ||| Электрик
+Elektronika ||| Электроника
+Erkaklar kiyimi ||| Мужская одежда
+Erkaklar, ayollar, bolalar ||| Мужская, женская, детская
+Gaz ||| Газ
+Gibrid ||| Гибрид
+Go‘zallik ||| Красота
+G‘isht va blok ||| Кирпич и блоки
+Hayvonlar ||| Животные
+Hovli uylar ||| Частные дома
+IT xizmatlari ||| IT-услуги
+Idish-tovoq ||| Посуда
+Ijara ||| Аренда
+Imoratlar ||| Здания
+Internet ||| Интернет
+Isitiladigan o‘rindiqlar ||| Подогрев сидений
+Kafolat bor ||| Есть гарантия
+Kir yuvish mashinalari ||| Стиральные машины
+Kiyim-kechak ||| Одежда
+Kompaniya ||| Компания
+Konditsionerlar ||| Кондиционеры
+Ko‘k ||| Синий
+Kreditga beriladi ||| Возможна рассрочка
+Kulrang ||| Серый
+Kumush ||| Серебристый
+Kunlik ijara ||| Посуточная аренда
+Kvartiralar ||| Квартиры
+Lift ||| Лифт
+Lyuk ||| Люк
+Maishiy texnika ||| Бытовая техника
+Maqsadi ||| Назначение
+Marka ||| Марка
+Masalan: 09:00–18:00 ||| Например: 09:00–18:00
+Masalan: 2 yosh ||| Например: 2 года
+Masalan: 3 xonali kvartira, markazda ||| Например: 3-комнатная квартира в центре
+Masalan: 8 sotix yer, yo‘l bo‘yida ||| Например: участок 8 соток у дороги
+Masalan: Chevrolet Cobalt 2022 ||| Например: Chevrolet Cobalt 2022
+Masalan: Chust tumani ||| Например: Чустский район
+Masalan: Cobalt ||| Например: Cobalt
+Masalan: Deep Purple ||| Например: Deep Purple
+Masalan: Hovli uy, 6 sotix ||| Например: частный дом, 6 соток
+Masalan: Santexnik xizmatlari ||| Например: услуги сантехника
+Masalan: Sog‘in sigir ||| Например: дойная корова
+Masalan: Sotuvchi kerak ||| Например: нужен продавец
+Masalan: iPhone 14 Pro ||| Например: iPhone 14 Pro
+Masalan: iPhone 14 Pro 256GB ||| Например: iPhone 14 Pro 256GB
+Maydon ||| Площадь
+Mebel ||| Мебель
+Mebel, idish-tovoq, dekor ||| Мебель, посуда, декор
+Metan ||| Метан
+Mexanika ||| Механика
+Mototexnika ||| Мототехника
+Mulk turi ||| Тип недвижимости
+Multimediya ||| Мультимедиа
+Noutbuklar ||| Ноутбуки
+Oq ||| Белый
+Orqa kamera ||| Камера заднего вида
+Oshxona texnikasi ||| Кухонная техника
+O‘rtacha ||| Среднее
+Parrandalar ||| Птицы
+Payvandchi ||| Сварщик
+Poyabzal ||| Обувь
+Probeg ||| Пробег
+Propan ||| Пропан
+Qavat ||| Этаж
+Qavatlar soni ||| Этажность
+Qishloq xo‘jaligi ||| Сельское хозяйство
+Qizil ||| Красный
+Qora ||| Чёрный
+Qora suvoq ||| Черновая отделка
+Qo‘shimcha jihozlar ||| Дополнительное оборудование
+Qulayliklar ||| Удобства
+Qurilish ||| Строительство
+Rang ||| Цвет
+Robot ||| Робот
+Sartarosh ||| Парикмахер
+Sement va aralashmalar ||| Цемент и смеси
+Sement, g‘isht, taxta va boshqalar ||| Цемент, кирпич, доски и другое
+Soni ||| Количество
+Sotish ||| Продажа
+Sotish, ijaraga berish ||| Продажа, аренда
+Sovutgich, kir yuvish mashinasi ||| Холодильник, стиральная машина
+Sovutgichlar ||| Холодильники
+Taxta va yog‘och ||| Доски и древесина
+Ta’mir ||| Ремонт
+Ta’mirlash ||| Ремонт
+Ta’mirsiz ||| Без ремонта
+Telefon, noutbuk, aksessuarlar ||| Телефоны, ноутбуки, аксессуары
+Telefonlar ||| Телефоны
+Televizorlar ||| Телевизоры
+Tijorat ||| Коммерческая
+Tijorat binolari ||| Коммерческие помещения
+Ustalar, ta’mirlash, yetkazib berish ||| Мастера, ремонт, доставка
+Uy hayvonlari ||| Домашние животные
+Uy maydoni ||| Площадь дома
+Uy-joy ||| Недвижимость
+Uy-joy qurilishi ||| Строительство жилья
+Uy-ro‘zg‘or ||| Товары для дома
+Uzatma ||| Коробка передач
+Vakansiyalar, ish qidiraman ||| Вакансии, поиск работы
+Variator ||| Вариатор
+Xonalar ||| Комнаты
+Xotira ||| Память
+Yem-xashak ||| Корма
+Yengil avtomobillar ||| Легковые автомобили
+Yer maydoni ||| Площадь участка
+Yer uchastka, bino, tijorat ||| Участки, здания, коммерческая недвижимость
+Yer uchastkalari ||| Земельные участки
+Yer/Imorat ||| Земля/здание
+Yevro ta’mir ||| Евроремонт
+Yili ||| Год выпуска
+Yoqilg‘i ||| Топливо
+Yoshi ||| Возраст
+Yuk mashinalari ||| Грузовые автомобили
+Yuk tashish ||| Грузоперевозки
+km ||| км
+m² ||| м²
+sotix ||| соток

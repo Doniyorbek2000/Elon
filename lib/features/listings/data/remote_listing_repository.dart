@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import '../../../core/domain/paged.dart';
+import '../../../core/errors/app_failure.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/storage/feed_cache.dart';
 import '../domain/listing.dart';
 import '../domain/listing_query.dart';
 import '../domain/listing_repository.dart';
@@ -7,9 +11,12 @@ import '../domain/listing_repository.dart';
 /// `/listings` REST implementation. No local fallback: failures surface as
 /// typed [AppFailure]s so screens show real error/offline states.
 class RemoteListingRepository implements ListingRepository {
-  RemoteListingRepository(this._api, {this.location});
+  RemoteListingRepository(this._api, {this.location, this.cache});
 
   final ApiClient _api;
+
+  /// First pages are cached so browsing still works without a connection.
+  final FeedCache? cache;
 
   /// Device coordinates for "nearest"/radius queries when GPS was granted.
   final ({double lat, double lng})? Function()? location;
@@ -25,7 +32,34 @@ class RemoteListingRepository implements ListingRepository {
       params['lng'] = coordinates.lng;
     }
     params.remove('cursor');
-    return _api.getPage('/listings', Listing.fromJson, query: params, cursor: cursor);
+    return _searchWithCache(params, cursor);
+  }
+
+  Future<PageResult<Listing>> _searchWithCache(Map<String, Object?> params, String? cursor) async {
+    final cacheKey = cache == null || cursor != null ? null : FeedCache.keyFor('/listings', params);
+    final raw = <Map<String, dynamic>>[];
+    try {
+      final page = await _api.getPage(
+        '/listings',
+        (json) {
+          raw.add(json);
+          return Listing.fromJson(json);
+        },
+        query: params,
+        cursor: cursor,
+      );
+      if (cacheKey != null) unawaited(cache!.save(cacheKey, raw, page.nextCursor).catchError((Object _) {}));
+      return page;
+    } on AppFailure catch (failure) {
+      if (cacheKey == null || !(failure is NetworkFailure || failure is TimeoutFailure)) rethrow;
+      final cached = cache!.load(cacheKey);
+      if (cached == null) rethrow;
+      return PageResult(
+        items: [for (final item in cached.items) Listing.fromJson(item)],
+        nextCursor: cached.nextCursor,
+        fromCache: true,
+      );
+    }
   }
 
   @override

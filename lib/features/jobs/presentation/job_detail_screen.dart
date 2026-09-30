@@ -5,6 +5,7 @@ import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_icons.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/sharing/share_service.dart';
 import '../../../core/sharing/share_sheet.dart';
 import '../../../core/utils/clock.dart';
@@ -80,10 +81,10 @@ class _JobDetailView extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Vakansiya'),
+        title: Text(tr('Vakansiya')),
         actions: [
           IconButton(
-            tooltip: 'Ulashish',
+            tooltip: tr('Ulashish'),
             icon: const Icon(Icons.ios_share_rounded),
             onPressed: () => showShareSheet(context, _payload(ref)),
           ),
@@ -157,7 +158,7 @@ class _JobDetailView extends ConsumerWidget {
                           MetaLine(icon: Icons.schedule_rounded, text: Formatters.relativeTime(job.publishedAt, now)),
                           MetaLine(
                             icon: Icons.visibility_outlined,
-                            text: '${Formatters.compactCount(job.views)} ko‘rish',
+                            text: tr('{p0} ko‘rish', {'p0': Formatters.compactCount(job.views)}),
                           ),
                         ],
                       ),
@@ -168,19 +169,19 @@ class _JobDetailView extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.md),
                   _ApplicationStatusBanner(application: application),
                 ],
-                DetailSection(title: 'Tavsif', child: ExpandableText(job.description)),
+                DetailSection(title: tr('Tavsif'), child: ExpandableText(job.description)),
                 if (job.responsibilities.isNotEmpty)
                   DetailSection(
-                    title: 'Vazifalar',
+                    title: tr('Vazifalar'),
                     child: _Bullets(items: job.responsibilities),
                   ),
                 if (job.requirements.isNotEmpty)
                   DetailSection(
-                    title: 'Talablar',
+                    title: tr('Talablar'),
                     child: _Bullets(items: job.requirements),
                   ),
                 DetailSection(
-                  title: 'Ish joyi',
+                  title: tr('Ish joyi'),
                   child: SurfaceCard(
                     child: Row(
                       children: [
@@ -192,7 +193,7 @@ class _JobDetailView extends ConsumerWidget {
                   ),
                 ),
                 DetailSection(
-                  title: 'Ish beruvchi',
+                  title: tr('Ish beruvchi'),
                   child: SurfaceCard(
                     child: Row(
                       children: [
@@ -226,15 +227,15 @@ class _JobDetailView extends ConsumerWidget {
                 ),
                 if (job.company.about != null)
                   DetailSection(
-                    title: 'Kompaniya haqida',
+                    title: tr('Kompaniya haqida'),
                     child: Text(job.company.about!, style: text.bodyMedium),
                   ),
                 const SizedBox(height: AppSpacing.xl),
-                const SafetyTipsCard(
+                SafetyTipsCard(
                   tips: [
                     'Ishga joylashish uchun pul to‘lamang.',
-                    'Pasport va karta ma’lumotlarini chatda yubormang.',
-                    'Suhbatni ish joyida yoki ofisda o‘tkazing.',
+                    tr('Pasport va karta ma’lumotlarini chatda yubormang.'),
+                    tr('Suhbatni ish joyida yoki ofisda o‘tkazing.'),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -242,7 +243,7 @@ class _JobDetailView extends ConsumerWidget {
                   style: TextButton.styleFrom(foregroundColor: palette.danger),
                   onPressed: () => showReportSheet(context, type: ReportTargetType.job, targetId: job.id),
                   icon: const Icon(Icons.flag_outlined, size: AppIconSize.sm),
-                  label: const Text('Vakansiya ustidan shikoyat qilish'),
+                  label: Text(tr('Vakansiya ustidan shikoyat qilish')),
                 ),
               ],
             ),
@@ -266,7 +267,7 @@ class _JobDetailView extends ConsumerWidget {
                     ),
                   ),
                   icon: const Icon(Icons.chat_bubble_outline_rounded),
-                  label: const Text('Chat'),
+                  label: Text(tr('Chat')),
                 ),
                 application != null
                     ? FilledButton.icon(
@@ -277,12 +278,12 @@ class _JobDetailView extends ConsumerWidget {
                           loadPhone: () => ref.read(jobRepositoryProvider).revealJobPhone(job.id),
                         ),
                         icon: const Icon(Icons.call_rounded),
-                        label: const Text('Qo‘ng‘iroq'),
+                        label: Text(tr('Qo‘ng‘iroq')),
                       )
                     : FilledButton.icon(
                         onPressed: () => _apply(context, ref),
                         icon: const Icon(Icons.send_rounded),
-                        label: const Text('Ariza topshirish'),
+                        label: Text(tr('Ariza topshirish')),
                       ),
               ],
             ),
@@ -343,7 +344,10 @@ class _ApplicationStatusBanner extends ConsumerWidget {
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(
-              'Ariza: ${application.status.label} · ${Formatters.relativeTime(application.appliedAt, now)}',
+              tr('Ariza: {label} · {p1}', {
+                'label': application.status.label,
+                'p1': Formatters.relativeTime(application.appliedAt, now),
+              }),
               style: Theme.of(context).textTheme.labelLarge?.copyWith(color: color),
             ),
           ),
@@ -380,7 +384,7 @@ class _ApplySheetState extends ConsumerState<_ApplySheet> {
           .apply(widget.job.id, message: _message.text.trim().isEmpty ? null : _message.text.trim());
       if (!mounted) return;
       Navigator.pop(context);
-      showAppSnack(context, 'Arizangiz yuborildi! Ish beruvchi javobini kuting.', icon: Icons.check_circle_rounded);
+      showAppSnack(context, tr('Arizangiz yuborildi! Ish beruvchi javobini kuting.'), icon: Icons.check_circle_rounded);
     } on Object catch (error) {
       if (!mounted) return;
       setState(() => _sending = false);
@@ -393,7 +397,7 @@ class _ApplySheetState extends ConsumerState<_ApplySheet> {
     final user = ref.watch(sessionProvider);
     final text = Theme.of(context).textTheme;
     return SheetScaffold(
-      title: 'Ariza topshirish',
+      title: tr('Ariza topshirish'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.lg),
         child: Column(
@@ -426,11 +430,11 @@ class _ApplySheetState extends ConsumerState<_ApplySheet> {
               maxLines: 6,
               maxLength: 800,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(
-                hintText: 'O‘zingiz haqingizda qisqacha: tajriba, qachondan ishlay olasiz…',
+              decoration: InputDecoration(
+                hintText: tr('O‘zingiz haqingizda qisqacha: tajriba, qachondan ishlay olasiz…'),
               ),
             ),
-            Text('Ish beruvchi ismingiz va telefon raqamingizni ko‘radi.', style: text.bodySmall),
+            Text(tr('Ish beruvchi ismingiz va telefon raqamingizni ko‘radi.'), style: text.bodySmall),
           ],
         ),
       ),
@@ -441,7 +445,7 @@ class _ApplySheetState extends ConsumerState<_ApplySheet> {
                 dimension: 22,
                 child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
               )
-            : const Text('Yuborish'),
+            : Text(tr('Yuborish')),
       ),
     );
   }

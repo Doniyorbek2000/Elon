@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router/routes.dart';
 import '../../../core/design/app_icons.dart';
 import '../../../core/design/app_tokens.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/widgets/app_search_field.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/paged_sliver.dart';
@@ -12,7 +13,6 @@ import '../../../core/widgets/skeleton.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../catalog/application/catalog_providers.dart';
 import '../../location/application/location_controller.dart';
-import '../../monetization/presentation/promoted_blocks.dart';
 import '../application/services_providers.dart';
 import '../data/bundled_service_categories.dart';
 import '../domain/service_provider.dart';
@@ -45,7 +45,7 @@ class _ServicesScreenState extends ConsumerState<ServicesScreen> {
     final searching = _text.isNotEmpty;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Xizmatlar')),
+      appBar: AppBar(title: Text(tr('Xizmatlar'))),
       body: RefreshIndicator.adaptive(
         onRefresh: () async {
           ref.invalidate(recommendedProvidersProvider(regionId));
@@ -58,7 +58,7 @@ class _ServicesScreenState extends ConsumerState<ServicesScreen> {
               sliver: SliverToBoxAdapter(
                 child: AppSearchField(
                   controller: _search,
-                  hint: 'Usta yoki xizmat qidirish...',
+                  hint: tr('Usta yoki xizmat qidirish...'),
                   onSubmitted: (value) => setState(() => _text = value.trim()),
                   onClear: () => setState(() => _text = ''),
                 ),
@@ -81,7 +81,7 @@ class _ServicesScreenState extends ConsumerState<ServicesScreen> {
                             SizedBox(
                               width: width,
                               child: Pressable(
-                                semanticLabel: category.name,
+                                semanticLabel: tr(category.name),
                                 onTap: () => context.push(AppRoutes.serviceCategory(category.id)),
                                 child: Column(
                                   children: [
@@ -93,7 +93,7 @@ class _ServicesScreenState extends ConsumerState<ServicesScreen> {
                                     ),
                                     const SizedBox(height: AppSpacing.xs + 2),
                                     Text(
-                                      category.name,
+                                      tr(category.name),
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
@@ -110,19 +110,16 @@ class _ServicesScreenState extends ConsumerState<ServicesScreen> {
                   ),
                 ),
               ),
-              SliverToBoxAdapter(
-                child: PromotedProvidersBlock(regionId: regionId, gutter: gutter),
-              ),
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(gutter, AppSpacing.xl, gutter - AppSpacing.sm, AppSpacing.sm),
-                sliver: const SliverToBoxAdapter(child: SectionHeader(title: 'Reytingi yuqori ustalar')),
+                sliver: SliverToBoxAdapter(child: SectionHeader(title: tr('Reytingi yuqori ustalar'))),
               ),
               SliverToBoxAdapter(
                 child: _RecommendedCarousel(regionId: regionId, gutter: gutter),
               ),
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(gutter, AppSpacing.xl, gutter, AppSpacing.sm),
-                sliver: const SliverToBoxAdapter(child: SectionHeader(title: 'Barcha ustalar')),
+                sliver: SliverToBoxAdapter(child: SectionHeader(title: tr('Barcha ustalar'))),
               ),
             ],
             SliverToBoxAdapter(
@@ -217,11 +214,11 @@ class ProviderResultsSliver extends ConsumerWidget {
             ),
           ),
           data: (providers) => providers.isEmpty
-              ? const SliverToBoxAdapter(
+              ? SliverToBoxAdapter(
                   child: EmptyState(
                     icon: Icons.handyman_outlined,
-                    title: 'Usta topilmadi',
-                    message: 'Boshqa filtr yoki kategoriyani tanlab ko‘ring.',
+                    title: tr('Usta topilmadi'),
+                    message: tr('Boshqa filtr yoki kategoriyani tanlab ko‘ring.'),
                     compact: true,
                   ),
                 )
@@ -254,7 +251,7 @@ class _ServiceCategoryScreenState extends ConsumerState<ServiceCategoryScreen> {
     final query = ProviderQuery(categoryId: widget.categoryId, filter: _filter, regionId: regionId);
     final gutter = adaptiveGutter(context, maxWidth: AppBreakpoints.contentMaxWidth);
     return Scaffold(
-      appBar: AppBar(title: Text(category?.name ?? 'Xizmatlar')),
+      appBar: AppBar(title: Text(category?.name ?? tr('Xizmatlar'))),
       body: RefreshIndicator.adaptive(
         onRefresh: () async => ref.invalidate(providerSearchProvider(query)),
         child: CustomScrollView(
@@ -271,9 +268,6 @@ class _ServiceCategoryScreenState extends ConsumerState<ServiceCategoryScreen> {
                 ),
               ),
             ),
-            SliverToBoxAdapter(
-              child: PromotedProvidersBlock(categoryId: widget.categoryId, regionId: regionId, gutter: gutter),
-            ),
             SliverPadding(
               padding: EdgeInsets.fromLTRB(gutter, AppSpacing.md, gutter, AppSpacing.md),
               sliver: ProviderResultsSliver(query: query),
@@ -286,7 +280,7 @@ class _ServiceCategoryScreenState extends ConsumerState<ServiceCategoryScreen> {
                   child: OutlinedButton.icon(
                     onPressed: () => context.push(AppRoutes.createIn('services')),
                     icon: const Icon(Icons.add_business_rounded),
-                    label: const Text('O‘z xizmatingizni joylang'),
+                    label: Text(tr('O‘z xizmatingizni joylang')),
                   ),
                 ),
               ),

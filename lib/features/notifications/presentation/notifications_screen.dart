@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/utils/clock.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/common.dart';
@@ -20,11 +21,11 @@ class NotificationsScreen extends ConsumerWidget {
     final unread = ref.watch(unreadNotificationsProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bildirishnomalar'),
+        title: Text(tr('Bildirishnomalar')),
         actions: [
           if (unread > 0)
             IconButton(
-              tooltip: 'Hammasini o‘qilgan deb belgilash',
+              tooltip: tr('Hammasini o‘qilgan deb belgilash'),
               onPressed: () => ref.read(notificationsProvider.notifier).markAllRead(),
               icon: const Icon(Icons.done_all_rounded),
             ),
@@ -34,10 +35,10 @@ class NotificationsScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => FailureView(error: error, onRetry: () => ref.invalidate(notificationsProvider)),
         data: (paged) => paged.items.isEmpty
-            ? const EmptyState(
+            ? EmptyState(
                 icon: Icons.notifications_none_rounded,
-                title: 'Bildirishnomalar yo‘q',
-                message: 'Yangi xabarlar va narx o‘zgarishlari shu yerda paydo bo‘ladi.',
+                title: tr('Bildirishnomalar yo‘q'),
+                message: tr('Yangi xabarlar va narx o‘zgarishlari shu yerda paydo bo‘ladi.'),
               )
             : RefreshIndicator.adaptive(
                 onRefresh: () => ref.refresh(notificationsProvider.future),

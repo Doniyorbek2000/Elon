@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../../core/l10n/l10n.dart';
+
 enum Currency {
   uzs,
   usd;
@@ -7,7 +9,7 @@ enum Currency {
   static Currency parse(Object? value) => value == 'usd' || value == 'USD' ? Currency.usd : Currency.uzs;
 
   String get label => switch (this) {
-    Currency.uzs => 'so‘m',
+    Currency.uzs => tr('so‘m'),
     Currency.usd => 'y.e.',
   };
 }

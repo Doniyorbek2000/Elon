@@ -16,16 +16,13 @@ import {
   QUEUE,
   QueueService,
 } from './infra/queues';
+import { flushMonitoring, initMonitoring, reportError } from './infra/monitoring';
 import { RedisService } from './infra/redis.service';
 import { StorageService } from './infra/storage.service';
 import { JobsService } from './modules/jobs/jobs.service';
 import { ListingsService } from './modules/listings/listings.service';
 import { MediaService } from './modules/media/media.service';
-import { AdsService } from './modules/business/ads.service';
-import { CreditsService } from './modules/monetization/credits.service';
-import { PaymentsService } from './modules/monetization/payments.service';
-import { PromotionService } from './modules/monetization/promotion.service';
-import { SubscriptionsService } from './modules/monetization/subscriptions.service';
+import { SEARCH_PROVIDER, SearchProvider } from './modules/search/search.provider';
 import { NotificationsService } from './modules/notifications/notifications.service';
 
 /** Errors that retrying cannot fix (corrupt/unsupported image input). */
@@ -38,16 +35,6 @@ function isPermanentImageError(error: unknown): boolean {
 
 function isFinalAttempt(job: Job): boolean {
   return job.attemptsMade + 1 >= (job.opts.attempts ?? 1);
-}
-
-/** Every step is idempotent (conditional updates), safe to overlap or retry. */
-export async function runMonetizationTick(app: INestApplicationContext, now = new Date()) {
-  const promotions = await app.get(PromotionService).sweep(now);
-  const subscriptions = await app.get(SubscriptionsService).sweep(now);
-  const creditsExpired = await app.get(CreditsService).sweepExpired(now);
-  const ads = await app.get(AdsService).sweep(now);
-  const reconciliation = await app.get(PaymentsService).reconcile(now);
-  return { promotions, subscriptions, creditsExpired, ads, reconciliation };
 }
 
 /**
@@ -110,8 +97,8 @@ export function startWorkers(app: INestApplicationContext): Worker[] {
         }
         case 'orphan-media':
           return { orphans: await media.cleanupOrphans() };
-        case 'monetization-tick':
-          return runMonetizationTick(app);
+        case 'search-sync':
+          return (await app.get<SearchProvider>(SEARCH_PROVIDER).sync?.()) ?? { indexed: 0, removed: 0 };
         default:
           throw new UnrecoverableError(`Unknown maintenance job ${job.name}`);
       }
@@ -143,18 +130,23 @@ export function startWorkers(app: INestApplicationContext): Worker[] {
 
   const workers = [mediaWorker, notificationWorker, maintenanceWorker, moderationWorker];
   for (const worker of workers) {
-    worker.on('failed', (job, error) =>
+    worker.on('failed', (job, error) => {
       log.warn(
         `${worker.name}/${job?.name ?? '?'} failed (attempt ${job?.attemptsMade ?? 0}): ${error.message}`,
-      ),
-    );
-    worker.on('error', (error) => log.error(`${worker.name} worker error: ${error.message}`));
+      );
+      if (job && isFinalAttempt(job)) reportError(error, { queue: worker.name, job: job.name });
+    });
+    worker.on('error', (error) => {
+      log.error(`${worker.name} worker error: ${error.message}`);
+      reportError(error, { queue: worker.name });
+    });
   }
   return workers;
 }
 
 async function main(): Promise<void> {
   env(); // fail fast on invalid configuration
+  initMonitoring('worker');
   const app = await NestFactory.createApplicationContext(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
   app.enableShutdownHooks();
@@ -164,6 +156,7 @@ async function main(): Promise<void> {
   const shutdown = async () => {
     await Promise.allSettled(workers.map((w) => w.close()));
     await app.close();
+    await flushMonitoring();
     process.exit(0);
   };
   process.once('SIGTERM', () => void shutdown());
@@ -173,6 +166,7 @@ async function main(): Promise<void> {
 if (require.main === module) {
   main().catch((error: unknown) => {
     process.stderr.write(`Fatal worker error: ${error instanceof Error ? error.message : String(error)}\n`);
-    process.exit(1);
+    reportError(error, { phase: 'startup' });
+    void flushMonitoring().finally(() => process.exit(1));
   });
 }

@@ -2,7 +2,6 @@ import '../../core/design/app_colors.dart';
 import '../../core/domain/media_image.dart';
 import '../../core/domain/money.dart';
 import '../../core/domain/place.dart';
-import '../../core/domain/promotion.dart';
 import '../../core/domain/public_profile.dart';
 import '../../features/auth/domain/auth.dart';
 import '../../features/chat/domain/chat.dart';
@@ -296,7 +295,6 @@ class DemoSeed {
       ),
       views: 5100,
       favorites: 132,
-      promotion: const Promotion(PromotionType.vip),
       description:
           'Malibu 2, Turbo, to‘liq komplektatsiya. Salon toza, hech qanday urilgan joyi yo‘q. '
           'Rasmiy dilerdan olingan, barcha hujjatlari joyida. Kredit va bo‘lib to‘lash imkoniyati bor.',
@@ -448,7 +446,6 @@ class DemoSeed {
       attributes: _phone('128 GB', 'Blue'),
       views: 610,
       favorites: 14,
-      promotion: const Promotion(PromotionType.top),
       description: 'Yangi, qutisi ochilmagan. Rasmiy kafolat 1 yil. Bo‘lib to‘lash mavjud.',
     ),
     Listing(
@@ -520,7 +517,6 @@ class DemoSeed {
       ],
       views: 3100,
       favorites: 88,
-      promotion: const Promotion(PromotionType.top),
       description:
           'Shahar markazida, maktab va bozorga yaqin. Yevro ta’mir, mebel bilan sotiladi. '
           'Hujjatlari tayyor, tez rasmiylashtiriladi.',
@@ -862,7 +858,6 @@ class DemoSeed {
       salaryMax: 6000000,
       workingHours: '10:00–22:00, smenali',
       employer: malika,
-      promotion: const Promotion(PromotionType.vip),
       description: 'Milliy taomlar bo‘yicha tajribali oshpaz kerak. Tushlik va transport bepul.',
       requirements: const ['Milliy taomlarni tayyorlash', 'Tozalik', 'Jamoada ishlash'],
       views: 1210,
@@ -1096,7 +1091,6 @@ class DemoSeed {
       serviceArea: const ['Chust tumani', 'Pop tumani', 'Namangan shahri'],
       priceFrom: const Money.uzs(100000),
       priceUnit: 'chaqiruv',
-      promotion: const Promotion(PromotionType.top),
       portfolio: photos(_rotate(_portfolioPool, 0, 4)),
       reviews: _reviews('p_rustam'),
       description:
@@ -1196,7 +1190,6 @@ class DemoSeed {
       serviceArea: const ['Namangan viloyati', 'Toshkent'],
       priceFrom: const Money.uzs(120000),
       priceUnit: 'reys',
-      promotion: const Promotion(PromotionType.top),
       reviews: _reviews('p_jasur_move'),
       description: 'Damas, Labo, Isuzu. Ko‘chish, mebel va qurilish materiallarini tashish. Yuklovchilar bor.',
     ),

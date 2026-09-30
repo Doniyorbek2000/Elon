@@ -5,13 +5,13 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router/routes.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/widgets/app_search_field.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/paged_sliver.dart';
 import '../../catalog/application/catalog_providers.dart';
 import '../../catalog/domain/category.dart';
 import '../../location/application/location_controller.dart';
-import '../../monetization/presentation/promoted_blocks.dart';
 import '../application/listing_providers.dart';
 import '../domain/listing_query.dart';
 import 'widgets/listing_feed_slivers.dart';
@@ -77,7 +77,7 @@ class _ListingsScreenState extends ConsumerState<ListingsScreen> {
     final selected = tree.byId(_refinements.categoryId);
     final (root, chips) = _chipContext(tree);
     final gutter = adaptiveGutter(context);
-    final title = selected == null ? 'Barcha e’lonlar' : (root?.name ?? selected.name);
+    final title = selected == null ? tr('Barcha e’lonlar') : (root?.name ?? selected.name);
     final areaLabel = location.regionName.replaceAll(' viloyati', '');
     final palette = context.palette;
 
@@ -94,7 +94,7 @@ class _ListingsScreenState extends ConsumerState<ListingsScreen> {
                 sliver: SliverToBoxAdapter(
                   child: AppSearchField(
                     controller: _search,
-                    hint: 'Qidirish...',
+                    hint: tr('Qidirish...'),
                     activeFilters: _refinements.activeFilterCount,
                     onFilterTap: () => _openFilters(query, areaLabel),
                     onSubmitted: (value) => setState(() => _refinements = _refinements.copyWith(text: value.trim())),
@@ -110,7 +110,7 @@ class _ListingsScreenState extends ConsumerState<ListingsScreen> {
                       padding: EdgeInsets.symmetric(horizontal: gutter),
                       items: [null, ...chips],
                       selected: selected?.hasChildren ?? false ? null : selected,
-                      labelOf: (c) => c?.name ?? 'Barchasi',
+                      labelOf: (c) => c?.name ?? tr('Barchasi'),
                       onSelected: (c) =>
                           setState(() => _refinements = _refinements.copyWith(categoryId: () => c?.id ?? root?.id)),
                     ),
@@ -126,7 +126,11 @@ class _ListingsScreenState extends ConsumerState<ListingsScreen> {
                     children: [
                       ActionChip(
                         avatar: Icon(Icons.location_on_rounded, size: AppIconSize.sm, color: palette.primary),
-                        label: Text(query.radiusKm == null ? areaLabel : '${location.label} · ${query.radiusKm} km'),
+                        label: Text(
+                          query.radiusKm == null
+                              ? areaLabel
+                              : tr('{label} · {radiusKm} km', {'label': location.label, 'radiusKm': query.radiusKm}),
+                        ),
                         onPressed: () => context.push(AppRoutes.location),
                       ),
                       ActionChip(
@@ -136,21 +140,6 @@ class _ListingsScreenState extends ConsumerState<ListingsScreen> {
                       ),
                     ],
                   ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (query.categoryId != null)
-                      FeaturedListingsBlock(
-                        placement: 'category',
-                        categoryId: query.categoryId,
-                        regionId: query.regionId,
-                        gutter: gutter,
-                      ),
-                    PromotedListingsBlock(query: query, gutter: gutter),
-                  ],
                 ),
               ),
               ListingFeedSlivers(query: query, gutter: gutter, layout: ListingLayout.list, heroPrefix: 'browse'),

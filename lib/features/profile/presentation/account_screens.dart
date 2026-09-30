@@ -8,6 +8,7 @@ import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/domain/media_image.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/utils/clock.dart';
 import '../../../core/utils/external_actions.dart';
 import '../../../core/utils/formatters.dart';
@@ -35,7 +36,7 @@ class MyApplicationsScreen extends ConsumerWidget {
     final now = ref.watch(clockProvider)();
     final text = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Mening arizalarim')),
+      appBar: AppBar(title: Text(tr('Mening arizalarim'))),
       body: ref
           .watch(myApplicationsProvider)
           .when(
@@ -44,9 +45,9 @@ class MyApplicationsScreen extends ConsumerWidget {
             data: (applications) => applications.isEmpty
                 ? EmptyState(
                     icon: Icons.assignment_outlined,
-                    title: 'Hali ariza topshirmagansiz',
-                    message: 'Yaqin atrofdagi vakansiyalarni ko‘ring va bir tugma bilan ariza yuboring.',
-                    actionLabel: 'Vakansiyalar',
+                    title: tr('Hali ariza topshirmagansiz'),
+                    message: tr('Yaqin atrofdagi vakansiyalarni ko‘ring va bir tugma bilan ariza yuboring.'),
+                    actionLabel: tr('Vakansiyalar'),
                     onAction: () => context.push(AppRoutes.jobs),
                   )
                 : ContentWidth(
@@ -68,7 +69,9 @@ class MyApplicationsScreen extends ConsumerWidget {
                                     Text(application.job.company.name, style: text.bodySmall),
                                     const SizedBox(height: AppSpacing.xs),
                                     Text(
-                                      'Yuborilgan: ${Formatters.relativeTime(application.appliedAt, now)}',
+                                      tr('Yuborilgan: {p0}', {
+                                        'p0': Formatters.relativeTime(application.appliedAt, now),
+                                      }),
                                       style: text.bodySmall,
                                     ),
                                   ],
@@ -85,14 +88,14 @@ class MyApplicationsScreen extends ConsumerWidget {
                               ),
                               if (application.status.isOpen)
                                 IconButton(
-                                  tooltip: 'Arizani qaytarib olish',
+                                  tooltip: tr('Arizani qaytarib olish'),
                                   icon: const Icon(Icons.undo_rounded),
                                   onPressed: () async {
                                     final confirmed = await confirmDialog(
                                       context,
-                                      title: 'Arizani qaytarib olasizmi?',
-                                      message: 'Ish beruvchi arizangizni boshqa ko‘rmaydi.',
-                                      confirmLabel: 'Qaytarib olish',
+                                      title: tr('Arizani qaytarib olasizmi?'),
+                                      message: tr('Ish beruvchi arizangizni boshqa ko‘rmaydi.'),
+                                      confirmLabel: tr('Qaytarib olish'),
                                     );
                                     if (!confirmed) return;
                                     try {
@@ -115,6 +118,29 @@ class MyApplicationsScreen extends ConsumerWidget {
 
 // ---------------------------------------------------------------- settings
 
+Future<void> _pickLanguage(BuildContext context, WidgetRef ref) {
+  return showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (sheetContext) => SafeArea(
+      child: RadioGroup<AppLanguage>(
+        groupValue: ref.read(languageProvider),
+        onChanged: (language) {
+          if (language != null) ref.read(languageProvider.notifier).set(language);
+          Navigator.of(sheetContext).pop();
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final language in AppLanguage.values)
+              RadioListTile<AppLanguage>(value: language, title: Text(language.nativeName)),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -126,25 +152,33 @@ class SettingsScreen extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Sozlamalar')),
+      appBar: AppBar(title: Text(tr('Sozlamalar'))),
       body: ContentWidth(
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.lg),
           children: [
-            Text('Ko‘rinish', style: text.titleSmall),
+            Text(tr('Ko‘rinish'), style: text.titleSmall),
             const SizedBox(height: AppSpacing.sm),
             SizedBox(
               width: double.infinity,
               child: SegmentedButton<ThemeMode>(
                 showSelectedIcon: false,
-                segments: const [
+                segments: [
                   ButtonSegment(
                     value: ThemeMode.system,
-                    icon: Icon(Icons.brightness_auto_rounded),
-                    label: Text('Tizim'),
+                    icon: const Icon(Icons.brightness_auto_rounded),
+                    label: Text(tr('Tizim')),
                   ),
-                  ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode_rounded), label: Text('Yorug‘')),
-                  ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode_rounded), label: Text('Qorong‘i')),
+                  ButtonSegment(
+                    value: ThemeMode.light,
+                    icon: const Icon(Icons.light_mode_rounded),
+                    label: Text(tr('Yorug‘')),
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.dark,
+                    icon: const Icon(Icons.dark_mode_rounded),
+                    label: Text(tr('Qorong‘i')),
+                  ),
                 ],
                 selected: {themeMode},
                 onSelectionChanged: (value) => ref.read(themeModeProvider.notifier).set(value.first),
@@ -157,28 +191,30 @@ class SettingsScreen extends ConsumerWidget {
                 children: [
                   SwitchListTile.adaptive(
                     secondary: const Icon(Icons.notifications_active_outlined),
-                    title: const Text('Bildirishnomalar'),
-                    subtitle: const Text('Yangi xabarlar, narx tushishi, arizalar'),
+                    title: Text(tr('Bildirishnomalar')),
+                    subtitle: Text(tr('Yangi xabarlar, narx tushishi, arizalar')),
                     value: notifications,
                     onChanged: (value) => ref.read(notificationsPreferenceProvider.notifier).set(enabled: value),
                   ),
-                  const ListTile(
-                    leading: Icon(Icons.language_rounded),
-                    title: Text('Til'),
-                    subtitle: Text('O‘zbekcha (lotin) · Русский — tez orada'),
+                  ListTile(
+                    leading: const Icon(Icons.language_rounded),
+                    title: Text(tr('Til')),
+                    subtitle: Text(ref.watch(languageProvider).nativeName),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => _pickLanguage(context, ref),
                   ),
                   ListTile(
                     leading: const Icon(Icons.block_rounded),
-                    title: const Text('Bloklangan foydalanuvchilar'),
+                    title: Text(tr('Bloklangan foydalanuvchilar')),
                     trailing: const Icon(Icons.chevron_right_rounded),
                     onTap: () => context.push(AppRoutes.blockedUsers),
                   ),
                   ListTile(
                     leading: const Icon(Icons.history_rounded),
-                    title: const Text('Qidiruv tarixini tozalash'),
+                    title: Text(tr('Qidiruv tarixini tozalash')),
                     onTap: () {
                       ref.read(recentSearchesProvider.notifier).clear();
-                      showAppSnack(context, 'Qidiruv tarixi tozalandi', icon: Icons.check_rounded);
+                      showAppSnack(context, tr('Qidiruv tarixi tozalandi'), icon: Icons.check_rounded);
                     },
                   ),
                 ],
@@ -191,20 +227,20 @@ class SettingsScreen extends ConsumerWidget {
                 children: [
                   ListTile(
                     leading: const Icon(Icons.privacy_tip_outlined),
-                    title: const Text('Maxfiylik siyosati'),
+                    title: Text(tr('Maxfiylik siyosati')),
                     trailing: const Icon(Icons.open_in_new_rounded, size: AppIconSize.sm),
                     onTap: () => ref.read(externalActionsProvider).openUrl(Uri.parse('${config.webBaseUrl}/privacy')),
                   ),
                   ListTile(
                     leading: const Icon(Icons.gavel_rounded),
-                    title: const Text('Foydalanish shartlari'),
+                    title: Text(tr('Foydalanish shartlari')),
                     trailing: const Icon(Icons.open_in_new_rounded, size: AppIconSize.sm),
                     onTap: () => ref.read(externalActionsProvider).openUrl(Uri.parse('${config.webBaseUrl}/terms')),
                   ),
                   ListTile(
                     leading: const Icon(Icons.info_outline_rounded),
-                    title: const Text('Ilova versiyasi'),
-                    trailing: Text(config.useDemoData ? '0.1.0 · demo' : '0.1.0', style: text.bodySmall),
+                    title: Text(tr('Ilova versiyasi')),
+                    trailing: Text(config.useDemoData ? tr('0.1.0 · demo') : '0.1.0', style: text.bodySmall),
                   ),
                 ],
               ),
@@ -222,14 +258,14 @@ class BlockedUsersScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Bloklanganlar')),
+      appBar: AppBar(title: Text(tr('Bloklanganlar'))),
       body: ref
           .watch(blockedUsersProvider)
           .when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, _) => FailureView(error: error),
             data: (ids) => ids.isEmpty
-                ? const EmptyState(icon: Icons.block_rounded, title: 'Bloklangan foydalanuvchilar yo‘q')
+                ? EmptyState(icon: Icons.block_rounded, title: tr('Bloklangan foydalanuvchilar yo‘q'))
                 : ListView(
                     children: [
                       for (final id in ids)
@@ -241,7 +277,7 @@ class BlockedUsersScreen extends ConsumerWidget {
                               title: Text(profile?.name ?? '…'),
                               trailing: TextButton(
                                 onPressed: () => ref.read(blockedUsersProvider.notifier).unblock(id),
-                                child: const Text('Blokdan chiqarish'),
+                                child: Text(tr('Blokdan chiqarish')),
                               ),
                             );
                           },
@@ -258,21 +294,21 @@ class BlockedUsersScreen extends ConsumerWidget {
 class HelpScreen extends ConsumerWidget {
   const HelpScreen({super.key});
 
-  static const _faq = [
-    ('E’lon joylash pullikmi?', 'Yo‘q. Hozir barcha e’lonlar, vakansiyalar va xizmatlar bepul joylanadi.'),
+  static List<(String, String)> get _faq => [
+    (tr('E’lon joylash pullikmi?'), tr('Yo‘q. Hozir barcha e’lonlar, vakansiyalar va xizmatlar bepul joylanadi.')),
     (
-      'E’lonim nega «Tekshiruvda»?',
-      'Matnda telefon raqami, havola yoki oldindan to‘lov so‘rovi bo‘lsa, moderator tekshiradi. Odatda 15 daqiqa.',
+      tr('E’lonim nega «Tekshiruvda»?'),
+      tr('Matnda telefon raqami, havola yoki oldindan to‘lov so‘rovi bo‘lsa, moderator tekshiradi. Odatda 15 daqiqa.'),
     ),
     (
-      'Telefon raqamim hammaga ko‘rinadimi?',
-      'Yo‘q. Raqamingiz faqat xaridor «Qo‘ng‘iroq» tugmasini bosganda ko‘rsatiladi.',
+      tr('Telefon raqamim hammaga ko‘rinadimi?'),
+      tr('Yo‘q. Raqamingiz faqat xaridor «Qo‘ng‘iroq» tugmasini bosganda ko‘rsatiladi.'),
     ),
     (
-      'Firibgarni qanday aniqlash mumkin?',
-      'Oldindan to‘lov so‘rash, karta raqami yoki SMS kodni talab qilish — firibgarlik belgilari. Shikoyat qiling.',
+      tr('Firibgarni qanday aniqlash mumkin?'),
+      tr('Oldindan to‘lov so‘rash, karta raqami yoki SMS kodni talab qilish — firibgarlik belgilari. Shikoyat qiling.'),
     ),
-    ('E’lonni qanday o‘chiraman?', 'Profil → Mening e’lonlarim → e’lon yonidagi ⋮ tugmasi → O‘chirish.'),
+    (tr('E’lonni qanday o‘chiraman?'), tr('Profil → Mening e’lonlarim → e’lon yonidagi ⋮ tugmasi → O‘chirish.')),
   ];
 
   @override
@@ -280,12 +316,12 @@ class HelpScreen extends ConsumerWidget {
     final config = ref.watch(appConfigProvider);
     final text = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Yordam')),
+      appBar: AppBar(title: Text(tr('Yordam'))),
       body: ContentWidth(
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.lg),
           children: [
-            Text('Ko‘p so‘raladigan savollar', style: text.titleMedium),
+            Text(tr('Ko‘p so‘raladigan savollar'), style: text.titleMedium),
             const SizedBox(height: AppSpacing.sm),
             SurfaceCard(
               padding: EdgeInsets.zero,
@@ -309,7 +345,7 @@ class HelpScreen extends ConsumerWidget {
               style: FilledButton.styleFrom(backgroundColor: const Color(0xFF229ED9)),
               onPressed: () => ref.read(externalActionsProvider).openUrl(Uri.parse(config.supportTelegramUrl)),
               icon: const Icon(Icons.support_agent_rounded),
-              label: const Text('Qo‘llab-quvvatlash (Telegram)'),
+              label: Text(tr('Qo‘llab-quvvatlash (Telegram)')),
             ),
           ],
         ),
@@ -344,14 +380,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       final paths = await ref.read(photoPickerProvider).pickFromGallery(limit: 1);
       if (paths.isNotEmpty) setState(() => _avatar = MediaImage.local('avatar', paths.first));
     } on Object {
-      if (mounted) showAppSnack(context, 'Rasm tanlab bo‘lmadi');
+      if (mounted) showAppSnack(context, tr('Rasm tanlab bo‘lmadi'));
     }
   }
 
   Future<void> _save() async {
     final name = _name.text.trim();
     if (name.length < 2) {
-      setState(() => _error = 'Ism kamida 2 ta harfdan iborat bo‘lsin');
+      setState(() => _error = tr('Ism kamida 2 ta harfdan iborat bo‘lsin'));
       return;
     }
     setState(() {
@@ -362,11 +398,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       await ref.read(sessionProvider.notifier).updateProfile(name: name, avatar: _avatar);
       if (!mounted) return;
       context.pop();
-      showAppSnack(context, 'Profil yangilandi', icon: Icons.check_rounded);
+      showAppSnack(context, tr('Profil yangilandi'), icon: Icons.check_rounded);
     } on Object {
       if (!mounted) return;
       setState(() => _saving = false);
-      showAppSnack(context, 'Saqlab bo‘lmadi');
+      showAppSnack(context, tr('Saqlab bo‘lmadi'));
     }
   }
 
@@ -375,7 +411,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final user = ref.watch(sessionProvider);
     final palette = context.palette;
     return Scaffold(
-      appBar: AppBar(title: const Text('Profilni tahrirlash')),
+      appBar: AppBar(title: Text(tr('Profilni tahrirlash'))),
       body: ContentWidth(
         maxWidth: AppBreakpoints.formMaxWidth,
         child: ListView(
@@ -389,7 +425,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     end: 0,
                     bottom: 0,
                     child: IconButton.filled(
-                      tooltip: 'Rasmni o‘zgartirish',
+                      tooltip: tr('Rasmni o‘zgartirish'),
                       style: IconButton.styleFrom(backgroundColor: palette.primary),
                       onPressed: _pickAvatar,
                       icon: const Icon(Icons.photo_camera_rounded, color: Colors.white, size: AppIconSize.sm),
@@ -402,14 +438,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             TextField(
               controller: _name,
               textCapitalization: TextCapitalization.words,
-              decoration: InputDecoration(labelText: 'Ism', errorText: _error),
+              decoration: InputDecoration(labelText: tr('Ism'), errorText: _error),
             ),
             const SizedBox(height: AppSpacing.lg),
             if (user != null)
               InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: 'Telefon raqami',
-                  helperText: 'Raqam boshqa foydalanuvchilarga faqat so‘ralganda ko‘rsatiladi',
+                decoration: InputDecoration(
+                  labelText: tr('Telefon raqami'),
+                  helperText: tr('Raqam boshqa foydalanuvchilarga faqat so‘ralganda ko‘rsatiladi'),
                   enabled: false,
                 ),
                 child: Text(Formatters.phone(user.phone)),
@@ -422,7 +458,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       dimension: 22,
                       child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
                     )
-                  : const Text('Saqlash'),
+                  : Text(tr('Saqlash')),
             ),
           ],
         ),

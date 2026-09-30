@@ -7,6 +7,7 @@ import '../../../app/router/routes.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../auth/application/session_controller.dart';
 import '../../jobs/application/job_providers.dart';
@@ -65,12 +66,12 @@ class SavedScreen extends StatelessWidget {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Saqlanganlar'),
-          bottom: const TabBar(
+          title: Text(tr('Saqlanganlar')),
+          bottom: TabBar(
             tabs: [
-              Tab(text: 'E’lonlar'),
-              Tab(text: 'Ishlar'),
-              Tab(text: 'Ustalar'),
+              Tab(text: tr('E’lonlar')),
+              Tab(text: tr('Ishlar')),
+              Tab(text: tr('Ustalar')),
             ],
           ),
         ),
@@ -78,19 +79,19 @@ class SavedScreen extends StatelessWidget {
           children: [
             _SavedTab<Listing>(
               provider: _savedListingsProvider,
-              emptyTitle: 'Saqlangan e’lonlar yo‘q',
+              emptyTitle: tr('Saqlangan e’lonlar yo‘q'),
               builder: (l) => ListingTile(listing: l, heroPrefix: 'saved'),
               browseRoute: AppRoutes.home,
             ),
             _SavedTab<Job>(
               provider: _savedJobsProvider,
-              emptyTitle: 'Saqlangan vakansiyalar yo‘q',
+              emptyTitle: tr('Saqlangan vakansiyalar yo‘q'),
               builder: (j) => JobCard(job: j),
               browseRoute: AppRoutes.jobs,
             ),
             _SavedTab<ServiceProvider>(
               provider: _savedProvidersProvider,
-              emptyTitle: 'Saqlangan ustalar yo‘q',
+              emptyTitle: tr('Saqlangan ustalar yo‘q'),
               builder: (p) => ProviderTile(provider: p),
               browseRoute: AppRoutes.services,
             ),
@@ -122,8 +123,8 @@ class _SavedTab<T> extends ConsumerWidget {
                   icon: Icons.favorite_border_rounded,
                   tone: AccentTone.red,
                   title: emptyTitle,
-                  message: 'Yoqqan narsalarni ♥ belgisi bilan saqlang — ular shu yerda turadi.',
-                  actionLabel: 'Ko‘rib chiqish',
+                  message: tr('Yoqqan narsalarni ♥ belgisi bilan saqlang — ular shu yerda turadi.'),
+                  actionLabel: tr('Ko‘rib chiqish'),
                   onAction: () => browseRoute == AppRoutes.home ? context.go(browseRoute) : context.push(browseRoute),
                 )
               : ListView.separated(

@@ -1,12 +1,17 @@
+import '../l10n/l10n.dart';
+
 /// Typed failures surfaced from the data layer. UI maps these to copy/icons;
 /// repositories never leak transport exceptions (Dio, platform) upward.
 sealed class AppFailure implements Exception {
-  const AppFailure(this.message);
+  const AppFailure(String message) : _message = message;
 
-  final String message;
+  /// Uzbek source text; shown through [message] in the current language.
+  final String _message;
+
+  String get message => tr(_message);
 
   @override
-  String toString() => '$runtimeType: $message';
+  String toString() => '$runtimeType: $_message';
 }
 
 final class NetworkFailure extends AppFailure {
@@ -37,7 +42,7 @@ base class ForbiddenFailure extends AppFailure {
   const ForbiddenFailure([super.message = 'Bu amal uchun ruxsat yo‘q']);
 }
 
-/// 403 LIMIT_REACHED: a plan limit (server-configured) was hit.
+/// 403 LIMIT_REACHED: a fair-use limit (server-configured) was hit.
 final class LimitReachedFailure extends ForbiddenFailure {
   const LimitReachedFailure(super.message, {required this.limit, this.max});
 
@@ -49,11 +54,6 @@ final class LimitReachedFailure extends ForbiddenFailure {
 /// 403 FEATURE_DISABLED: switched off on the server (e.g. not launched yet).
 final class FeatureDisabledFailure extends ForbiddenFailure {
   const FeatureDisabledFailure([super.message = 'Bu imkoniyat hozircha mavjud emas']);
-}
-
-/// Payment could not start: method not available here or not configured.
-final class PaymentUnavailableFailure extends AppFailure {
-  const PaymentUnavailableFailure([super.message = 'Bu to‘lov usuli hozircha mavjud emas']);
 }
 
 /// 403 BLOCKED: one of the users blocked the other.

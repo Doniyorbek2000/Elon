@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router/routes.dart';
 import '../../../core/domain/public_profile.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/widgets/common.dart';
 import '../../auth/application/session_controller.dart';
 import '../../auth/presentation/auth_gate.dart';
@@ -19,13 +20,13 @@ Future<void> startChat(
 }) async {
   if (!await ensureSignedIn(context, ref) || !context.mounted) return;
   if (ref.read(sessionProvider)?.id == peer.id) {
-    showAppSnack(context, 'Bu sizning e’loningiz');
+    showAppSnack(context, tr('Bu sizning e’loningiz'));
     return;
   }
   try {
     final conversation = await ref.read(chatRepositoryProvider).openConversation(peer: peer, context: subject);
     if (context.mounted) await context.push(AppRoutes.chat(conversation.id));
   } on Object {
-    if (context.mounted) showAppSnack(context, 'Chatni ochib bo‘lmadi. Qayta urinib ko‘ring.');
+    if (context.mounted) showAppSnack(context, tr('Chatni ochib bo‘lmadi. Qayta urinib ko‘ring.'));
   }
 }

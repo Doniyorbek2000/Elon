@@ -7,12 +7,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/app.dart';
 import 'core/logging/app_logger.dart';
+import 'core/logging/crash_reporting.dart';
 import 'core/storage/key_value_store.dart';
 
 Future<void> main() async {
-  const logger = DeveloperLogger();
+  const logger = ReportingLogger(DeveloperLogger());
   await runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
+    await CrashReporting.init();
     FlutterError.onError = (details) {
       FlutterError.presentError(details);
       logger.error('Flutter error', error: details.exception, stackTrace: details.stack, tag: 'ui');

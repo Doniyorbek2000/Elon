@@ -11,23 +11,16 @@ import {
   Patch,
   Post,
   Query,
-  Req,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import type { Request } from 'express';
-
-import { AuthUser, CurrentUser, MaybeUser, OptionalAuth, Public } from '../../common/auth.decorators';
+import { AuthUser, CurrentUser, Public } from '../../common/auth.decorators';
 import {
-  AdEventDto,
   AddMemberDto,
-  AdsQuery,
   BusinessDto,
-  CampaignDto,
   StatsQuery,
   StorefrontListingsQuery,
   UpdateBusinessDto,
 } from './business.dto';
-import { AdsService } from './ads.service';
 import { AnalyticsService } from './analytics.service';
 import { BusinessService } from './business.service';
 
@@ -36,7 +29,6 @@ import { BusinessService } from './business.service';
 class BusinessController {
   constructor(
     private readonly business: BusinessService,
-    private readonly ads: AdsService,
     private readonly analytics: AnalyticsService,
   ) {}
 
@@ -90,54 +82,6 @@ class BusinessController {
     return this.business.storefrontListings(id, query.cursor, query.limit);
   }
 
-  // ─── ads
-
-  @ApiBearerAuth()
-  @Post('me/business/campaigns')
-  createCampaign(@CurrentUser() user: AuthUser, @Body() dto: CampaignDto) {
-    return this.ads.create(user.userId, dto);
-  }
-
-  @ApiBearerAuth()
-  @Get('me/business/campaigns')
-  campaigns(@CurrentUser() user: AuthUser) {
-    return this.ads.mine(user.userId);
-  }
-
-  @ApiBearerAuth()
-  @Post('me/business/campaigns/:id/pause')
-  @HttpCode(200)
-  pause(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string) {
-    return this.ads.setPaused(user.userId, id, true);
-  }
-
-  @ApiBearerAuth()
-  @Post('me/business/campaigns/:id/resume')
-  @HttpCode(200)
-  resume(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string) {
-    return this.ads.setPaused(user.userId, id, false);
-  }
-
-  @Public()
-  @Get('ads')
-  serve(@Query() query: AdsQuery) {
-    return this.ads.serve(query);
-  }
-
-  /** Aggregated impression/click; duplicates per viewer/day are ignored. */
-  @OptionalAuth()
-  @Post('ads/:id/events')
-  @HttpCode(200)
-  adEvent(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: AdEventDto,
-    @Req() request: Request,
-    @MaybeUser() viewer?: AuthUser,
-  ) {
-    const key = viewer?.userId ?? `${request.ip ?? 'unknown'}|${request.headers['user-agent'] ?? ''}`;
-    return this.ads.recordEvent(id, dto.type, key);
-  }
-
   // ─── seller analytics
 
   @ApiBearerAuth()
@@ -149,18 +93,12 @@ class BusinessController {
   ) {
     return this.analytics.listingStats(user.userId, id, query);
   }
-
-  @ApiBearerAuth()
-  @Get('me/promotions/:id/stats')
-  promotionStats(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string) {
-    return this.analytics.promotionStats(user.userId, id);
-  }
 }
 
 @Global()
 @Module({
   controllers: [BusinessController],
-  providers: [BusinessService, AdsService, AnalyticsService],
-  exports: [BusinessService, AdsService, AnalyticsService],
+  providers: [BusinessService, AnalyticsService],
+  exports: [BusinessService, AnalyticsService],
 })
 export class BusinessModule {}

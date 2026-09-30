@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../../../core/domain/media_image.dart';
 import '../../../core/domain/money.dart';
 import '../../../core/domain/place.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/sharing/share_service.dart';
 import '../../listings/domain/listing.dart';
 
@@ -11,9 +12,11 @@ enum CreateStep {
   photos('Rasmlar'),
   review('Ko‘rib chiqish');
 
-  const CreateStep(this.label);
+  const CreateStep(this._label);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
 }
 
 @immutable

@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DevicePlatform, NotificationType, Prisma } from '@prisma/client';
 
 import { AppError } from '../../common/errors';
+import { Msg, isLang, render } from '../../common/i18n';
 import { Page, keysetPage, keysetWhere, pageSize } from '../../common/pagination';
 import { apiEnum } from '../../common/text';
 import { PrismaService } from '../../infra/prisma.service';
@@ -10,8 +11,9 @@ import { PUSH_PROVIDER, PushProvider } from './push.provider';
 
 export interface NotifyInput {
   type: NotificationType;
-  title: string;
-  body: string;
+  /** Uzbek source text or a template with params; rendered in the recipient's language. */
+  title: string | Msg;
+  body: string | Msg;
   /** Deep link route inside the app, e.g. "/chat/<id>". */
   route: string;
   data?: Record<string, string>;
@@ -33,17 +35,21 @@ export class NotificationsService {
    */
   async notify(userId: string, input: NotifyInput, options: { inbox?: boolean; dedupeKey?: string } = {}) {
     const data = { route: input.route, type: apiEnum(input.type), ...input.data };
+    const profile = await this.prisma.profile.findUnique({ where: { userId }, select: { language: true } });
+    const lang = isLang(profile?.language) ? profile.language : 'uz';
+    const title = render(input.title, lang);
+    const body = render(input.body, lang);
     let notificationId: string | undefined;
     if (options.inbox ?? input.type !== NotificationType.MESSAGE) {
       const row = await this.prisma.notification.create({
-        data: { userId, type: input.type, title: input.title, body: input.body, data },
+        data: { userId, type: input.type, title, body, data },
       });
       notificationId = row.id;
     }
     await this.queues.push({
       userId,
-      title: input.title,
-      body: input.body,
+      title,
+      body,
       data: { ...data, ...(notificationId ? { notificationId } : {}) },
       dedupeKey: options.dedupeKey ?? notificationId ?? `${userId}:${Date.now()}`,
     });

@@ -4,3 +4,4 @@ coverage/
 .env
 .env.docker
 *.log
+dump.rdb

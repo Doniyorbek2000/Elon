@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../design/app_colors.dart';
 
 /// Vector brand mark (shopping bag, green→blue). Painted so it stays crisp at
@@ -11,7 +12,7 @@ class BrandMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
-    label: 'Bozor.uz logotipi',
+    label: tr('Bozor.uz logotipi'),
     image: true,
     child: CustomPaint(size: Size.square(size), painter: _BagPainter(context.palette)),
   );
@@ -86,7 +87,7 @@ class Wordmark extends StatelessWidget {
     return Text.rich(
       TextSpan(
         children: [
-          const TextSpan(text: 'Bozor'),
+          TextSpan(text: tr('Bozor')),
           TextSpan(
             text: '.uz',
             style: TextStyle(color: palette.primary),

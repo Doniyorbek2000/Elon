@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../core/l10n/l10n.dart';
 import 'media_image.dart';
 
 /// Verification is server-issued. The client only renders what the backend
@@ -13,10 +14,10 @@ enum VerificationLevel {
   bool get isVerified => this != VerificationLevel.none;
 
   String get label => switch (this) {
-    VerificationLevel.none => 'Tasdiqlanmagan',
-    VerificationLevel.phone => 'Telefon tasdiqlangan',
-    VerificationLevel.identity => 'Shaxsi tasdiqlangan',
-    VerificationLevel.business => 'Biznes tasdiqlangan',
+    VerificationLevel.none => tr('Tasdiqlanmagan'),
+    VerificationLevel.phone => tr('Telefon tasdiqlangan'),
+    VerificationLevel.identity => tr('Shaxsi tasdiqlangan'),
+    VerificationLevel.business => tr('Biznes tasdiqlangan'),
   };
 
   static VerificationLevel parse(Object? value) =>

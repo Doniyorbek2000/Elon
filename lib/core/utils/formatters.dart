@@ -1,8 +1,41 @@
+import '../../core/l10n/l10n.dart';
 import '../domain/money.dart';
 
 /// Uzbek-locale formatting helpers. Pure functions → trivially testable.
 abstract final class Formatters {
   static const _nbsp = ' ';
+
+  static const _monthsRuGenitive = [
+    'января',
+    'февраля',
+    'марта',
+    'апреля',
+    'мая',
+    'июня',
+    'июля',
+    'августа',
+    'сентября',
+    'октября',
+    'ноября',
+    'декабря',
+  ];
+
+  static const _monthsRuNominative = [
+    'январь',
+    'февраль',
+    'март',
+    'апрель',
+    'май',
+    'июнь',
+    'июль',
+    'август',
+    'сентябрь',
+    'октябрь',
+    'ноябрь',
+    'декабрь',
+  ];
+
+  static bool get _ru => currentLanguage == AppLanguage.ru;
 
   static const _months = [
     'yanvar',
@@ -31,23 +64,23 @@ abstract final class Formatters {
   }
 
   static String money(Money money) => switch (money.currency) {
-    Currency.uzs => '${groupDigits(money.amount)}${_nbsp}so‘m',
+    Currency.uzs => '${groupDigits(money.amount)}$_nbsp${tr('so‘m')}',
     Currency.usd => '\$${groupDigits(money.amount)}',
   };
 
   static String moneyOrNegotiable(Money? value, {bool negotiable = false}) {
-    if (value == null) return 'Kelishiladi';
+    if (value == null) return tr('Kelishiladi');
     return money(value);
   }
 
   /// "3 000 000 – 5 000 000 so‘m", "5 000 000 so‘m dan", "Suhbat asosida".
   static String salaryRange(int? min, int? max, Currency currency) {
-    if (min == null && max == null) return 'Suhbat asosida';
-    final suffix = currency == Currency.uzs ? '${_nbsp}so‘m' : '';
+    if (min == null && max == null) return tr('Suhbat asosida');
+    final suffix = currency == Currency.uzs ? '$_nbsp${tr('so‘m')}' : '';
     final prefix = currency == Currency.usd ? '\$' : '';
     if (min != null && max != null) return '$prefix${groupDigits(min)} – $prefix${groupDigits(max)}$suffix';
-    if (min != null) return '$prefix${groupDigits(min)}$suffix dan';
-    return '$prefix${groupDigits(max!)}$suffix gacha';
+    if (min != null) return tr('{p0} dan', {'p0': '$prefix${groupDigits(min)}$suffix'});
+    return tr('{p0} gacha', {'p0': '$prefix${groupDigits(max!)}$suffix'});
   }
 
   /// Compact counts: 950 → "950", 2400 → "2.4K", 1250000 → "1.3M".
@@ -65,22 +98,26 @@ abstract final class Formatters {
   /// "hozirgina", "5 daqiqa oldin", "2 soat oldin", "kecha", "3 kun oldin", "12 mart".
   static String relativeTime(DateTime time, DateTime now) {
     final diff = now.difference(time);
-    if (diff.inMinutes < 1) return 'hozirgina';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} daqiqa oldin';
-    if (diff.inHours < 24) return '${diff.inHours} soat oldin';
-    if (diff.inDays == 1) return 'kecha';
-    if (diff.inDays < 7) return '${diff.inDays} kun oldin';
-    if (diff.inDays < 30) return '${diff.inDays ~/ 7} hafta oldin';
+    if (diff.inMinutes < 1) return tr('hozirgina');
+    if (diff.inMinutes < 60) return _ago(diff.inMinutes, 'daqiqa', ('минуту', 'минуты', 'минут'));
+    if (diff.inHours < 24) return _ago(diff.inHours, 'soat', ('час', 'часа', 'часов'));
+    if (diff.inDays == 1) return tr('kecha');
+    if (diff.inDays < 7) return _ago(diff.inDays, 'kun', ('день', 'дня', 'дней'));
+    if (diff.inDays < 30) return _ago(diff.inDays ~/ 7, 'hafta', ('неделю', 'недели', 'недель'));
     return date(time, now: now);
   }
 
+  static String _ago(int n, String uzUnit, (String, String, String) ru) =>
+      _ru ? '$n ${pluralRu(n, ru.$1, ru.$2, ru.$3)} назад' : '$n $uzUnit oldin';
+
   /// "12 mart" in the current year, "12 mart 2024" otherwise.
   static String date(DateTime time, {required DateTime now}) {
-    final base = '${time.day} ${_months[time.month - 1]}';
+    final month = (_ru ? _monthsRuGenitive : _months)[time.month - 1];
+    final base = '${time.day} $month';
     return time.year == now.year ? base : '$base ${time.year}';
   }
 
-  static String monthYear(DateTime time) => '${_months[time.month - 1]} ${time.year}';
+  static String monthYear(DateTime time) => '${(_ru ? _monthsRuNominative : _months)[time.month - 1]} ${time.year}';
 
   /// "10:24"
   static String clock(DateTime time) =>
@@ -92,7 +129,7 @@ abstract final class Formatters {
     final day = DateTime(time.year, time.month, time.day);
     final days = today.difference(day).inDays;
     if (days == 0) return clock(time);
-    if (days == 1) return 'kecha';
+    if (days == 1) return tr('kecha');
     return date(time, now: now);
   }
 
@@ -101,16 +138,16 @@ abstract final class Formatters {
     final today = DateTime(now.year, now.month, now.day);
     final day = DateTime(time.year, time.month, time.day);
     final days = today.difference(day).inDays;
-    if (days == 0) return 'Bugun';
-    if (days == 1) return 'Kecha';
+    if (days == 0) return tr('Bugun');
+    if (days == 1) return tr('Kecha');
     return date(time, now: now);
   }
 
   /// "Onlayn" / "5 daqiqa oldin faol edi".
   static String presence({required bool isOnline, DateTime? lastActiveAt, required DateTime now}) {
-    if (isOnline) return 'Onlayn';
-    if (lastActiveAt == null) return 'Yaqinda faol edi';
-    return '${relativeTime(lastActiveAt, now)} faol edi';
+    if (isOnline) return tr('Onlayn');
+    if (lastActiveAt == null) return tr('Yaqinda faol edi');
+    return tr('{p0} faol edi', {'p0': relativeTime(lastActiveAt, now)});
   }
 
   /// "+998 90 123 45 67"
@@ -128,5 +165,5 @@ abstract final class Formatters {
   }
 
   static String distance(double km) =>
-      km < 1 ? '${(km * 1000).round()} m' : '${km < 10 ? km.toStringAsFixed(1) : km.round()} km';
+      km < 1 ? '${(km * 1000).round()} m' : tr('{p0} km', {'p0': km < 10 ? km.toStringAsFixed(1) : km.round()});
 }

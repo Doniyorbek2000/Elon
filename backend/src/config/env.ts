@@ -58,22 +58,48 @@ const schema = z
     LISTING_TTL_DAYS: z.coerce.number().int().positive().default(30),
     JOB_TTL_DAYS: z.coerce.number().int().positive().default(30),
 
-    /**
-     * Development/test payment provider (simulated checkout + HMAC-signed
-     * webhooks). Never available in production.
-     */
-    PAYMENT_DEV_ENABLED: bool.default('false'),
-    PAYMENT_DEV_SECRET: z.string().min(32).optional(),
+    /** Error reporting. Empty disables Sentry. */
+    SENTRY_DSN: z.string().url().optional(),
+    SENTRY_ENVIRONMENT: z.string().optional(),
+    SENTRY_TRACES_SAMPLE_RATE: z.coerce.number().min(0).max(1).default(0),
+
+    /** `postgres` (default, pg_trgm) or `meilisearch` (typo-tolerant external engine). */
+    SEARCH_PROVIDER: z.enum(['postgres', 'meilisearch']).default('postgres'),
+    MEILI_URL: z.string().url().optional(),
+    MEILI_API_KEY: z.string().optional(),
+    /** Index name prefix so several environments can share one Meilisearch. */
+    MEILI_INDEX_PREFIX: z.string().default('bozor'),
+
+    /** Automated image content check (nudity, gore, offensive). `none` disables it. */
+    IMAGE_MODERATION_PROVIDER: z.enum(['none', 'sightengine']).default('none'),
+    SIGHTENGINE_USER: z.string().optional(),
+    SIGHTENGINE_SECRET: z.string().optional(),
+    /** Override for tests / proxies. */
+    SIGHTENGINE_URL: z.string().url().default('https://api.sightengine.com/1.0/check.json'),
+
+    /** Global per-client request limit per minute (raise it only for load tests). */
+    RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(300),
 
     SWAGGER_ENABLED: bool.default('true'),
     WEB_BASE_URL: z.string().url().default('https://bozor.uz'),
   })
   .superRefine((env, ctx) => {
-    if (env.PAYMENT_DEV_ENABLED && !env.PAYMENT_DEV_SECRET) {
+    if (
+      env.IMAGE_MODERATION_PROVIDER === 'sightengine' &&
+      !(env.SIGHTENGINE_USER && env.SIGHTENGINE_SECRET)
+    ) {
       ctx.addIssue({
         code: 'custom',
-        message: 'PAYMENT_DEV_SECRET is required when PAYMENT_DEV_ENABLED=true',
-        path: ['PAYMENT_DEV_SECRET'],
+        message:
+          'SIGHTENGINE_USER and SIGHTENGINE_SECRET are required when IMAGE_MODERATION_PROVIDER=sightengine',
+        path: ['SIGHTENGINE_USER'],
+      });
+    }
+    if (env.SEARCH_PROVIDER === 'meilisearch' && !env.MEILI_URL) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'MEILI_URL is required when SEARCH_PROVIDER=meilisearch',
+        path: ['MEILI_URL'],
       });
     }
     if (env.NODE_ENV !== 'production') return;
@@ -96,13 +122,6 @@ const schema = z
         code: 'custom',
         message: 'FCM_PROJECT_ID and FCM_SERVICE_ACCOUNT are required',
         path: ['FCM_PROJECT_ID'],
-      });
-    }
-    if (env.PAYMENT_DEV_ENABLED) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'The dev payment provider is forbidden in production',
-        path: ['PAYMENT_DEV_ENABLED'],
       });
     }
     if (!env.CORS_ORIGINS) {

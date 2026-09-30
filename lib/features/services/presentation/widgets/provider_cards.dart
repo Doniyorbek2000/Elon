@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router/routes.dart';
 import '../../../../core/design/app_colors.dart';
 import '../../../../core/design/app_tokens.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/avatar.dart';
 import '../../../../core/widgets/badges.dart';
@@ -17,10 +18,9 @@ import '../../domain/service_provider.dart';
 String _semantics(ServiceProvider p) => [
   p.name,
   p.profession,
-  'reyting ${p.rating.toStringAsFixed(1)}, ${p.reviewCount} sharh',
+  tr('reyting {p0}, {reviewCount} sharh', {'p0': p.rating.toStringAsFixed(1), 'reviewCount': p.reviewCount}),
   p.place.shortLabel,
   if (p.profile.isOnline) 'onlayn',
-  if (p.isTop) 'TOP usta',
 ].join(', ');
 
 /// Compact vertical card for provider carousels.
@@ -69,8 +69,7 @@ class ProviderCard extends ConsumerWidget {
               spacing: AppSpacing.xs,
               runSpacing: AppSpacing.xs,
               children: [
-                if (provider.profile.isOnline) const StatusPill(label: 'Onlayn', style: PillStyle.success, dense: true),
-                if (provider.promotion case final promotion?) PromotionBadge(type: promotion.type),
+                if (provider.profile.isOnline) StatusPill(label: tr('Onlayn'), style: PillStyle.success, dense: true),
               ],
             ),
           ],
@@ -117,10 +116,6 @@ class ProviderTile extends ConsumerWidget {
                       ),
                       const SizedBox(width: AppSpacing.xs),
                       VerifiedBadge(level: provider.profile.verification, size: 14),
-                      if (provider.promotion case final promotion?) ...[
-                        const SizedBox(width: AppSpacing.xs),
-                        PromotionBadge(type: promotion.type),
-                      ],
                     ],
                   ),
                   Text(provider.profession, style: text.bodySmall),
@@ -137,7 +132,10 @@ class ProviderTile extends ConsumerWidget {
                   if (provider.priceFrom != null) ...[
                     const SizedBox(height: AppSpacing.xs),
                     Text(
-                      '${Formatters.money(provider.priceFrom!)} dan${provider.priceUnit == null ? '' : ' / ${provider.priceUnit}'}',
+                      tr('{p0} dan{p1}', {
+                        'p0': Formatters.money(provider.priceFrom!),
+                        'p1': provider.priceUnit == null ? '' : ' / ${provider.priceUnit}',
+                      }),
                       style: text.labelMedium?.copyWith(color: palette.price),
                     ),
                   ],

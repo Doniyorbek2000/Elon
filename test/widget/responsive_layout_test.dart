@@ -1,3 +1,4 @@
+import 'package:bozor/core/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -41,23 +42,45 @@ void main() {
     '/account/applications',
     '/account/settings',
     '/account/help',
-    '/account/plans',
-    '/account/plans/business',
     '/account/business',
     '/account/edit',
     '/verify-phone',
   ];
 
-  for (final MapEntry(key: name, value: (size, textScale, theme)) in viewports.entries) {
-    testWidgets('$name: onboarding lays out without overflow', (tester) async {
-      await pumpBozorApp(tester, onboarded: false, size: size, textScale: textScale, themeMode: theme);
-    });
+  // Russian strings are longer than Uzbek ones: check the tightest layouts in both languages.
+  const languages = {'uz': null, 'ru': 'ru'};
+  const russianViewports = {'iPhone SE 1st gen', 'Pro Max @200% text'};
 
-    for (final location in screens) {
-      testWidgets('$name: $location lays out without overflow', (tester) async {
-        await pumpBozorApp(tester, location: location, size: size, textScale: textScale, themeMode: theme);
-        expect(find.byType(ErrorWidget), findsNothing);
+  for (final MapEntry(key: name, value: (size, textScale, theme)) in viewports.entries) {
+    for (final MapEntry(key: languageName, value: language) in languages.entries) {
+      if (language != null && !russianViewports.contains(name)) continue;
+      final label = language == null ? name : '$name [$languageName]';
+      testWidgets('$label: onboarding lays out without overflow', (tester) async {
+        addTearDown(() => currentLanguage = AppLanguage.uz);
+        await pumpBozorApp(
+          tester,
+          onboarded: false,
+          size: size,
+          textScale: textScale,
+          themeMode: theme,
+          language: language,
+        );
       });
+
+      for (final location in screens) {
+        testWidgets('$label: $location lays out without overflow', (tester) async {
+          addTearDown(() => currentLanguage = AppLanguage.uz);
+          await pumpBozorApp(
+            tester,
+            location: location,
+            size: size,
+            textScale: textScale,
+            themeMode: theme,
+            language: language,
+          );
+          expect(find.byType(ErrorWidget), findsNothing);
+        });
+      }
     }
   }
 }

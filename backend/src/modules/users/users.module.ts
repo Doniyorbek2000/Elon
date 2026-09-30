@@ -19,6 +19,7 @@ import { AuthUser, CurrentUser, OptionalAuth } from '../../common/auth.decorator
 import { AppError } from '../../common/errors';
 import { presentMedia, presentUser, publicUserSelect, mediaSelect } from '../../common/presenters';
 import { apiEnum } from '../../common/text';
+import { LANGUAGES, Lang } from '../../common/i18n';
 import { PresenceService } from '../../infra/presence.service';
 import { PrismaService } from '../../infra/prisma.service';
 import { LocationsService } from '../locations/locations.service';
@@ -63,6 +64,10 @@ export class UpdateMeDto {
   preferredLocalityId?: string | null;
 
   @IsOptional()
+  @IsIn(LANGUAGES)
+  language?: Lang;
+
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
   @IsIn([1, 5, 10, 25, 50])
@@ -105,7 +110,11 @@ export class UsersService {
       accountType: apiEnum(profile.accountType),
       role: apiEnum(user.role),
       memberSince: user.createdAt,
-      settings: { showPhone: profile.showPhone, messagePreviews: profile.messagePreviews },
+      settings: {
+        showPhone: profile.showPhone,
+        messagePreviews: profile.messagePreviews,
+        language: profile.language,
+      },
       preferredLocation: profile.preferredRegion
         ? {
             regionId: profile.preferredRegion.id,
@@ -126,6 +135,7 @@ export class UsersService {
       bio: dto.bio?.trim(),
       showPhone: dto.showPhone,
       messagePreviews: dto.messagePreviews,
+      language: dto.language,
     };
     if (dto.avatarId !== undefined) {
       if (dto.avatarId) {

@@ -72,7 +72,7 @@ The e2e suites need the compose dependencies running. They run the real HTTP app
 - **Redis** holds only ephemeral state: rate limits, OTP challenges, presence, view dedupe, short caches, BullMQ.
 - **Jobs**: all BullMQ handlers are idempotent (deterministic job ids; renditions overwrite the same keys); failures retry with exponential backoff; undecodable images are marked `failed` immediately.
 - **Moderation**: risky text/prices are held in `pendingReview`; 3 distinct reports escalate to the moderation queue. Roles `MODERATOR`/`ADMIN` are set in the database only.
-- **Monetization**: models and flags exist (`FEATURE_*`), all disabled; no paid feature is active.
+- **Free service**: there are no payments, plans or paid promotion. Fair-use limits live in `src/modules/limits/limits.module.ts`.
 
 ## Credentials required for production
 

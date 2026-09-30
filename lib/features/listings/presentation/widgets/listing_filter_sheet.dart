@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../../../core/design/app_colors.dart';
 import '../../../../core/design/app_tokens.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/widgets/sheets.dart';
 import '../../domain/listing.dart';
 import '../../domain/listing_query.dart';
@@ -43,7 +44,7 @@ class _ListingFilterSheetState extends State<ListingFilterSheet> {
     final min = int.tryParse(_min.text);
     final max = int.tryParse(_max.text);
     if (min != null && max != null && min > max) {
-      setState(() => _priceError = 'Minimal narx maksimaldan katta bo‘lmasin');
+      setState(() => _priceError = tr('Minimal narx maksimaldan katta bo‘lmasin'));
       return;
     }
     Navigator.pop(context, _query.copyWith(minPrice: () => min, maxPrice: () => max));
@@ -68,14 +69,14 @@ class _ListingFilterSheetState extends State<ListingFilterSheet> {
     );
 
     return SheetScaffold(
-      title: 'Filtrlar',
-      trailing: TextButton(onPressed: _reset, child: const Text('Tozalash')),
+      title: tr('Filtrlar'),
+      trailing: TextButton(onPressed: _reset, child: Text(tr('Tozalash'))),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            label('Saralash'),
+            label(tr('Saralash')),
             Wrap(
               spacing: AppSpacing.sm,
               runSpacing: AppSpacing.sm,
@@ -91,7 +92,7 @@ class _ListingFilterSheetState extends State<ListingFilterSheet> {
                   ),
               ],
             ),
-            label('Narx, so‘m'),
+            label(tr('Narx, so‘m')),
             Row(
               children: [
                 Expanded(
@@ -119,27 +120,27 @@ class _ListingFilterSheetState extends State<ListingFilterSheet> {
                 padding: const EdgeInsets.only(top: AppSpacing.sm),
                 child: Text(_priceError!, style: text.bodySmall?.copyWith(color: palette.danger)),
               ),
-            label('Holati'),
+            label(tr('Holati')),
             SizedBox(
               width: double.infinity,
               child: SegmentedButton<ItemCondition?>(
                 showSelectedIcon: false,
-                segments: const [
-                  ButtonSegment(value: null, label: Text('Barchasi')),
-                  ButtonSegment(value: ItemCondition.newItem, label: Text('Yangi')),
-                  ButtonSegment(value: ItemCondition.used, label: Text('Ishlatilgan')),
+                segments: [
+                  ButtonSegment(value: null, label: Text(tr('Barchasi'))),
+                  ButtonSegment(value: ItemCondition.newItem, label: Text(tr('Yangi'))),
+                  ButtonSegment(value: ItemCondition.used, label: Text(tr('Ishlatilgan'))),
                 ],
                 selected: {_query.condition},
                 onSelectionChanged: (value) => setState(() => _query = _query.copyWith(condition: () => value.first)),
               ),
             ),
-            label('Masofa'),
+            label(tr('Masofa')),
             Wrap(
               spacing: AppSpacing.sm,
               runSpacing: AppSpacing.sm,
               children: [
                 ChoiceChip(
-                  label: Text('Butun hudud · ${widget.areaLabel}'),
+                  label: Text(tr('Butun hudud · {areaLabel}', {'areaLabel': widget.areaLabel})),
                   selected: _query.radiusKm == null,
                   onSelected: (_) => setState(() => _query = _query.copyWith(radiusKm: () => null)),
                   labelStyle: text.labelMedium?.copyWith(
@@ -148,7 +149,7 @@ class _ListingFilterSheetState extends State<ListingFilterSheet> {
                 ),
                 for (final km in listingRadiusOptionsKm)
                   ChoiceChip(
-                    label: Text('$km km'),
+                    label: Text(tr('{km} km', {'km': km})),
                     selected: _query.radiusKm == km,
                     onSelected: (_) => setState(() => _query = _query.copyWith(radiusKm: () => km)),
                     labelStyle: text.labelMedium?.copyWith(
@@ -160,7 +161,7 @@ class _ListingFilterSheetState extends State<ListingFilterSheet> {
           ],
         ),
       ),
-      actions: FilledButton(onPressed: _apply, child: const Text('Natijalarni ko‘rsatish')),
+      actions: FilledButton(onPressed: _apply, child: Text(tr('Natijalarni ko‘rsatish'))),
     );
   }
 }
