@@ -65,6 +65,11 @@ const schema = z
     PAYMENT_DEV_ENABLED: bool.default('false'),
     PAYMENT_DEV_SECRET: z.string().min(32).optional(),
 
+    /** Error reporting. Empty disables Sentry. */
+    SENTRY_DSN: z.string().url().optional(),
+    SENTRY_ENVIRONMENT: z.string().optional(),
+    SENTRY_TRACES_SAMPLE_RATE: z.coerce.number().min(0).max(1).default(0),
+
     SWAGGER_ENABLED: bool.default('true'),
     WEB_BASE_URL: z.string().url().default('https://bozor.uz'),
   })

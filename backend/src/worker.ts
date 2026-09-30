@@ -16,6 +16,7 @@ import {
   QUEUE,
   QueueService,
 } from './infra/queues';
+import { flushMonitoring, initMonitoring, reportError } from './infra/monitoring';
 import { RedisService } from './infra/redis.service';
 import { StorageService } from './infra/storage.service';
 import { JobsService } from './modules/jobs/jobs.service';
@@ -143,18 +144,23 @@ export function startWorkers(app: INestApplicationContext): Worker[] {
 
   const workers = [mediaWorker, notificationWorker, maintenanceWorker, moderationWorker];
   for (const worker of workers) {
-    worker.on('failed', (job, error) =>
+    worker.on('failed', (job, error) => {
       log.warn(
         `${worker.name}/${job?.name ?? '?'} failed (attempt ${job?.attemptsMade ?? 0}): ${error.message}`,
-      ),
-    );
-    worker.on('error', (error) => log.error(`${worker.name} worker error: ${error.message}`));
+      );
+      if (job && isFinalAttempt(job)) reportError(error, { queue: worker.name, job: job.name });
+    });
+    worker.on('error', (error) => {
+      log.error(`${worker.name} worker error: ${error.message}`);
+      reportError(error, { queue: worker.name });
+    });
   }
   return workers;
 }
 
 async function main(): Promise<void> {
   env(); // fail fast on invalid configuration
+  initMonitoring('worker');
   const app = await NestFactory.createApplicationContext(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
   app.enableShutdownHooks();
@@ -164,6 +170,7 @@ async function main(): Promise<void> {
   const shutdown = async () => {
     await Promise.allSettled(workers.map((w) => w.close()));
     await app.close();
+    await flushMonitoring();
     process.exit(0);
   };
   process.once('SIGTERM', () => void shutdown());
@@ -173,6 +180,7 @@ async function main(): Promise<void> {
 if (require.main === module) {
   main().catch((error: unknown) => {
     process.stderr.write(`Fatal worker error: ${error instanceof Error ? error.message : String(error)}\n`);
-    process.exit(1);
+    reportError(error, { phase: 'startup' });
+    void flushMonitoring().finally(() => process.exit(1));
   });
 }

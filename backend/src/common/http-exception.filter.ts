@@ -2,6 +2,7 @@ import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logge
 import { Prisma } from '@prisma/client';
 import type { Request, Response } from 'express';
 
+import { reportError } from '../infra/monitoring';
 import { AppError, ErrorCode } from './errors';
 
 interface ErrorBody {
@@ -38,6 +39,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     body.error.requestId = request.id;
     if (status >= 500) {
       this.logger.error({ err: exception, requestId: request.id, path: request.path }, 'Unhandled error');
+      reportError(exception, { requestId: request.id, path: request.route?.path as string | undefined });
     }
     const retry = (body.error.details as { retryAfterSeconds?: number } | undefined)?.retryAfterSeconds;
     if (status === 429 && retry) response.setHeader('Retry-After', String(retry));

@@ -1,0 +1,71 @@
+name: Backend
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths: ["backend/**", ".github/workflows/backend.yml"]
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4-alpine
+        env:
+          POSTGRES_USER: bozor
+          POSTGRES_PASSWORD: bozor_dev_password
+          POSTGRES_DB: bozor
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U bozor -d bozor" --health-interval 5s
+          --health-timeout 5s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s
+          --health-timeout 3s --health-retries 20
+    env:
+      DATABASE_URL: postgresql://bozor:bozor_dev_password@localhost:5432/bozor?schema=public
+      E2E_POSTGRES_URL: postgresql://bozor:bozor_dev_password@localhost:5432
+      TEST_REDIS_URL: redis://localhost:6379/1
+      TEST_S3_ENDPOINT: http://localhost:9000
+      TEST_S3_ACCESS_KEY_ID: bozor_dev_access
+      TEST_S3_SECRET_ACCESS_KEY: bozor_dev_secret_key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Start S3-compatible storage
+        working-directory: .
+        run: |
+          docker run -d --name s3 -p 9000:9000 \
+            -e MINIO_ROOT_USER=bozor_dev_access \
+            -e MINIO_ROOT_PASSWORD=bozor_dev_secret_key \
+            minio/minio server /data
+      - name: Enable Postgres extensions
+        working-directory: .
+        run: |
+          PGPASSWORD=bozor_dev_password psql -h localhost -U bozor -d postgres \
+            -c "CREATE EXTENSION IF NOT EXISTS postgis" -c "CREATE EXTENSION IF NOT EXISTS pg_trgm"
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npx prisma validate
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run build
+      - run: npm test
+      - run: npm run test:e2e

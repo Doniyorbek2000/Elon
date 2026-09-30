@@ -34,6 +34,7 @@ The backend lives in [`backend/`](backend/README.md) (NestJS, PostgreSQL/PostGIS
 | `WEB_BASE_URL` | `https://bozor.uz` | Share links / App Links / Universal Links host |
 | `APP_SCHEME` | `bozor` | Custom URL scheme (`bozor://app/listing/42`) |
 | `SUPPORT_TELEGRAM_URL` | `https://t.me/bozoruz_support` | Help → support button. **Replace with the real account.** |
+| `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `APP_RELEASE` | *(empty → crash reporting off)* | Sentry crash reports (no user data, no request bodies). |
 | `DEMO_LATENCY_MS` | `450` | Simulated latency for demo repositories |
 | `FF_AI_LISTING_ASSIST` | `false` | Photo → title/description suggestions in the create flow |
 
