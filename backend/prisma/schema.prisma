@@ -1310,26 +1310,46 @@ model Purchase {
 }
 
 model Payment {
-  id            String             @id @default(uuid()) @db.Uuid
-  purchaseId    String             @db.Uuid
-  purchase      Purchase           @relation(fields: [purchaseId], references: [id])
-  provider      PaymentProviderKey
-  status        PaymentStatus      @default(CREATED)
-  amountMinor   BigInt
-  currency      Currency           @default(UZS)
-  refundedMinor BigInt             @default(0)
-  externalId    String?
-  failureCode   String?
-  succeededAt   DateTime?
-  needsReview   Boolean            @default(false)
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-  events        PaymentEvent[]
-  refunds       Refund[]
+  id                String             @id @default(uuid()) @db.Uuid
+  purchaseId        String             @db.Uuid
+  purchase          Purchase           @relation(fields: [purchaseId], references: [id])
+  provider          PaymentProviderKey
+  status            PaymentStatus      @default(CREATED)
+  amountMinor       BigInt
+  currency          Currency           @default(UZS)
+  refundedMinor     BigInt             @default(0)
+  externalId        String?
+  failureCode       String?
+  succeededAt       DateTime?
+  needsReview       Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  events            PaymentEvent[]
+  refunds           Refund[]
+  paymeTransactions PaymeTransaction[]
 
   @@unique([provider, externalId])
   @@index([status, createdAt])
   @@index([purchaseId])
+}
+
+/// Payme Merchant API transaction (JSON-RPC). Payme owns the id and expects
+/// the exact create/perform/cancel timestamps back on every call.
+model PaymeTransaction {
+  id          String   @id
+  paymentId   String   @db.Uuid
+  payment     Payment  @relation(fields: [paymentId], references: [id])
+  amountMinor BigInt
+  /// 1 created, 2 performed, -1 cancelled before perform, -2 cancelled after
+  state       Int
+  reason      Int?
+  createTime  BigInt
+  performTime BigInt?
+  cancelTime  BigInt?
+  createdAt   DateTime @default(now())
+
+  @@index([paymentId, state])
+  @@index([createTime])
 }
 
 /// Append-only log of provider callbacks and reconciliation results.

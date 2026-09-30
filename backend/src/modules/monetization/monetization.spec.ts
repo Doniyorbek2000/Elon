@@ -1,3 +1,4 @@
+import { clickPrepareId, sumToTiyin } from './providers/click.provider';
 import { BillingPeriod, Coupon, CouponDiscountType, Currency, Prisma, PurchaseKind } from '@prisma/client';
 import type Redis from 'ioredis';
 
@@ -312,5 +313,26 @@ describe('payment configuration', () => {
     expect(() =>
       loadEnv({ ...base, NODE_ENV: 'development', PAYMENT_DEV_ENABLED: 'true', PAYMENT_DEV_SECRET: 'short' }),
     ).toThrow(/PAYMENT_DEV_SECRET/);
+  });
+});
+
+describe('click amount and prepare id helpers', () => {
+  it.each([
+    ['25000', 2_500_000n],
+    ['25000.5', 2_500_050n],
+    ['25000.05', 2_500_005n],
+    ['0.01', 1n],
+  ])('sumToTiyin(%s)', (input, expected) => {
+    expect(sumToTiyin(input)).toBe(expected);
+  });
+
+  it.each(['', '-1', '1e5', '12.345', 'abc', '1,5'])('sumToTiyin rejects %j', (input) => {
+    expect(sumToTiyin(input)).toBeNull();
+  });
+
+  it('derives a stable safe integer prepare id from the payment uuid', () => {
+    const id = '0b6f3c2e-1a4d-4c8e-9f21-7d5a3b9c1e40';
+    expect(clickPrepareId(id)).toBe(clickPrepareId(id));
+    expect(Number.isSafeInteger(clickPrepareId(id))).toBe(true);
   });
 });

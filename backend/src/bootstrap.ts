@@ -34,7 +34,17 @@ export async function createApp(options: { logger?: boolean } = {}): Promise<INe
       },
     }),
   );
-  app.use(express.urlencoded({ extended: false, limit: '64kb' }));
+  app.use(
+    express.urlencoded({
+      extended: false,
+      limit: '64kb',
+      // Click posts form-encoded callbacks.
+      verify: (req, _res, buf) => {
+        if ((req as { url?: string }).url?.includes('/payments/webhooks/'))
+          (req as { rawBody?: Buffer }).rawBody = Buffer.from(buf);
+      },
+    }),
+  );
   app.use(
     helmet({
       contentSecurityPolicy: false, // JSON API; Swagger UI needs inline assets.

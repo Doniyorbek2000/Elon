@@ -22,6 +22,19 @@ export interface WebhookRequest {
   rawBody: Buffer;
 }
 
+/**
+ * Thrown by an adapter when the provider's protocol expects a specific
+ * (HTTP 200) error body instead of an HTTP error, e.g. Click's `error: -1`.
+ */
+export class WebhookRejection extends Error {
+  constructor(
+    readonly body: unknown,
+    readonly reason: string,
+  ) {
+    super(reason);
+  }
+}
+
 export interface ProviderCapabilities {
   refunds: boolean;
   statusLookup: boolean;
@@ -44,7 +57,7 @@ export interface PaymentProvider {
   /** Verifies the signature exactly per provider docs; throws on failure. */
   parseWebhook(request: WebhookRequest): Promise<ProviderEvent[]>;
   /** Response body the provider expects for an accepted webhook. */
-  webhookAck(events: ProviderEvent[]): unknown;
+  webhookAck(events: ProviderEvent[], request: WebhookRequest): unknown;
   fetchStatus?(payment: Payment): Promise<ProviderEvent | null>;
   refund?(payment: Payment, amountMinor: bigint): Promise<{ succeeded: boolean; providerRefundId?: string }>;
 }

@@ -70,6 +70,16 @@ const schema = z
     SENTRY_ENVIRONMENT: z.string().optional(),
     SENTRY_TRACES_SAMPLE_RATE: z.coerce.number().min(0).max(1).default(0),
 
+    /** Click Shop API (https://docs.click.uz). All four are required to enable Click. */
+    CLICK_SERVICE_ID: z.string().min(1).optional(),
+    CLICK_MERCHANT_ID: z.string().min(1).optional(),
+    CLICK_SECRET_KEY: z.string().min(8).optional(),
+    /** Payme Business Merchant API (https://developer.help.paycom.uz). */
+    PAYME_MERCHANT_ID: z.string().min(1).optional(),
+    PAYME_KEY: z.string().min(8).optional(),
+    /** Use the Payme sandbox checkout (test.paycom.uz). */
+    PAYME_TEST_MODE: bool.default('false'),
+
     SWAGGER_ENABLED: bool.default('true'),
     WEB_BASE_URL: z.string().url().default('https://bozor.uz'),
   })

@@ -42,7 +42,10 @@ admin    ── /admin/monetization/* (ADMIN role) + AdminAuditLog
 
 ### Payments
 - `PaymentProvider` adapters: `dev` (development/test only, HMAC-signed webhooks), `payme`, `click`, `apple`, `google`, plus internal `credits` and `free` (100 % coupon).
-- **Payme / Click**: interface + webhook routes + configuration keys only. Their merchant documentation was not reachable from the build environment, so no protocol code was written from memory. They report `NOT_CONFIGURED` until implemented against the official docs.
+- **Click** (`providers/click.provider.ts`): Shop API two-phase callbacks (`Prepare`/`Complete`, MD5 `sign_string`), answered with HTTP 200 and Click error codes (`-1 … -9`). Enabled when `CLICK_SERVICE_ID`, `CLICK_MERCHANT_ID` and `CLICK_SECRET_KEY` are set. Callback URL for the Click cabinet: `POST {PUBLIC_API_URL}/api/v1/payments/webhooks/click` (both Prepare and Complete).
+- **Payme** (`payme.service.ts`, `providers/payme.provider.ts`): Merchant API JSON-RPC (`CheckPerformTransaction`, `CreateTransaction`, `PerformTransaction`, `CancelTransaction`, `CheckTransaction`, `GetStatement`) with Basic auth, transaction state in `PaymeTransaction`, 12 h transaction timeout. Enabled when `PAYME_MERCHANT_ID` and `PAYME_KEY` are set (`PAYME_TEST_MODE=true` → `test.paycom.uz`). Endpoint for the Payme cabinet: `POST {PUBLIC_API_URL}/api/v1/payments/webhooks/payme`; the account field is `order_id`. A performed transaction cannot be cancelled through the API (`-31007`): refunds are handled by support.
+- **Both were written from the public merchant specifications and verified against a simulator in `test/monetization-providers.e2e-spec.ts` — not against Click/Payme themselves.** Run their sandbox/test-cashbox checks before enabling either in production (field names, amount formats, and the exact error codes they expect are the usual places for surprises). Status polling and API-initiated refunds are not implemented for either.
+- Provider callbacks are returned to the caller **without** the `{ data }` envelope (`RawResponse`).
 - **Apple / Google**: interfaces for server-side receipt/purchase verification; `NOT_CONFIGURED` until App Store Server API / Play Developer API credentials exist.
 - Webhooks: signature verified first; each provider event id is stored once (replay → no-op); payment rows are locked (`SELECT … FOR UPDATE`) and moved through an explicit state machine; fulfillment is unique per purchase.
 - Money: `BigInt` minor units (`amountMinor`, tiyin for UZS). No floats.
@@ -77,8 +80,8 @@ Every step is written to `AdminAuditLog`.
 ### Requires credentials / external work before real money
 | Item | Status | Needed |
 |---|---|---|
-| Payme | Interface + webhook route; `UnconfiguredPaymentProvider` | Merchant account, official protocol docs, sandbox; implement `createCheckout`, signature check, `fetchStatus`, `refund`. Note: if its callbacks are not JSON, extend the raw-body capture in `bootstrap.ts`. |
-| Click | Same as Payme | Same as Payme |
+| Payme | Implemented (Merchant API), not verified against Payme | Merchant account + key, cabinet endpoint URL, sandbox run with Payme’s test cases; optional `fetchStatus`/refund work |
+| Click | Implemented (Shop API), not verified against Click | Service/merchant ids + secret key, cabinet callback URL, sandbox run; optional status lookup/reversal |
 | Apple IAP | Interface; route `ios → APPLE` | App Store Connect products, App Store Server API key; client StoreKit implementation of `StoreBilling`; receipt verification endpoint |
 | Google Play Billing | Interface; route `android → GOOGLE` | Play Console products, service account for Play Developer API; client billing implementation; purchase-token verification + RTDN webhook |
 | Real prices | None seeded | Business decision, entered via admin API |

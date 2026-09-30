@@ -21,7 +21,7 @@ import { PrismaService } from '../../infra/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreditsService } from './credits.service';
 import { PromotionService, routeFor } from './promotion.service';
-import { ProviderEvent, WebhookRequest } from './providers/payment-provider';
+import { ProviderEvent, WebhookRejection, WebhookRequest } from './providers/payment-provider';
 import { PaymentProviderRegistry } from './providers/providers.registry';
 import { SubscriptionsService } from './subscriptions.service';
 
@@ -67,9 +67,17 @@ export class PaymentsService {
 
   async handleWebhook(providerKey: PaymentProviderKey, request: WebhookRequest): Promise<unknown> {
     const provider = this.registry.get(providerKey);
-    const events = await provider.parseWebhook(request); // throws on bad signature
-    for (const event of events) await this.applyEvent(providerKey, event, 'webhook');
-    return provider.webhookAck(events);
+    try {
+      const events = await provider.parseWebhook(request); // throws on bad signature
+      for (const event of events) await this.applyEvent(providerKey, event, 'webhook');
+      return provider.webhookAck(events, request);
+    } catch (error) {
+      if (error instanceof WebhookRejection) {
+        this.logger.warn(`${providerKey} webhook rejected: ${error.reason}`);
+        return error.body;
+      }
+      throw error;
+    }
   }
 
   /** Idempotent: the same (provider, eventId) is applied at most once. */

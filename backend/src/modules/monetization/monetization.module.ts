@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Global,
+  Headers,
   Header,
   HttpCode,
   Module,
@@ -12,6 +13,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { ApiBearerAuth, ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { ActivationStatus, ListingStatus, PaymentProviderKey } from '@prisma/client';
 import { IsIn, IsString, Length } from 'class-validator';
@@ -19,6 +21,7 @@ import type { Request } from 'express';
 
 import { AuthUser, CurrentUser, Public } from '../../common/auth.decorators';
 import { AppError } from '../../common/errors';
+import { RawResponse } from '../../common/envelope.interceptor';
 import { apiEnum } from '../../common/text';
 import { env } from '../../config/env';
 import { PrismaService } from '../../infra/prisma.service';
@@ -30,10 +33,13 @@ import { MonetizationConfig } from './config.service';
 import { CouponsService } from './coupons.service';
 import { CreditsService } from './credits.service';
 import { EntitlementService } from './entitlements.service';
+import { PaymeService } from './payme.service';
 import { PaymentsService } from './payments.service';
 import { PromotionService } from './promotion.service';
 import { DevPaymentProvider } from './providers/dev.provider';
+import { ClickPaymentProvider } from './providers/click.provider';
 import { PAYMENT_PROVIDERS, PaymentProvider } from './providers/payment-provider';
+import { PaymePaymentProvider } from './providers/payme.provider';
 import { PaymentProviderRegistry } from './providers/providers.registry';
 import { UnconfiguredPaymentProvider } from './providers/unconfigured.provider';
 import { SubscriptionsService } from './subscriptions.service';
@@ -228,6 +234,8 @@ class CheckoutController {
 
 // ─────────────────────────────────────────────────────── provider webhooks
 
+// Signature-verified provider traffic: generous limit instead of the global default.
+@Throttle({ default: { limit: 600, ttl: 60_000 } })
 @ApiTags('payments')
 @Controller('payments')
 class PaymentWebhookController {
@@ -235,7 +243,16 @@ class PaymentWebhookController {
     private readonly payments: PaymentsService,
     private readonly registry: PaymentProviderRegistry,
     private readonly prisma: PrismaService,
+    private readonly payme: PaymeService,
   ) {}
+
+  /** Payme Merchant API (JSON-RPC). Declared before the generic route so it wins. */
+  @Public()
+  @Post('webhooks/payme')
+  @HttpCode(200)
+  async paymeRpc(@Headers('authorization') authorization: string | undefined, @Body() body: unknown) {
+    return new RawResponse(await this.payme.handle(authorization, body));
+  }
 
   /**
    * Provider callbacks. Signature is verified by the adapter against the raw
@@ -244,14 +261,16 @@ class PaymentWebhookController {
   @Public()
   @Post('webhooks/:provider')
   @HttpCode(200)
-  webhook(@Param('provider') provider: string, @Req() request: RawRequest) {
+  async webhook(@Param('provider') provider: string, @Req() request: RawRequest) {
     const key = this.registry.parseKey(provider);
     if (key === PaymentProviderKey.CREDITS || key === PaymentProviderKey.FREE)
       throw AppError.notFound('Payment provider');
-    return this.payments.handleWebhook(key, {
+    const ack = await this.payments.handleWebhook(key, {
       headers: request.headers,
       rawBody: request.rawBody ?? Buffer.alloc(0),
     });
+    // Providers define their own acknowledgement format.
+    return new RawResponse(ack);
   }
 
   // Dev provider's hosted checkout (development/test only).
@@ -320,16 +339,17 @@ function escapeHtml(value: string): string {
     CouponsService,
     SubscriptionsService,
     PaymentsService,
+    PaymeService,
     CheckoutService,
     PaymentProviderRegistry,
     {
       provide: PAYMENT_PROVIDERS,
-      inject: [RedisService],
-      useFactory: (redis: RedisService): PaymentProvider[] => [
+      inject: [RedisService, PrismaService],
+      useFactory: (redis: RedisService, prisma: PrismaService): PaymentProvider[] => [
         new DevPaymentProvider(redis.client),
-        // Interfaces only until implemented against official docs with credentials.
-        new UnconfiguredPaymentProvider(PaymentProviderKey.PAYME),
-        new UnconfiguredPaymentProvider(PaymentProviderKey.CLICK),
+        new PaymePaymentProvider(),
+        new ClickPaymentProvider(prisma),
+        // Store purchases need Apple/Google server APIs and credentials (see docs/monetization.md).
         new UnconfiguredPaymentProvider(PaymentProviderKey.APPLE),
         new UnconfiguredPaymentProvider(PaymentProviderKey.GOOGLE),
         new UnconfiguredPaymentProvider(PaymentProviderKey.CREDITS),
