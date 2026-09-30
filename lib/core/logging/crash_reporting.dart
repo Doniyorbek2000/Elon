@@ -34,11 +34,11 @@ abstract final class CrashReporting {
   static SentryEvent? scrub(SentryEvent event, Hint hint) => _scrub(event, hint);
 
   static SentryEvent? _scrub(SentryEvent event, Hint hint) {
-    // Empty replacements: the SDK's fields are immutable, and an empty user/request carries nothing.
-    return event.copyWith(
-      user: SentryUser(id: 'anonymous'),
-      request: SentryRequest(),
-    );
+    // Empty replacements: an empty user/request carries nothing about the person.
+    event
+      ..user = SentryUser(id: 'anonymous')
+      ..request = SentryRequest();
+    return event;
   }
 
   static Future<void> capture(Object error, StackTrace? stackTrace, {String? tag}) async {
