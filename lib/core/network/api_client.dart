@@ -258,7 +258,7 @@ class AuthInterceptor extends QueuedInterceptor {
   Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     final token = await tokens.accessToken;
     if (token != null) options.headers[HttpHeaders.authorizationHeader] = 'Bearer $token';
-    options.headers[HttpHeaders.acceptLanguageHeader] = 'uz';
+    options.headers[HttpHeaders.acceptLanguageHeader] = currentLanguage.code;
     handler.next(options);
   }
 

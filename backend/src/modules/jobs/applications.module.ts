@@ -21,6 +21,7 @@ import {
 } from '@prisma/client';
 
 import { AuthUser, CurrentUser } from '../../common/auth.decorators';
+import { msg } from '../../common/i18n';
 import { AppError } from '../../common/errors';
 import { CursorQuery, Page, keysetPage, keysetWhere, pageSize } from '../../common/pagination';
 import { presentUser, publicUserSelect } from '../../common/presenters';
@@ -122,7 +123,10 @@ export class ApplicationsService {
     await this.notifications.notify(job.employerId, {
       type: NotificationType.APPLICATION_RECEIVED,
       title: 'Yangi ariza',
-      body: `${applicant?.displayName ?? 'Nomzod'} «${job.title}» vakansiyasiga ariza yubordi`,
+      body: msg('{name} «{title}» vakansiyasiga ariza yubordi', {
+        name: applicant?.displayName ?? 'Nomzod',
+        title: job.title,
+      }),
       route: `/employer/jobs/${job.id}/applicants`,
       data: { jobId: job.id, applicationId: application.id },
     });
@@ -205,7 +209,10 @@ export class ApplicationsService {
     await this.notifications.notify(application.applicantId, {
       type: NotificationType.APPLICATION_STATUS,
       title: STATUS_COPY[next] ?? 'Ariza holati yangilandi',
-      body: `«${application.job.title}» — ${application.job.companyName}`,
+      body: msg('«{title}» — {company}', {
+        title: application.job.title,
+        company: application.job.companyName,
+      }),
       route: '/account/applications',
       data: { applicationId: id, jobId: application.jobId, status: apiEnum(next) },
     });

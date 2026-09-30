@@ -16,6 +16,7 @@ import {
   RefundStatus,
 } from '@prisma/client';
 
+import { Msg, msg } from '../../common/i18n';
 import { AppError } from '../../common/errors';
 import { PrismaService } from '../../infra/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -34,8 +35,8 @@ interface Effects {
   notify: Array<{
     userId: string;
     type: NotificationType;
-    title: string;
-    body: string;
+    title: string | Msg;
+    body: string | Msg;
     route: string;
     key: string;
     data: Record<string, string>;
@@ -247,7 +248,9 @@ export class PaymentsService {
         userId: fresh.userId,
         type: NotificationType.SUBSCRIPTION,
         title: 'Tarif faollashtirildi',
-        body: `Amal qilish muddati: ${subscription.currentPeriodEnd.toISOString().slice(0, 10)} gacha.`,
+        body: msg('Amal qilish muddati: {date} gacha.', {
+          date: subscription.currentPeriodEnd.toISOString().slice(0, 10),
+        }),
         route: `/account/payments/${fresh.id}`,
         key: `sub-active:${fresh.id}`,
         data: { purchaseId: fresh.id },
@@ -316,7 +319,7 @@ export class PaymentsService {
     effects.notify.push({
       userId: fresh.userId,
       type: NotificationType.PROMOTION,
-      title: `${product.title} faollashtirildi`,
+      title: msg('{title} faollashtirildi', { title: product.title }),
       body:
         activation.expiresAt && activation.expiresAt > activation.startsAt
           ? `${activation.startsAt.toISOString().slice(0, 10)} — ${activation.expiresAt.toISOString().slice(0, 10)}`

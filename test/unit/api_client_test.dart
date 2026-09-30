@@ -1,6 +1,7 @@
 import 'package:bozor/core/device/device_identity.dart';
 import 'package:bozor/core/domain/place.dart';
 import 'package:bozor/core/errors/app_failure.dart';
+import 'package:bozor/core/l10n/l10n.dart';
 import 'package:bozor/core/network/api_client.dart';
 import 'package:bozor/core/storage/key_value_store.dart';
 import 'package:bozor/features/auth/data/remote_auth_repository.dart';
@@ -17,6 +18,23 @@ import 'package:shared_preferences_platform_interface/shared_preferences_async_p
 import '../helpers/fake_backend.dart';
 
 void main() {
+  group('Language header', () {
+    tearDown(() => currentLanguage = AppLanguage.uz);
+
+    test('requests carry the interface language', () async {
+      final c = buildClient();
+      final seen = <Object?>[];
+      c.backend.on('GET', '/ping', (options) {
+        seen.add(options.headers['accept-language']);
+        return (200, {'data': <String, dynamic>{}});
+      });
+      await c.api.get<Object?>('/ping');
+      currentLanguage = AppLanguage.ru;
+      await c.api.get<Object?>('/ping');
+      expect(seen, ['uz', 'ru']);
+    });
+  });
+
   group('Envelope and error mapping', () {
     test('unwraps data and page meta', () async {
       final c = buildClient();

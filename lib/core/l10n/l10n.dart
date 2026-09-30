@@ -1,8 +1,13 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/auth/application/session_controller.dart';
+import '../config/app_config.dart';
+import '../errors/app_failure.dart';
+import '../network/api_client.dart';
 import '../storage/key_value_store.dart';
 import 'ru.dart';
 
@@ -87,3 +92,26 @@ class LanguageController extends Notifier<AppLanguage> {
 }
 
 final languageProvider = NotifierProvider<LanguageController, AppLanguage>(LanguageController.new);
+
+/// Tells the server which language to use for notifications and push, whenever
+/// the signed-in user or the chosen language changes. Best effort: failures are
+/// ignored because the next change (or sign-in) retries.
+class LanguageSync extends Notifier<void> {
+  @override
+  void build() {
+    final language = ref.watch(languageProvider);
+    final userId = ref.watch(sessionProvider.select((user) => user?.id));
+    if (userId == null || ref.watch(appConfigProvider).useDemoData) return;
+    unawaited(_push(language));
+  }
+
+  Future<void> _push(AppLanguage language) async {
+    try {
+      await ref.read(apiClientProvider).patch<Object?>('/me', body: {'language': language.code});
+    } on AppFailure {
+      // Retried on the next change or sign-in.
+    }
+  }
+}
+
+final languageSyncProvider = NotifierProvider<LanguageSync, void>(LanguageSync.new);

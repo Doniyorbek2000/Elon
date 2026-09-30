@@ -14,6 +14,7 @@ import {
   ProviderStatus,
 } from '@prisma/client';
 
+import { msg } from '../../common/i18n';
 import { AppError } from '../../common/errors';
 import { Badge, sortBadges } from '../../common/badges';
 import { PrismaService } from '../../infra/prisma.service';
@@ -418,7 +419,7 @@ export class PromotionService {
         a.ownerId,
         {
           type: NotificationType.PROMOTION,
-          title: `${a.product.title} tugayapti`,
+          title: msg('{title} tugayapti', { title: a.product.title }),
           body: 'Targ‘ibot muddati tez orada tugaydi.',
           route: routeFor(a.target, a.targetId),
           data: { activationId: a.id },

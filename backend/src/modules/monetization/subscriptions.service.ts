@@ -9,6 +9,7 @@ import {
   SubscriptionStatus,
 } from '@prisma/client';
 
+import { msg } from '../../common/i18n';
 import { AppError } from '../../common/errors';
 import { apiEnum } from '../../common/text';
 import { PrismaService } from '../../infra/prisma.service';
@@ -244,7 +245,9 @@ export class SubscriptionsService {
         {
           type: NotificationType.SUBSCRIPTION,
           title: 'Tarif muddati tugayapti',
-          body: `Tarifingiz ${s.currentPeriodEnd.toISOString().slice(0, 10)} kuni tugaydi.`,
+          body: msg('Tarifingiz {date} kuni tugaydi.', {
+            date: s.currentPeriodEnd.toISOString().slice(0, 10),
+          }),
           route: '/account/plans',
           data: { subscriptionId: s.id },
         },

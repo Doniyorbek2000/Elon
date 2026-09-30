@@ -19,6 +19,7 @@ class BozorApp extends ConsumerWidget {
     final language = ref.watch(languageProvider);
     // Keeps push token registration in sync with the signed-in account.
     ref.watch(pushRegistrationProvider);
+    ref.watch(languageSyncProvider);
     return MaterialApp.router(
       title: 'Bozor.uz',
       debugShowCheckedModeBanner: false,
