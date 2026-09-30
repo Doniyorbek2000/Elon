@@ -80,10 +80,24 @@ const schema = z
     /** Use the Payme sandbox checkout (test.paycom.uz). */
     PAYME_TEST_MODE: bool.default('false'),
 
+    /** `postgres` (default, pg_trgm) or `meilisearch` (typo-tolerant external engine). */
+    SEARCH_PROVIDER: z.enum(['postgres', 'meilisearch']).default('postgres'),
+    MEILI_URL: z.string().url().optional(),
+    MEILI_API_KEY: z.string().optional(),
+    /** Index name prefix so several environments can share one Meilisearch. */
+    MEILI_INDEX_PREFIX: z.string().default('bozor'),
+
     SWAGGER_ENABLED: bool.default('true'),
     WEB_BASE_URL: z.string().url().default('https://bozor.uz'),
   })
   .superRefine((env, ctx) => {
+    if (env.SEARCH_PROVIDER === 'meilisearch' && !env.MEILI_URL) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'MEILI_URL is required when SEARCH_PROVIDER=meilisearch',
+        path: ['MEILI_URL'],
+      });
+    }
     if (env.PAYMENT_DEV_ENABLED && !env.PAYMENT_DEV_SECRET) {
       ctx.addIssue({
         code: 'custom',

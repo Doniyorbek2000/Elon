@@ -27,6 +27,7 @@ import { CreditsService } from './modules/monetization/credits.service';
 import { PaymentsService } from './modules/monetization/payments.service';
 import { PromotionService } from './modules/monetization/promotion.service';
 import { SubscriptionsService } from './modules/monetization/subscriptions.service';
+import { SEARCH_PROVIDER, SearchProvider } from './modules/search/search.provider';
 import { NotificationsService } from './modules/notifications/notifications.service';
 
 /** Errors that retrying cannot fix (corrupt/unsupported image input). */
@@ -113,6 +114,8 @@ export function startWorkers(app: INestApplicationContext): Worker[] {
           return { orphans: await media.cleanupOrphans() };
         case 'monetization-tick':
           return runMonetizationTick(app);
+        case 'search-sync':
+          return (await app.get<SearchProvider>(SEARCH_PROVIDER).sync?.()) ?? { indexed: 0, removed: 0 };
         default:
           throw new UnrecoverableError(`Unknown maintenance job ${job.name}`);
       }

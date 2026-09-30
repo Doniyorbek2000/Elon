@@ -90,6 +90,8 @@ export class QueueService implements OnModuleDestroy {
     const queue = this.queue(QUEUE.maintenance);
     await queue.upsertJobScheduler('expire-content', { every: 60 * 60 * 1000 }, { name: 'expire-content' });
     await queue.upsertJobScheduler('orphan-media', { every: 6 * 60 * 60 * 1000 }, { name: 'orphan-media' });
+    // External search index follows the database (no-op for the PostgreSQL engine).
+    await queue.upsertJobScheduler('search-sync', { every: 60 * 1000 }, { name: 'search-sync' });
     // Paid features must expire even when no app is open.
     await queue.upsertJobScheduler(
       'monetization-tick',

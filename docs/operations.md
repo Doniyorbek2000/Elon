@@ -53,7 +53,9 @@ Server errors are never masked by the cache.
 - **Languages**: Uzbek (Latin) and Russian. Every UI string is written in Uzbek in the code as `tr('…')`; Russian lives in
   `tool/l10n/*.txt` (`uzbek ||| russian`) and is compiled into `lib/core/l10n/ru.dart` with `python3 tool/l10n/build.py`.
   `test/unit/l10n_test.dart` fails when a `tr()` string has no Russian entry. Demo seed data and user-generated text are not translated.
-- **Search**: PostgreSQL trigram/token search behind the `SearchProvider` interface; move to Meilisearch/Typesense when
-  volume or typo-tolerance demands it.
+- **Search**: PostgreSQL trigram search is the default. `SEARCH_PROVIDER=meilisearch` (+ `MEILI_URL`, `MEILI_API_KEY`) switches to
+  Meilisearch: typo tolerance and ranking come from the engine, the worker syncs changed rows every minute (so results lag writes
+  by up to a minute), and `postgres` remains a valid fallback. Tested against Meilisearch 1.11 (`test/search-meilisearch.e2e-spec.ts`,
+  enabled by `TEST_MEILI_URL`). Run a full reindex by clearing the `search:sync:*` Redis keys.
 - **Load testing**: none yet (chat, search, feed).
 - **Device integration tests**: only widget tests and the optional live-backend test exist.
