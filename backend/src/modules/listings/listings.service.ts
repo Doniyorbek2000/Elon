@@ -7,7 +7,6 @@ import {
   MediaPurpose,
   ModerationAction,
   NotificationType,
-  Placement,
   PriceMode,
   Prisma,
   ReportTarget,
@@ -29,10 +28,8 @@ import { buildSearchText, dbEnum } from '../../common/text';
 import { PresenceService } from '../../infra/presence.service';
 import { PrismaService } from '../../infra/prisma.service';
 import { QueueService } from '../../infra/queues';
-import { EntitlementService } from '../monetization/entitlements.service';
+import { LimitsService } from '../limits/limits.module';
 import { AnalyticsService } from '../business/analytics.service';
-import { MonetizationConfig } from '../monetization/config.service';
-import { PromotionService } from '../monetization/promotion.service';
 import { RateLimiterService } from '../../infra/rate-limiter.service';
 import { RedisService } from '../../infra/redis.service';
 import { CategoriesService } from '../categories/categories.service';
@@ -48,7 +45,6 @@ import {
 } from './listing.presenter';
 import {
   CreateListingDto,
-  FeaturedQuery,
   FeedQuery,
   MAX_LISTING_PHOTOS,
   MoneyDto,
@@ -82,9 +78,7 @@ export class ListingsService {
     private readonly limiter: RateLimiterService,
     private readonly redis: RedisService,
     private readonly queues: QueueService,
-    private readonly entitlements: EntitlementService,
-    private readonly promotions: PromotionService,
-    private readonly config: MonetizationConfig,
+    private readonly limits: LimitsService,
     private readonly analytics: AnalyticsService,
   ) {}
 
@@ -129,54 +123,6 @@ export class ListingsService {
     return new Page(items, nextCursor(rows));
   }
 
-  /**
-   * Paid TOP/VIP listings that match the *same* filters, for the labeled block
-   * above the organic feed. Limited slots, VIP first, fair hourly rotation.
-   */
-  async promoted(query: FeedQuery, viewer?: AuthUser) {
-    const [top, vip] = await Promise.all([
-      this.config.enabled('listingTop'),
-      this.config.enabled('listingVip'),
-    ]);
-    if (!top && !vip) return [];
-    const { promotedSlots } = await this.config.setting('ranking');
-    const { sql } = buildFeedQuery(
-      { ...(await this.feedFilters(query, viewer)), promotedOnly: true },
-      'newest',
-      undefined,
-      promotedSlots,
-    );
-    const rows = await this.prisma.$queryRaw<Array<FeedRow & { published_at: Date }>>(sql);
-    return this.hydrate(rows.slice(0, promotedSlots), viewer);
-  }
-
-  /** Featured placement block (home / category / region) with explicit scope rules. */
-  async featured(query: FeaturedQuery, viewer?: AuthUser) {
-    if (!(await this.config.enabled('featuredListings'))) return [];
-    const { featuredSlots } = await this.config.setting('ranking');
-    const placement = dbEnum(query.placement) as Placement;
-    const ids = await this.promotions.featuredIds(
-      'LISTING_FEATURED',
-      placement,
-      {
-        regionId: query.region,
-        categoryIds: query.category ? await this.categories.subtreeIds(query.category) : undefined,
-      },
-      featuredSlots,
-    );
-    if (!ids.length) return [];
-    const { sql } = buildFeedQuery(
-      { onlyIds: ids, viewerId: viewer?.userId },
-      'newest',
-      undefined,
-      featuredSlots,
-    );
-    const rows = await this.prisma.$queryRaw<Array<FeedRow & { published_at: Date }>>(sql);
-    const order = new Map(ids.map((id, index) => [id, index]));
-    rows.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
-    return this.hydrate(rows.slice(0, featuredSlots), viewer);
-  }
-
   private async hydrate(rows: FeedRow[], viewer?: AuthUser) {
     if (rows.length === 0) return [];
     const ids = rows.map((r) => r.id);
@@ -191,7 +137,6 @@ export class ListingsService {
     ]);
     const byId = new Map(listings.map((l) => [l.id, l]));
     const favoriteIds = new Set(favorites.map((f) => f.listingId));
-    const badges = await this.promotions.badges('LISTING', ids);
     return rows
       .map((row) => {
         const listing = byId.get(row.id);
@@ -199,7 +144,6 @@ export class ListingsService {
           ? presentListingCard(listing, {
               isFavorite: favoriteIds.has(row.id),
               distanceKm: row.distance_km,
-              badges: badges.get(row.id),
             })
           : undefined;
       })
@@ -220,16 +164,14 @@ export class ListingsService {
     if (!publiclyVisible && !isOwner && !this.isModerator(viewer)) throw AppError.notFound('Listing');
 
     if (!isOwner && viewerKey && row.status === ListingStatus.ACTIVE) await this.countView(id, viewerKey);
-    const [favorite, sellerOnline, sellerActiveListings, badges] = await Promise.all([
+    const [favorite, sellerOnline, sellerActiveListings] = await Promise.all([
       viewer ? this.prisma.favorite.count({ where: { userId: viewer.userId, listingId: id } }) : 0,
       this.presence.isOnline(row.sellerId),
       this.prisma.listing.count({
         where: { sellerId: row.sellerId, status: ListingStatus.ACTIVE, deletedAt: null },
       }),
-      this.promotions.badges('LISTING', [id]),
     ]);
     return presentListingDetail(row, env().WEB_BASE_URL, {
-      badges: badges.get(id),
       isFavorite: favorite > 0,
       isOwner,
       sellerOnline,
@@ -299,7 +241,7 @@ export class ListingsService {
     const attributes = await this.categories.validateAttributes(dto.categoryId, dto.attributes ?? {});
     const place = await this.locations.resolvePlace(dto.place);
     const mediaIds = await this.media.assertOwned(user.userId, dto.mediaIds, [MediaPurpose.LISTING]);
-    await this.entitlements.assertCanCreateListing(user.userId, mediaIds.length);
+    await this.limits.assertCanCreateListing(user.userId, mediaIds.length);
     const price = this.normalizePrice(dto.price ?? null);
 
     const listing = await this.prisma.listing.create({
@@ -355,7 +297,7 @@ export class ListingsService {
     const mediaIds = dto.mediaIds
       ? await this.media.assertOwned(user.userId, dto.mediaIds, [MediaPurpose.LISTING])
       : undefined;
-    if (mediaIds) await this.entitlements.assertPhotoLimit(user.userId, mediaIds.length);
+    if (mediaIds) this.limits.assertPhotoLimit(mediaIds.length);
     data.searchText = buildSearchText(
       dto.title ?? listing.title,
       dto.description ?? listing.description,
@@ -394,7 +336,7 @@ export class ListingsService {
     if (listing.status !== ListingStatus.DRAFT && listing.status !== ListingStatus.REJECTED) {
       throw AppError.invalidState(`Cannot publish a listing in status ${listing.status}`);
     }
-    await this.entitlements.assertCanActivateListing(user.userId, id);
+    await this.limits.assertCanActivateListing(user.userId, id);
     await this.assertPublishable(id);
     const signals = await this.screen(id);
     if (hasBlocking(signals)) {
@@ -421,7 +363,7 @@ export class ListingsService {
     }
     if (next === ListingStatus.ACTIVE && listing.status !== ListingStatus.RESERVED) {
       // Re-listing (sold/expired/archived) goes through publication checks again.
-      await this.entitlements.assertCanActivateListing(user.userId, id);
+      await this.limits.assertCanActivateListing(user.userId, id);
       await this.assertPublishable(id);
       const signals = await this.screen(id);
       if (requiresModeration(signals)) {

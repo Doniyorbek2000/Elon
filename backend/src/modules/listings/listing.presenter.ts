@@ -1,4 +1,3 @@
-import { BadgeOptions, presentBadges } from '../../common/badges';
 import { Prisma } from '@prisma/client';
 
 import {
@@ -26,8 +25,6 @@ export const listingCardSelect = {
   createdAt: true,
   viewCount: true,
   favoriteCount: true,
-  boostTier: true,
-  boostUntil: true,
   regionId: true,
   districtId: true,
   lat: true,
@@ -55,7 +52,7 @@ export const listingDetailSelect = {
 type CardRow = Prisma.ListingGetPayload<{ select: typeof listingCardSelect }>;
 type DetailRow = Prisma.ListingGetPayload<{ select: typeof listingDetailSelect }>;
 
-export interface PresentOptions extends BadgeOptions {
+export interface PresentOptions {
   isFavorite?: boolean;
   distanceKm?: number | null;
   isOwner?: boolean;
@@ -82,7 +79,6 @@ export function presentListingCard(row: CardRow, options: PresentOptions = {}) {
     attributes: [] as Array<{ key: string; label: string; value: string }>,
     views: row.viewCount,
     favorites: row.favoriteCount,
-    ...presentBadges(row, options),
     status: apiEnum(row.status),
     distanceKm: options.distanceKm != null ? Math.round(options.distanceKm * 10) / 10 : null,
     isFavorite: options.isFavorite ?? false,

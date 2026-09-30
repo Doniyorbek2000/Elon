@@ -41,7 +41,6 @@ async function main() {
   }));
 
   const scenarios = [
-    ['GET /config', '/config'],
     ['GET /categories', '/categories'],
     ['GET /listings (feed)', '/listings?limit=20'],
     ['GET /listings (region filter)', '/listings?region=namangan&limit=20'],

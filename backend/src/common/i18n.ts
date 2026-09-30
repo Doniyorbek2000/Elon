@@ -27,25 +27,9 @@ const RU: Record<string, string> = {
   'Ariza holati yangilandi': 'Статус отклика обновлён',
   '«{title}» — {company}': '«{title}» — {company}',
   'Yangi sharh': 'Новый отзыв',
-  'To‘lov amalga oshmadi': 'Платёж не прошёл',
-  'Hech narsa faollashtirilmadi va hisobingizdan yechilmadi.':
-    'Ничего не активировано, деньги с вашего счёта не списаны.',
-  'Tarif faollashtirildi': 'Тариф активирован',
-  'Amal qilish muddati: {date} gacha.': 'Срок действия: до {date}.',
-  '{title} faollashtirildi': '«{title}» активировано',
-  'To‘lov qaytarildi': 'Платёж возвращён',
-  'Xarid bekor qilindi va mablag‘ qaytarildi.': 'Покупка отменена, средства возвращены.',
-  'Tarif muddati tugadi': 'Срок тарифа истёк',
-  'Biznes tarifingiz muddati tugadi. Bepul tarif imkoniyatlari saqlanadi.':
-    'Срок вашего бизнес-тарифа истёк. Возможности бесплатного тарифа сохраняются.',
-  'Tarif muddati tugayapti': 'Срок тарифа заканчивается',
-  'Tarifingiz {date} kuni tugaydi.': 'Ваш тариф заканчивается {date}.',
-  '{title} tugayapti': 'Срок «{title}» заканчивается',
-  'Targ‘ibot muddati tez orada tugaydi.': 'Срок продвижения скоро закончится.',
   'Yangi xabar': 'Новое сообщение',
   'E’loningiz faollashtirildi': 'Ваше объявление опубликовано',
   'E’loningiz rad etildi': 'Ваше объявление отклонено',
-  Bepul: 'Бесплатно',
 };
 
 export function render(message: string | Msg, lang: Lang): string {

@@ -19,9 +19,7 @@ import { PrismaService } from '../../infra/prisma.service';
 import { QueueService } from '../../infra/queues';
 import { RateLimiterService } from '../../infra/rate-limiter.service';
 import { RedisService } from '../../infra/redis.service';
-import { EntitlementService } from '../monetization/entitlements.service';
-import { MonetizationConfig } from '../monetization/config.service';
-import { PromotionService, rotate } from '../monetization/promotion.service';
+import { LimitsService } from '../limits/limits.module';
 import { LocationsService } from '../locations/locations.service';
 import { jobCardSelect, jobDetailSelect, presentJobCard, presentJobDetail } from './job.presenter';
 import { JobInputDto, JobSearchQuery, MyJobsQuery } from './jobs.dto';
@@ -44,9 +42,7 @@ export class JobsService {
     private readonly limiter: RateLimiterService,
     private readonly queues: QueueService,
     private readonly redis: RedisService,
-    private readonly entitlements: EntitlementService,
-    private readonly promotions: PromotionService,
-    private readonly config: MonetizationConfig,
+    private readonly limits: LimitsService,
   ) {}
 
   /** Filters shared by the organic results and the paid block (same relevance). */
@@ -94,28 +90,6 @@ export class JobsService {
     return where;
   }
 
-  /**
-   * Paid TOP vacancies for the same search, shown in a separate labeled
-   * block (limited slots, fair hourly rotation). Organic results are unchanged.
-   */
-  async promoted(query: JobSearchQuery, viewer?: AuthUser) {
-    if (!(await this.config.enabled('premiumJobs'))) return [];
-    const { promotedSlots } = await this.config.setting('ranking');
-    const where = await this.filters(query, viewer);
-    const rows = await this.prisma.job.findMany({
-      where: { AND: [where, { boostTier: { gt: 0 }, boostUntil: { gt: new Date() } }] },
-      select: jobCardSelect,
-      orderBy: [{ boostTier: 'desc' }, { boostUntil: 'desc' }],
-      take: 30,
-    });
-    const picked = rotate(rows).slice(0, promotedSlots);
-    const badges = await this.promotions.badges(
-      'JOB',
-      picked.map((r) => r.id),
-    );
-    return picked.map((r) => presentJobCard(r, { badges: badges.get(r.id) }));
-  }
-
   async search(query: JobSearchQuery, viewer?: AuthUser) {
     const take = pageSize(query.limit);
     const where = await this.filters(query, viewer);
@@ -161,12 +135,8 @@ export class JobsService {
           ).map((f) => f.jobId),
         )
       : new Set<string | null>();
-    const badges = await this.promotions.badges(
-      'JOB',
-      rows.map((r) => r.id),
-    );
     return new Page(
-      rows.map((r) => presentJobCard(r, { isFavorite: favorites.has(r.id), badges: badges.get(r.id) })),
+      rows.map((r) => presentJobCard(r, { isFavorite: favorites.has(r.id) })),
       nextCursor,
     );
   }
@@ -191,9 +161,7 @@ export class JobsService {
           }),
         ])
       : [0, null];
-    const badges = await this.promotions.badges('JOB', [job.id]);
     return presentJobDetail(job, env().WEB_BASE_URL, {
-      badges: badges.get(job.id),
       isFavorite: favorite > 0,
       isOwner,
       myApplication: application
@@ -259,7 +227,7 @@ export class JobsService {
     await this.limiter.consume(`job:create:${user.userId}`, 20, 24 * 3600);
     const data = await this.data(dto);
     const publish = dto.publish !== false;
-    if (publish) await this.entitlements.assertCanActivateJob(user.userId);
+    if (publish) await this.limits.assertCanActivateJob(user.userId);
     const job = await this.prisma.job.create({
       data: {
         ...data,
@@ -285,7 +253,7 @@ export class JobsService {
     const next = dbEnum(status) as JobStatus;
     if (!OWNER_TRANSITIONS[job.status].includes(next))
       throw AppError.invalidState(`Cannot move from ${job.status} to ${next}`);
-    if (next === JobStatus.ACTIVE) await this.entitlements.assertCanActivateJob(user.userId, id);
+    if (next === JobStatus.ACTIVE) await this.limits.assertCanActivateJob(user.userId, id);
     const republish = next === JobStatus.ACTIVE && job.status !== JobStatus.PAUSED;
     await this.prisma.job.update({
       where: { id },

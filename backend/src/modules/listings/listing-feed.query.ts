@@ -20,7 +20,6 @@ export interface FeedFilters {
   viewerId?: string;
   excludeId?: string;
   /** Only items with a live paid tier (the labeled TOP block). */
-  promotedOnly?: boolean;
   onlyIds?: string[];
 }
 
@@ -38,9 +37,7 @@ const MAX_OFFSET = 2000;
  * hydration happens separately with Prisma includes (no N+1).
  *
  * Cursors: keyset on (rankedAt, id) for "newest" (the hot path; rankedAt is
- * publication time, moved only by a purchased bump); bounded offset cursors
- * for price/popularity/distance sorts. Paid tiers never reorder organic
- * results — they are served separately by `promotedOnly`.
+ * the publication time); bounded offset cursors for price/popularity/distance sorts.
  */
 export function buildFeedQuery(
   filters: FeedFilters,
@@ -67,7 +64,6 @@ export function buildFeedQuery(
   if (filters.condition) where.push(Prisma.sql`l."condition" = ${filters.condition}::"ItemCondition"`);
   if (filters.sellerId) where.push(Prisma.sql`l."sellerId" = ${filters.sellerId}::uuid`);
   if (filters.excludeId) where.push(Prisma.sql`l."id" <> ${filters.excludeId}::uuid`);
-  if (filters.promotedOnly) where.push(Prisma.sql`l."boostTier" > 0 AND l."boostUntil" > now()`);
   if (filters.onlyIds) where.push(Prisma.sql`l."id" = ANY(${filters.onlyIds}::uuid[])`);
   if (filters.viewerId) {
     where.push(Prisma.sql`NOT EXISTS (
@@ -84,9 +80,7 @@ export function buildFeedQuery(
   let order: Prisma.Sql;
   let offset = 0;
 
-  if (filters.promotedOnly) {
-    order = Prisma.sql`l."boostTier" DESC, md5(l."id"::text || date_trunc('hour', now())::text)`;
-  } else if (sort === 'newest') {
+  if (sort === 'newest') {
     const keyset = decodeCursor<{ t: string; id: string }>(cursor);
     if (keyset) {
       const t = new Date(keyset.t);
@@ -116,7 +110,7 @@ export function buildFeedQuery(
     LIMIT ${take + 1} OFFSET ${offset}`;
 
   const nextCursor = (rows: Array<FeedRow & { published_at: Date }>): string | null => {
-    if (rows.length <= take || filters.promotedOnly) return null;
+    if (rows.length <= take) return null;
     if (sort === 'newest') {
       const last = rows[take - 1];
       return encodeCursor({ t: last.published_at.toISOString(), id: last.id });

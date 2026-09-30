@@ -92,12 +92,8 @@ export class QueueService implements OnModuleDestroy {
     await queue.upsertJobScheduler('orphan-media', { every: 6 * 60 * 60 * 1000 }, { name: 'orphan-media' });
     // External search index follows the database (no-op for the PostgreSQL engine).
     await queue.upsertJobScheduler('search-sync', { every: 60 * 1000 }, { name: 'search-sync' });
-    // Paid features must expire even when no app is open.
-    await queue.upsertJobScheduler(
-      'monetization-tick',
-      { every: 5 * 60 * 1000 },
-      { name: 'monetization-tick' },
-    );
+    // Drop the schedule of the removed payment sweep if an older deploy created it.
+    await queue.removeJobScheduler('monetization-tick').catch(() => false);
   }
 
   async counts(): Promise<Record<string, Record<string, number>>> {

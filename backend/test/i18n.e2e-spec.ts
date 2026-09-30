@@ -20,10 +20,10 @@ describe('Notifications follow the user’s language', () => {
 
   const notify = () =>
     ctx.app.get(NotificationsService).notify(user.userId, {
-      type: NotificationType.SUBSCRIPTION,
-      title: 'Tarif faollashtirildi',
-      body: msg('Amal qilish muddati: {date} gacha.', { date: '2026-12-31' }),
-      route: '/account/plans',
+      type: NotificationType.APPLICATION_RECEIVED,
+      title: 'Yangi ariza',
+      body: msg('{name} «{title}» vakansiyasiga ariza yubordi', { name: 'Aziz', title: 'Kassir' }),
+      route: '/account/applications',
     });
 
   const latest = async () =>
@@ -37,8 +37,8 @@ describe('Notifications follow the user’s language', () => {
     expect(me.body.data.settings.language).toBe('uz');
     await notify();
     expect(await latest()).toMatchObject({
-      title: 'Tarif faollashtirildi',
-      body: 'Amal qilish muddati: 2026-12-31 gacha.',
+      title: 'Yangi ariza',
+      body: 'Aziz «Kassir» vakansiyasiga ariza yubordi',
     });
   });
 
@@ -48,8 +48,8 @@ describe('Notifications follow the user’s language', () => {
     expect(me.body.data.settings.language).toBe('ru');
     await notify();
     expect(await latest()).toMatchObject({
-      title: 'Тариф активирован',
-      body: 'Срок действия: до 2026-12-31.',
+      title: 'Новый отклик',
+      body: 'Aziz откликнулся на вакансию «Kassir»',
     });
   });
 });

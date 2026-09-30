@@ -58,27 +58,10 @@ const schema = z
     LISTING_TTL_DAYS: z.coerce.number().int().positive().default(30),
     JOB_TTL_DAYS: z.coerce.number().int().positive().default(30),
 
-    /**
-     * Development/test payment provider (simulated checkout + HMAC-signed
-     * webhooks). Never available in production.
-     */
-    PAYMENT_DEV_ENABLED: bool.default('false'),
-    PAYMENT_DEV_SECRET: z.string().min(32).optional(),
-
     /** Error reporting. Empty disables Sentry. */
     SENTRY_DSN: z.string().url().optional(),
     SENTRY_ENVIRONMENT: z.string().optional(),
     SENTRY_TRACES_SAMPLE_RATE: z.coerce.number().min(0).max(1).default(0),
-
-    /** Click Shop API (https://docs.click.uz). All four are required to enable Click. */
-    CLICK_SERVICE_ID: z.string().min(1).optional(),
-    CLICK_MERCHANT_ID: z.string().min(1).optional(),
-    CLICK_SECRET_KEY: z.string().min(8).optional(),
-    /** Payme Business Merchant API (https://developer.help.paycom.uz). */
-    PAYME_MERCHANT_ID: z.string().min(1).optional(),
-    PAYME_KEY: z.string().min(8).optional(),
-    /** Use the Payme sandbox checkout (test.paycom.uz). */
-    PAYME_TEST_MODE: bool.default('false'),
 
     /** `postgres` (default, pg_trgm) or `meilisearch` (typo-tolerant external engine). */
     SEARCH_PROVIDER: z.enum(['postgres', 'meilisearch']).default('postgres'),
@@ -93,23 +76,6 @@ const schema = z
     SIGHTENGINE_SECRET: z.string().optional(),
     /** Override for tests / proxies. */
     SIGHTENGINE_URL: z.string().url().default('https://api.sightengine.com/1.0/check.json'),
-
-    /** App Store Server API (in-app purchases). All of these are needed to enable Apple. */
-    APPLE_BUNDLE_ID: z.string().optional(),
-    APPLE_ISSUER_ID: z.string().optional(),
-    APPLE_KEY_ID: z.string().optional(),
-    /** The .p8 key (PEM, raw or base64). */
-    APPLE_PRIVATE_KEY: z.string().optional(),
-    /** Apple Root CA - G3 (PEM, raw or base64), downloaded from apple.com/certificateauthority. */
-    APPLE_ROOT_CA: z.string().optional(),
-    APPLE_ENVIRONMENT: z.enum(['production', 'sandbox']).default('production'),
-    /** Google Play Developer API (in-app purchases). */
-    GOOGLE_PACKAGE_NAME: z.string().optional(),
-    /** Service-account JSON (raw or base64) with access to the Play Console app. */
-    GOOGLE_SERVICE_ACCOUNT: z.string().optional(),
-    /** Overrides for tests / proxies. */
-    APPLE_API_URL: z.string().url().optional(),
-    GOOGLE_API_URL: z.string().url().default('https://androidpublisher.googleapis.com'),
 
     /** Global per-client request limit per minute (raise it only for load tests). */
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(300),
@@ -136,13 +102,6 @@ const schema = z
         path: ['MEILI_URL'],
       });
     }
-    if (env.PAYMENT_DEV_ENABLED && !env.PAYMENT_DEV_SECRET) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'PAYMENT_DEV_SECRET is required when PAYMENT_DEV_ENABLED=true',
-        path: ['PAYMENT_DEV_SECRET'],
-      });
-    }
     if (env.NODE_ENV !== 'production') return;
     if (env.OTP_PROVIDER === 'dev' || env.OTP_DEV_ECHO) {
       ctx.addIssue({
@@ -163,13 +122,6 @@ const schema = z
         code: 'custom',
         message: 'FCM_PROJECT_ID and FCM_SERVICE_ACCOUNT are required',
         path: ['FCM_PROJECT_ID'],
-      });
-    }
-    if (env.PAYMENT_DEV_ENABLED) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'The dev payment provider is forbidden in production',
-        path: ['PAYMENT_DEV_ENABLED'],
       });
     }
     if (!env.CORS_ORIGINS) {
