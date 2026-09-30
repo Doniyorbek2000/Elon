@@ -74,6 +74,13 @@ class ListingFeedSlivers extends ConsumerWidget {
         }
         return SliverMainAxisGroup(
           slivers: [
+            if (state.fromCache)
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(gutter, 0, gutter, AppSpacing.sm),
+                sliver: SliverToBoxAdapter(
+                  child: _OfflineBanner(onRetry: () => ref.invalidate(listingFeedProvider(query))),
+                ),
+              ),
             SliverPadding(
               padding: padding,
               sliver: layout == ListingLayout.grid
@@ -137,6 +144,43 @@ class _TileList extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// Shown above cached results so stale data is never mistaken for live data.
+class _OfflineBanner extends StatelessWidget {
+  const _OfflineBanner({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      child: Material(
+        color: scheme.secondaryContainer,
+        borderRadius: AppRadii.mdAll,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+          child: Row(
+            children: [
+              Icon(Icons.cloud_off_outlined, size: 18, color: scheme.onSecondaryContainer),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  'Internet yo‘q. Saqlangan e’lonlar ko‘rsatilmoqda.',
+                  style: text.bodySmall?.copyWith(color: scheme.onSecondaryContainer),
+                ),
+              ),
+              TextButton(onPressed: onRetry, child: const Text('Yangilash')),
+            ],
+          ),
+        ),
       ),
     );
   }

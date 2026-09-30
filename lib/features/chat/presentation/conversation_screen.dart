@@ -440,13 +440,25 @@ class _MessageList extends ConsumerWidget {
           if (rowIndex > rows.length) return _SafetyBanner(onDismiss: onDismissSafety);
           return switch (rows[rowIndex]) {
             _DayRow(:final label) => _DaySeparator(label: label),
-            final _MessageRow row => GestureDetector(
-              onTap: row.isMine && row.message.delivery == DeliveryState.failed ? () => onRetry(row.message) : null,
-              child: _Bubble(message: row.message, isMine: row.isMine, grouped: row.groupedWithNext),
-            ),
+            final _MessageRow row => _retryable(row),
           };
         },
       ),
+    );
+  }
+}
+
+/// Failed outgoing messages are tappable to retry; expose that to screen readers too.
+extension on _MessageList {
+  Widget _retryable(_MessageRow row) {
+    final bubble = _Bubble(message: row.message, isMine: row.isMine, grouped: row.groupedWithNext);
+    final failed = row.isMine && row.message.delivery == DeliveryState.failed;
+    if (!failed) return bubble;
+    return Semantics(
+      button: true,
+      hint: 'Qayta yuborish uchun ikki marta bosing',
+      onTap: () => onRetry(row.message),
+      child: GestureDetector(onTap: () => onRetry(row.message), child: bubble),
     );
   }
 }
