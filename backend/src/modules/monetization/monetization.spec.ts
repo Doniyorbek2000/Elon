@@ -220,7 +220,18 @@ describe('dev payment provider webhook verification', () => {
   const saved = { ...process.env };
 
   beforeAll(() => {
-    Object.assign(process.env, { NODE_ENV: 'test', PAYMENT_DEV_ENABLED: 'true', PAYMENT_DEV_SECRET: secret });
+    Object.assign(process.env, {
+      NODE_ENV: 'test',
+      DATABASE_URL: 'postgresql://u:p@localhost:5432/bozor_unit',
+      REDIS_URL: 'redis://localhost:6379/0',
+      JWT_ACCESS_SECRET: 'a'.repeat(64),
+      OTP_HASH_SECRET: 'b'.repeat(64),
+      S3_BUCKET: 'bozor-unit',
+      S3_ACCESS_KEY_ID: 'key',
+      S3_SECRET_ACCESS_KEY: 'secret',
+      PAYMENT_DEV_ENABLED: 'true',
+      PAYMENT_DEV_SECRET: secret,
+    });
     resetEnvCache();
   });
 
