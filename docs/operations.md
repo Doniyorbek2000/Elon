@@ -17,7 +17,8 @@ Off unless a DSN is provided; nothing is sent otherwise. Request bodies, cookies
 | App | `--dart-define=SENTRY_DSN=… [--dart-define=SENTRY_ENVIRONMENT=production] [--dart-define=APP_RELEASE=1.0.0+12]` |
 | API and worker | `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE` |
 
-The app uses the pure-Dart `sentry` package (Dart errors only). Native crashes need `sentry_flutter` with symbol upload.
+The app uses `sentry_flutter` (Dart errors plus native Android/iOS crashes). Readable native stack traces need symbol/mapping upload at
+release time (`dart run sentry_dart_plugin` with `--split-debug-info`), which is a CI step you configure with your Sentry org/project/token.
 
 ## Mobile release
 

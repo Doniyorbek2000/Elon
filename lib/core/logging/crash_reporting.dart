@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:sentry/sentry.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'app_logger.dart';
 
@@ -15,23 +15,30 @@ abstract final class CrashReporting {
 
   static Future<void> init() async {
     if (_dsn.isEmpty || _enabled) return;
-    await Sentry.init((options) {
+    // SentryFlutter adds native crash capture (Android NDK/ANR, iOS signals) on top of Dart errors.
+    await SentryFlutter.init((options) {
       options
         ..dsn = _dsn
         ..environment = _environment.isEmpty ? (kReleaseMode ? 'production' : 'development') : _environment
         ..release = _release.isEmpty ? null : _release
         ..sendDefaultPii = false
+        ..attachScreenshot = false
+        ..enableUserInteractionBreadcrumbs = false
         ..beforeSend = _scrub;
     });
     _enabled = true;
   }
 
   /// Nothing about the person or the request payload leaves the device.
+  @visibleForTesting
+  static SentryEvent? scrub(SentryEvent event, Hint hint) => _scrub(event, hint);
+
   static SentryEvent? _scrub(SentryEvent event, Hint hint) {
-    event
-      ..user = null
-      ..request = null;
-    return event;
+    // Empty replacements: the SDK's fields are immutable, and an empty user/request carries nothing.
+    return event.copyWith(
+      user: SentryUser(id: 'anonymous'),
+      request: SentryRequest(),
+    );
   }
 
   static Future<void> capture(Object error, StackTrace? stackTrace, {String? tag}) async {

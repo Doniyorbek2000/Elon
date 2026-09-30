@@ -111,6 +111,9 @@ const schema = z
     APPLE_API_URL: z.string().url().optional(),
     GOOGLE_API_URL: z.string().url().default('https://androidpublisher.googleapis.com'),
 
+    /** Global per-client request limit per minute (raise it only for load tests). */
+    RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(300),
+
     SWAGGER_ENABLED: bool.default('true'),
     WEB_BASE_URL: z.string().url().default('https://bozor.uz'),
   })

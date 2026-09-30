@@ -98,7 +98,11 @@ function prettyTransport() {
       },
     }),
     ThrottlerModule.forRoot([
-      { name: 'default', ttl: 60_000, limit: env().NODE_ENV === 'test' ? 10_000 : 300 },
+      {
+        name: 'default',
+        ttl: 60_000,
+        limit: env().NODE_ENV === 'test' ? 10_000 : env().RATE_LIMIT_PER_MINUTE,
+      },
     ]),
     ...domainModules,
   ],
