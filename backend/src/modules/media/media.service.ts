@@ -2,6 +2,8 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ListingStatus, MediaPurpose, MediaStatus } from '@prisma/client';
 import sharp, { Metadata } from 'sharp';
 
+import { bands, dHash, hasSignal, toSigned } from '../../common/image-hash';
+
 import { env } from '../../config/env';
 import { AuthUser } from '../../common/auth.decorators';
 import { AppError } from '../../common/errors';
@@ -138,8 +140,22 @@ export class MediaService {
         width: oriented.info.width,
         height: oriented.info.height,
         failureReason: null,
+        ...(await this.perceptualHash(media.purpose, oriented.data)),
       },
     });
+  }
+
+  /** Only listing photos are compared (avatars and chat images are personal). */
+  private async perceptualHash(purpose: MediaPurpose, image: Buffer) {
+    if (purpose !== MediaPurpose.LISTING) return {};
+    try {
+      const hash = await dHash(image);
+      if (!hasSignal(hash)) return {};
+      const [hashBand0, hashBand1, hashBand2, hashBand3] = bands(hash);
+      return { imageHash: toSigned(hash), hashBand0, hashBand1, hashBand2, hashBand3 };
+    } catch {
+      return {}; // hashing is best-effort; never fail an upload because of it
+    }
   }
 
   async markFailed(mediaId: string, reason: string): Promise<void> {

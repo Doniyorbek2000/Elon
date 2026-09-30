@@ -15,7 +15,14 @@ import {
 
 import { env } from '../../config/env';
 import { AuthUser } from '../../common/auth.decorators';
-import { assessPrice, assessText, hasBlocking, requiresModeration } from '../../common/content-risk';
+import {
+  assessPrice,
+  assessText,
+  hasBlocking,
+  requiresModeration,
+  RiskSignal,
+} from '../../common/content-risk';
+import { DUPLICATE_DISTANCE, fromSigned, hammingDistance } from '../../common/image-hash';
 import { AppError } from '../../common/errors';
 import { Page, keysetPage, keysetWhere, pageSize } from '../../common/pagination';
 import { buildSearchText, dbEnum } from '../../common/text';
@@ -574,7 +581,57 @@ export class ListingsService {
   private async screen(id: string) {
     const listing = await this.prisma.listing.findUniqueOrThrow({ where: { id } });
     const reference = await this.referencePrice(listing.categoryId);
-    return [...assessText(listing.title, listing.description), ...assessPrice(listing.priceUzs, reference)];
+    return [
+      ...assessText(listing.title, listing.description),
+      ...assessPrice(listing.priceUzs, reference),
+      ...(await this.assessPhotos(listing.id, listing.sellerId)),
+    ];
+  }
+
+  /**
+   * Photos already used by another seller's live listing are a classic scam
+   * signal (stolen pictures): route to moderation instead of publishing.
+   */
+  private async assessPhotos(listingId: string, sellerId: string): Promise<RiskSignal[]> {
+    const own = await this.prisma.media.findMany({
+      where: { listingLinks: { some: { listingId } }, imageHash: { not: null } },
+      select: { imageHash: true, hashBand0: true, hashBand1: true, hashBand2: true, hashBand3: true },
+    });
+    for (const photo of own) {
+      const hash = fromSigned(photo.imageHash!);
+      const candidates = await this.prisma.media.findMany({
+        where: {
+          ownerId: { not: sellerId },
+          deletedAt: null,
+          OR: [
+            { hashBand0: photo.hashBand0 },
+            { hashBand1: photo.hashBand1 },
+            { hashBand2: photo.hashBand2 },
+            { hashBand3: photo.hashBand3 },
+          ],
+          listingLinks: {
+            some: {
+              listing: {
+                deletedAt: null,
+                // A listing already flagged as a copy is not evidence of who owns the picture.
+                NOT: { riskFlags: { has: 'duplicate_image' } },
+                status: { in: [ListingStatus.ACTIVE, ListingStatus.RESERVED, ListingStatus.PENDING_REVIEW] },
+              },
+            },
+          },
+        },
+        select: { imageHash: true },
+        take: 100,
+      });
+      if (
+        candidates.some(
+          (c) => c.imageHash != null && hammingDistance(hash, fromSigned(c.imageHash)) <= DUPLICATE_DISTANCE,
+        )
+      ) {
+        return [{ code: 'duplicate_image', severity: 'WARNING' }];
+      }
+    }
+    return [];
   }
 
   /** Average active price in the category (needs ≥ 5 samples to be meaningful). */

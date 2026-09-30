@@ -660,6 +660,13 @@ model Media {
   feedKey       String?
   detailKey     String?
   failureReason String?
+  /// 64-bit perceptual hash (see common/image-hash.ts) of listing photos,
+  /// split into four 16-bit bands for indexed near-duplicate lookups.
+  imageHash     BigInt?
+  hashBand0     Int?
+  hashBand1     Int?
+  hashBand2     Int?
+  hashBand3     Int?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   deletedAt     DateTime?
@@ -672,6 +679,10 @@ model Media {
 
   @@index([ownerId, purpose, createdAt])
   @@index([status, createdAt])
+  @@index([hashBand0])
+  @@index([hashBand1])
+  @@index([hashBand2])
+  @@index([hashBand3])
 }
 
 // ────────────────────────────────────────────────────────────── listings
