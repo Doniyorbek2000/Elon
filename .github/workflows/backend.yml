@@ -54,10 +54,11 @@ jobs:
       - name: Start S3-compatible storage
         working-directory: .
         run: |
-          pip install --quiet 'moto[server]'
-          nohup moto_server -p 9000 > moto.log 2>&1 &
+          python3 -m venv /tmp/moto-venv
+          /tmp/moto-venv/bin/pip install --quiet 'moto[server]'
+          nohup /tmp/moto-venv/bin/moto_server -p 9000 > moto.log 2>&1 &
           for _ in $(seq 1 30); do
-            curl -s http://localhost:9000 > /dev/null && exit 0
+            curl -s -o /dev/null http://127.0.0.1:9000 && exit 0
             sleep 1
           done
           cat moto.log
