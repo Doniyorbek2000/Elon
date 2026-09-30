@@ -54,10 +54,14 @@ jobs:
       - name: Start S3-compatible storage
         working-directory: .
         run: |
-          docker run -d --name s3 -p 9000:9000 \
-            -e MINIO_ROOT_USER=bozor_dev_access \
-            -e MINIO_ROOT_PASSWORD=bozor_dev_secret_key \
-            minio/minio server /data
+          pip install --quiet 'moto[server]'
+          nohup moto_server -p 9000 > moto.log 2>&1 &
+          for _ in $(seq 1 30); do
+            curl -s http://localhost:9000 > /dev/null && exit 0
+            sleep 1
+          done
+          cat moto.log
+          exit 1
       - name: Start Meilisearch
         working-directory: .
         run: |
