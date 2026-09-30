@@ -24,6 +24,12 @@ abstract interface class MonetizationRepository {
 
   Future<Purchase> cancelPurchase(String id);
 
+  /// Reports a store receipt; the server verifies it with Apple/Google before activating.
+  Future<Purchase> submitStoreReceipt(String purchaseId, String receipt);
+
+  /// Same for a receipt whose purchase the app lost track of; the receipt says which payment it belongs to.
+  Future<Purchase> recoverStoreReceipt({required String store, required String receipt, required String productId});
+
   Future<List<Subscription>> subscriptions();
 
   Future<Subscription> cancelSubscription(String id);
@@ -71,6 +77,20 @@ class RemoteMonetizationRepository implements MonetizationRepository {
   @override
   Future<Purchase> cancelPurchase(String id) async =>
       Purchase.fromJson(await _api.post<JsonMap>('/me/purchases/$id/cancel'));
+
+  @override
+  Future<Purchase> submitStoreReceipt(String purchaseId, String receipt) async => Purchase.fromJson(
+    await _api.post<JsonMap>('/me/purchases/$purchaseId/store-receipt', body: {'receipt': receipt}),
+  );
+
+  @override
+  Future<Purchase> recoverStoreReceipt({
+    required String store,
+    required String receipt,
+    required String productId,
+  }) async => Purchase.fromJson(
+    await _api.post<JsonMap>('/me/store-receipts', body: {'store': store, 'receipt': receipt, 'productId': productId}),
+  );
 
   @override
   Future<List<Subscription>> subscriptions() async => [
@@ -121,6 +141,13 @@ class UnavailableMonetizationRepository implements MonetizationRepository {
 
   @override
   Future<Purchase> cancelPurchase(String id) => throw _off;
+
+  @override
+  Future<Purchase> submitStoreReceipt(String purchaseId, String receipt) => throw _off;
+
+  @override
+  Future<Purchase> recoverStoreReceipt({required String store, required String receipt, required String productId}) =>
+      throw _off;
 
   @override
   Future<List<Subscription>> subscriptions() async => const [];

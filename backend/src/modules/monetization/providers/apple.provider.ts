@@ -87,7 +87,7 @@ export class ApplePaymentProvider implements PaymentProvider {
     };
   }
 
-  async createCheckout(_payment: Payment, purchase: Purchase): Promise<{ action: CheckoutAction }> {
+  async createCheckout(payment: Payment, purchase: Purchase): Promise<{ action: CheckoutAction }> {
     this.config();
     const storeProductId = await storeProductFor(this.prisma, this.key, purchase);
     if (!storeProductId) {
@@ -97,7 +97,7 @@ export class ApplePaymentProvider implements PaymentProvider {
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
-    return { action: { type: 'store', store: 'apple', storeProductId } };
+    return { action: { type: 'store', store: 'apple', storeProductId, accountToken: payment.id } };
   }
 
   /** Short-lived ES256 JWT for the App Store Server API. */
@@ -111,7 +111,8 @@ export class ApplePaymentProvider implements PaymentProvider {
     );
   }
 
-  async verifyReceipt(payment: Payment, purchase: Purchase, receipt: string): Promise<ProviderEvent> {
+  /** Asks Apple for the transaction and verifies the signed answer; everything else is checked by the callers. */
+  private async fetchTransaction(receipt: string): Promise<TransactionInfo> {
     const c = this.config();
     if (!/^\d{1,30}$/.test(receipt)) throw new ReceiptInvalid('malformed_transaction_id');
     const response = await this.fetchImpl(`${c.baseUrl}/inApps/v1/transactions/${receipt}`, {
@@ -122,14 +123,23 @@ export class ApplePaymentProvider implements PaymentProvider {
     if (!response.ok) throw new Error(`App Store Server API HTTP ${response.status}`);
     const { signedTransactionInfo } = (await response.json()) as { signedTransactionInfo?: string };
     if (!signedTransactionInfo) throw new ReceiptInvalid('no_transaction_info');
-
-    let info: TransactionInfo;
     try {
-      info = verifyAppleJws<TransactionInfo>(signedTransactionInfo, c.rootPem);
+      return verifyAppleJws<TransactionInfo>(signedTransactionInfo, c.rootPem);
     } catch (error) {
       if (error instanceof JwsError) throw new ReceiptInvalid(`bad_signature:${error.message}`);
       throw error;
     }
+  }
+
+  async identifyPayment(receipt: string): Promise<string> {
+    const info = await this.fetchTransaction(receipt);
+    if (!info.appAccountToken) throw new ReceiptInvalid('account_mismatch');
+    return info.appAccountToken.toLowerCase();
+  }
+
+  async verifyReceipt(payment: Payment, purchase: Purchase, receipt: string): Promise<ProviderEvent> {
+    const c = this.config();
+    const info = await this.fetchTransaction(receipt);
     const expectedProduct = await storeProductFor(this.prisma, this.key, purchase);
     if (info.bundleId !== c.bundleId) throw new ReceiptInvalid('wrong_bundle');
     if (!expectedProduct || info.productId !== expectedProduct) throw new ReceiptInvalid('wrong_product');

@@ -46,7 +46,18 @@ admin    ── /admin/monetization/* (ADMIN role) + AdminAuditLog
 - **Payme** (`payme.service.ts`, `providers/payme.provider.ts`): Merchant API JSON-RPC (`CheckPerformTransaction`, `CreateTransaction`, `PerformTransaction`, `CancelTransaction`, `CheckTransaction`, `GetStatement`) with Basic auth, transaction state in `PaymeTransaction`, 12 h transaction timeout. Enabled when `PAYME_MERCHANT_ID` and `PAYME_KEY` are set (`PAYME_TEST_MODE=true` → `test.paycom.uz`). Endpoint for the Payme cabinet: `POST {PUBLIC_API_URL}/api/v1/payments/webhooks/payme`; the account field is `order_id`. A performed transaction cannot be cancelled through the API (`-31007`): refunds are handled by support.
 - **Both were written from the public merchant specifications and verified against a simulator in `test/monetization-providers.e2e-spec.ts` — not against Click/Payme themselves.** Run their sandbox/test-cashbox checks before enabling either in production (field names, amount formats, and the exact error codes they expect are the usual places for surprises). Status polling and API-initiated refunds are not implemented for either.
 - Provider callbacks are returned to the caller **without** the `{ data }` envelope (`RawResponse`).
-- **Apple / Google**: interfaces for server-side receipt/purchase verification; `NOT_CONFIGURED` until App Store Server API / Play Developer API credentials exist.
+- **Apple / Google** (`providers/apple.provider.ts`, `google.provider.ts`): consumable-style store purchases (boosts, promotions, prepaid plan periods).
+  Checkout returns `{type:'store', storeProductId, accountToken}`; the app buys it in the store with `accountToken` (= payment id) attached
+  (`appAccountToken` / obfuscated account id), then `POST /me/purchases/:id/store-receipt {receipt}` (App Store transaction id / Play purchase token).
+  The server verifies with the store's own API before activating: Apple — App Store Server API, the signed transaction's x5c chain must end at the
+  pinned `APPLE_ROOT_CA` and carry Apple's marker extensions, plus bundle/product/environment/revocation/account checks; Google — `purchases.products.get`
+  (purchase state, product, account) and `acknowledge`. `POST /me/store-receipts {store, receipt, productId}` recovers purchases the app lost track of
+  (the receipt names its payment). Apple `REFUND`/`REVOKE` notifications (`POST /payments/webhooks/apple`) flag the payment for review.
+  Store product ids are mapped in admin: `PUT /admin/monetization/store-products {provider, storeProductId, productId | planPriceId}`.
+  Configuration: `APPLE_BUNDLE_ID/ISSUER_ID/KEY_ID/PRIVATE_KEY/ROOT_CA/ENVIRONMENT`, `GOOGLE_PACKAGE_NAME/SERVICE_ACCOUNT`.
+  The repository has no copy of Apple's root certificate (it could not be downloaded here): get *Apple Root CA - G3* from apple.com/certificateauthority.
+  **Tested against fakes only** (real PKI, real signatures, fake store servers) — run the App Store sandbox and Play test tracks before enabling.
+  Not built: auto-renewing subscriptions, Google real-time developer notifications, voided-purchase sweeps.
 - Webhooks: signature verified first; each provider event id is stored once (replay → no-op); payment rows are locked (`SELECT … FOR UPDATE`) and moved through an explicit state machine; fulfillment is unique per purchase.
 - Money: `BigInt` minor units (`amountMinor`, tiyin for UZS). No floats.
 
@@ -82,8 +93,8 @@ Every step is written to `AdminAuditLog`.
 |---|---|---|
 | Payme | Implemented (Merchant API), not verified against Payme | Merchant account + key, cabinet endpoint URL, sandbox run with Payme’s test cases; optional `fetchStatus`/refund work |
 | Click | Implemented (Shop API), not verified against Click | Service/merchant ids + secret key, cabinet callback URL, sandbox run; optional status lookup/reversal |
-| Apple IAP | Interface; route `ios → APPLE` | App Store Connect products, App Store Server API key; client StoreKit implementation of `StoreBilling`; receipt verification endpoint |
-| Google Play Billing | Interface; route `android → GOOGLE` | Play Console products, service account for Play Developer API; client billing implementation; purchase-token verification + RTDN webhook |
+| Apple IAP | Implemented (server verification + `in_app_purchase` client), not verified against Apple | App Store Connect consumable products + mapping, API key (.p8), Apple Root CA G3, bundle id; enable the In-App Purchase capability in Xcode; sandbox run |
+| Google Play Billing | Implemented (server verification + `in_app_purchase` client), not verified against Google | Play Console in-app products + mapping, service account with Play Console access, package name; license-tester run |
 | Real prices | None seeded | Business decision, entered via admin API |
 | Legal/tax | Not done | Offer terms, refund policy text, fiscal receipts (OFD) requirements in Uzbekistan |
 

@@ -40,6 +40,9 @@ interface Priced {
   currency: Currency;
 }
 
+/** Receipt verification calls Apple/Google: bound it per user (generous enough for recovery after an outage). */
+const RECEIPT_LIMIT_PER_HOUR = env().NODE_ENV === 'test' ? 10_000 : 30;
+
 @Injectable()
 export class CheckoutService {
   constructor(
@@ -451,7 +454,7 @@ export class CheckoutService {
       throw AppError.invalidState('Purchase is not awaiting payment');
     const provider = this.registry.get(payment.provider);
     if (!provider.verifyReceipt) throw AppError.invalidState('This provider does not take receipts');
-    await this.limiter.consume(`store-receipt:${userId}`, 20, 3600);
+    await this.limiter.consume(`store-receipt:${userId}`, RECEIPT_LIMIT_PER_HOUR, 3600);
     let event;
     try {
       event = await provider.verifyReceipt(payment, purchase, receipt);
@@ -470,6 +473,48 @@ export class CheckoutService {
     }
     await this.payments.applyEvent(payment.provider, event, 'internal');
     return this.present(purchaseId, userId);
+  }
+
+  /**
+   * Recovery of a store purchase the app could not report (killed after paying,
+   * offline, …): the receipt itself says which payment it was made for.
+   */
+  async recoverStoreReceipt(
+    userId: string,
+    store: 'apple' | 'google',
+    receipt: string,
+    storeProductId?: string,
+  ) {
+    const key = store === 'apple' ? PaymentProviderKey.APPLE : PaymentProviderKey.GOOGLE;
+    const provider = this.registry.get(key);
+    if (!provider.identifyPayment) throw AppError.invalidState('This provider does not take receipts');
+    await this.limiter.consume(`store-receipt:${userId}`, RECEIPT_LIMIT_PER_HOUR, 3600);
+    let paymentId: string;
+    try {
+      paymentId = await provider.identifyPayment(receipt, storeProductId);
+    } catch (error) {
+      if (error instanceof ReceiptInvalid) throw this.receiptRejected(error);
+      throw error;
+    }
+    const payment = /^[0-9a-f-]{36}$/i.test(paymentId)
+      ? await this.prisma.payment.findFirst({
+          where: { id: paymentId, provider: key, purchase: { userId } },
+          select: { purchaseId: true },
+        })
+      : null;
+    if (!payment) throw this.receiptRejected(new ReceiptInvalid('unknown_payment'));
+    return this.submitStoreReceipt(userId, payment.purchaseId, receipt);
+  }
+
+  private receiptRejected(error: ReceiptInvalid): AppError {
+    return new AppError(
+      'RECEIPT_INVALID',
+      'The store did not confirm this purchase',
+      HttpStatus.UNPROCESSABLE_ENTITY,
+      {
+        reason: error.reason,
+      },
+    );
   }
 
   async cancel(userId: string, purchaseId: string) {

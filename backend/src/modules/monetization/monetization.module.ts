@@ -16,7 +16,7 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import { ApiBearerAuth, ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { ActivationStatus, ListingStatus, PaymentProviderKey } from '@prisma/client';
-import { IsIn, IsString, Length } from 'class-validator';
+import { IsIn, IsOptional, IsString, Length } from 'class-validator';
 import type { Request } from 'express';
 
 import { AuthUser, CurrentUser, Public } from '../../common/auth.decorators';
@@ -53,6 +53,17 @@ class StoreReceiptDto {
   @IsString()
   @Length(10, 400)
   receipt!: string;
+}
+
+class RecoverReceiptDto extends StoreReceiptDto {
+  @IsIn(['apple', 'google'])
+  store!: 'apple' | 'google';
+
+  /** The store's product id (needed to look a Google Play token up). */
+  @IsOptional()
+  @IsString()
+  @Length(3, 200)
+  productId?: string;
 }
 
 class DevCompleteDto {
@@ -232,6 +243,13 @@ class CheckoutController {
     @Body() dto: StoreReceiptDto,
   ) {
     return this.checkout.submitStoreReceipt(user.userId, id, dto.receipt);
+  }
+
+  /** Recovery: a store receipt whose purchase the app lost track of. */
+  @Post('me/store-receipts')
+  @HttpCode(200)
+  recoverReceipt(@CurrentUser() user: AuthUser, @Body() dto: RecoverReceiptDto) {
+    return this.checkout.recoverStoreReceipt(user.userId, dto.store, dto.receipt, dto.productId);
   }
 
   @Post('me/purchases/:id/cancel')

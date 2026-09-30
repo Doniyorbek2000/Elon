@@ -1,12 +1,17 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:bozor/core/config/app_config.dart';
 import 'package:bozor/core/config/feature_flags.dart';
 import 'package:bozor/core/domain/paged.dart';
 import 'package:bozor/core/domain/promotion.dart';
 import 'package:bozor/core/errors/app_failure.dart';
 import 'package:bozor/core/utils/external_actions.dart';
+import 'package:bozor/features/auth/application/session_controller.dart';
+import 'package:bozor/features/auth/domain/auth.dart';
 import 'package:bozor/features/monetization/application/monetization_providers.dart';
 import 'package:bozor/features/monetization/data/monetization_repository.dart';
+import 'package:bozor/features/monetization/data/store_billing.dart';
 import 'package:bozor/features/monetization/domain/monetization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -51,6 +56,8 @@ class ScriptedRepository implements MonetizationRepository {
   Object? checkoutError;
   Purchase Function(CheckoutRequest request)? onCheckout;
   final List<Purchase> statuses = [];
+  final List<({String purchaseId, String receipt})> receipts = [];
+  Purchase Function(String receipt)? onReceipt;
 
   @override
   Future<Purchase> checkout(CheckoutRequest request) async {
@@ -69,6 +76,25 @@ class ScriptedRepository implements MonetizationRepository {
   Future<Purchase> cancelPurchase(String id) async {
     cancelled.add(id);
     return Purchase.fromJson(purchaseJson(id: id, status: 'cancelled'));
+  }
+
+  @override
+  Future<Purchase> submitStoreReceipt(String purchaseId, String receipt) async {
+    receipts.add((purchaseId: purchaseId, receipt: receipt));
+    return onReceipt!(receipt);
+  }
+
+  final List<({String store, String receipt, String productId})> recovered = [];
+  Purchase Function()? onRecover;
+
+  @override
+  Future<Purchase> recoverStoreReceipt({
+    required String store,
+    required String receipt,
+    required String productId,
+  }) async {
+    recovered.add((store: store, receipt: receipt, productId: productId));
+    return onRecover!();
   }
 
   @override
@@ -95,6 +121,35 @@ class ScriptedRepository implements MonetizationRepository {
 
   @override
   Future<({int balance, List<CreditEntry> entries})> credits() async => (balance: 0, entries: const <CreditEntry>[]);
+}
+
+class SignedInSession extends SessionController {
+  @override
+  CurrentUser? build() =>
+      CurrentUser(id: 'u1', displayId: 'U1', name: 'Test', phone: '998901234567', memberSince: DateTime(2024));
+}
+
+class FakeStoreBilling implements StoreBilling {
+  final List<({String productId, String accountToken})> requests = [];
+  int completed = 0;
+  bool available = true;
+  bool lastFinished = false;
+  Object? error;
+
+  @override
+  Future<bool> isAvailable() async => available;
+
+  final unclaimedController = StreamController<UnclaimedPurchase>.broadcast();
+
+  @override
+  Stream<UnclaimedPurchase> unclaimed() => unclaimedController.stream;
+
+  @override
+  Future<StoreReceipt> purchase({required String productId, required String accountToken}) async {
+    requests.add((productId: productId, accountToken: accountToken));
+    if (error case final failure?) throw failure;
+    return StoreReceipt(receipt: 'tx-1', complete: () async => completed++);
+  }
 }
 
 void main() {
@@ -343,6 +398,125 @@ void main() {
       expect(sub.read().phase, CheckoutPhase.unavailable);
       expect(external.urls, isEmpty);
       expect(repository.cancelled, ['p1']);
+    });
+
+    group('store billing', () {
+      late FakeStoreBilling billing;
+
+      setUp(() {
+        billing = FakeStoreBilling();
+        container.dispose();
+        container = ProviderContainer(
+          overrides: [
+            monetizationRepositoryProvider.overrideWithValue(repository),
+            externalActionsProvider.overrideWithValue(external),
+            checkoutPlatformProvider.overrideWithValue('ios'),
+            storeBillingProvider.overrideWithValue(billing),
+            checkoutTimingProvider.overrideWithValue(
+              const CheckoutTiming(pollInterval: Duration(milliseconds: 10), pollTimeout: Duration(seconds: 5)),
+            ),
+          ],
+        );
+        sub = container.listen(checkoutControllerProvider, (_, _) {});
+        repository.onCheckout = (_) => Purchase.fromJson(
+          purchaseJson(
+            action: {'type': 'store', 'store': 'apple', 'storeProductId': 'uz.bozor.top7', 'accountToken': 'pay-1'},
+          ),
+        );
+      });
+
+      Future<void> start() => controller().start(
+        controller().request(method: PaymentMethod.apple, productId: 'listing_top_7d', targetId: 'l1'),
+      );
+
+      test('buys in the store, lets the server verify, and only then finishes the transaction', () async {
+        repository.onReceipt = (_) => Purchase.fromJson(purchaseJson(status: 'fulfilled'));
+        await start();
+        expect(billing.requests, [(productId: 'uz.bozor.top7', accountToken: 'pay-1')]);
+        expect(repository.receipts, [(purchaseId: 'p1', receipt: 'tx-1')]);
+        expect(sub.read().phase, CheckoutPhase.succeeded);
+        expect(billing.completed, 1);
+        expect(external.urls, isEmpty);
+      });
+
+      test('a receipt the server rejects is a failure and the transaction stays unfinished', () async {
+        repository.onReceipt = (_) => throw const ValidationFailure('no', code: 'RECEIPT_INVALID');
+        await start();
+        expect(sub.read().phase, CheckoutPhase.failed);
+        expect(billing.completed, 0, reason: 'unfinished transactions are re-delivered by the store for recovery');
+      });
+
+      test('the user dismissing the store sheet cancels the purchase on the server', () async {
+        billing.error = const UnknownFailure('cancelled');
+        await start();
+        expect(sub.read().phase, CheckoutPhase.cancelled);
+        expect(repository.cancelled, ['p1']);
+        expect(repository.receipts, isEmpty);
+      });
+
+      test('a product the store does not know withdraws the offer', () async {
+        billing.error = const PaymentUnavailableFailure();
+        await start();
+        expect(sub.read().phase, CheckoutPhase.unavailable);
+        expect(repository.cancelled, ['p1']);
+      });
+
+      test('a device without store access withdraws the offer and never links out', () async {
+        billing.available = false;
+        await start();
+        expect(sub.read().phase, CheckoutPhase.unavailable);
+        expect(repository.cancelled, ['p1']);
+        expect(external.urls, isEmpty);
+      });
+    });
+
+    group('store recovery', () {
+      late FakeStoreBilling billing;
+      late ProviderContainer recoveryContainer;
+
+      ProviderContainer build() => ProviderContainer(
+        overrides: [
+          monetizationRepositoryProvider.overrideWithValue(repository),
+          storeBillingProvider.overrideWithValue(billing),
+          appConfigProvider.overrideWithValue(AppConfig.fromEnvironment().copyWith(apiBaseUrl: 'https://api.test')),
+          sessionProvider.overrideWith(SignedInSession.new),
+        ],
+      );
+
+      setUp(() {
+        billing = FakeStoreBilling();
+        recoveryContainer = build();
+        addTearDown(recoveryContainer.dispose);
+        recoveryContainer.read(storeRecoveryProvider);
+      });
+
+      Future<void> deliver() async {
+        var finished = false;
+        billing.unclaimedController.add(
+          UnclaimedPurchase(
+            store: 'apple',
+            productId: 'uz.bozor.top7',
+            receipt: 'tx-9',
+            complete: () async => finished = true,
+          ),
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 30));
+        billing.lastFinished = finished;
+      }
+
+      test('a paid-but-unreported purchase is claimed, verified by the server, then finished', () async {
+        repository.onRecover = () => Purchase.fromJson(purchaseJson(status: 'fulfilled'));
+        await deliver();
+        expect(repository.recovered, [(store: 'apple', receipt: 'tx-9', productId: 'uz.bozor.top7')]);
+        expect(billing.lastFinished, isTrue);
+      });
+
+      test('a receipt the server will not confirm stays in the store queue', () async {
+        repository.onRecover = () => throw const ValidationFailure('no', code: 'RECEIPT_INVALID');
+        await deliver();
+        expect(repository.recovered, hasLength(1));
+        expect(billing.lastFinished, isFalse);
+      });
     });
 
     test('unavailable payment method is reported as unavailable', () async {

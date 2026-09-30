@@ -225,18 +225,43 @@ class CheckoutController extends Notifier<CheckoutState> {
         await ref.read(externalActionsProvider).openUrl(url);
         _startPolling(purchase.id);
       case StoreAction():
-        // Store billing is not configured: nothing is charged, offer is withdrawn.
-        final billing = ref.read(storeBillingProvider);
-        if (!billing.available) {
-          await _repository.cancelPurchase(purchase.id).then<void>((_) {}, onError: (Object _) {});
-          state = CheckoutState(phase: CheckoutPhase.unavailable, purchase: purchase);
-          return;
-        }
-        state = CheckoutState(phase: CheckoutPhase.awaitingPayment, purchase: purchase);
-        _startPolling(purchase.id);
+        await _payWithStore(purchase, purchase.action! as StoreAction);
       case NoAction() || null:
         _apply(purchase);
         if (state.phase == CheckoutPhase.awaitingPayment) _startPolling(purchase.id);
+    }
+  }
+
+  /// App Store / Google Play: buy in the store, then let the server verify the receipt.
+  Future<void> _payWithStore(Purchase purchase, StoreAction action) async {
+    final billing = ref.read(storeBillingProvider);
+    if (!await billing.isAvailable()) {
+      // Store billing is not available here: nothing is charged, the offer is withdrawn.
+      await _repository.cancelPurchase(purchase.id).then<void>((_) {}, onError: (Object _) {});
+      if (ref.mounted) state = CheckoutState(phase: CheckoutPhase.unavailable, purchase: purchase);
+      return;
+    }
+    state = CheckoutState(phase: CheckoutPhase.awaitingPayment, purchase: purchase);
+    try {
+      final receipt = await billing.purchase(productId: action.productId, accountToken: action.accountToken);
+      if (!ref.mounted) return;
+      final verified = await _repository.submitStoreReceipt(purchase.id, receipt.receipt);
+      // Only after the server accepted it: finish/consume so the store stops re-delivering.
+      if (verified.status == PurchaseStatus.fulfilled) await receipt.complete();
+      if (!ref.mounted) return;
+      _apply(verified);
+    } on PaymentUnavailableFailure catch (failure) {
+      await _repository.cancelPurchase(purchase.id).then<void>((_) {}, onError: (Object _) {});
+      if (ref.mounted) state = CheckoutState(phase: CheckoutPhase.unavailable, purchase: purchase, failure: failure);
+    } on Object catch (error) {
+      if (!ref.mounted) return;
+      final cancelled = error is UnknownFailure && error.message == 'cancelled';
+      if (cancelled) {
+        await _repository.cancelPurchase(purchase.id).then<void>((_) {}, onError: (Object _) {});
+        if (ref.mounted) state = CheckoutState(phase: CheckoutPhase.cancelled, purchase: purchase);
+      } else {
+        state = CheckoutState(phase: CheckoutPhase.failed, purchase: purchase, failure: error.asFailure());
+      }
     }
   }
 
@@ -310,3 +335,28 @@ class CheckoutController extends Notifier<CheckoutState> {
     state = const CheckoutState();
   }
 }
+
+/// Claims store purchases that were paid for but never reported to the server,
+/// then finishes them. Only a server-verified, fulfilled purchase is completed;
+/// anything else stays in the store's queue and is retried on the next launch.
+class StoreRecovery extends Notifier<void> {
+  @override
+  void build() {
+    if (ref.watch(sessionProvider) == null || ref.watch(appConfigProvider).useDemoData) return;
+    final subscription = ref.watch(storeBillingProvider).unclaimed().listen(_claim);
+    ref.onDispose(subscription.cancel);
+  }
+
+  Future<void> _claim(UnclaimedPurchase purchase) async {
+    try {
+      final verified = await ref
+          .read(monetizationRepositoryProvider)
+          .recoverStoreReceipt(store: purchase.store, receipt: purchase.receipt, productId: purchase.productId);
+      if (verified.status == PurchaseStatus.fulfilled) await purchase.complete();
+    } on Object {
+      // Not verifiable now (offline, pending, refunded…): the store re-delivers it later.
+    }
+  }
+}
+
+final storeRecoveryProvider = NotifierProvider<StoreRecovery, void>(StoreRecovery.new);

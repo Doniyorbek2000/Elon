@@ -328,7 +328,11 @@ sealed class CheckoutAction {
 
   static CheckoutAction? fromJson(Json? json) => switch (json?['type']) {
     'redirect' => RedirectAction(Uri.parse(json!['url'] as String)),
-    'store' => StoreAction(json!['store'] as String, json['storeProductId'] as String),
+    'store' => StoreAction(
+      json!['store'] as String,
+      json['storeProductId'] as String,
+      json['accountToken'] as String? ?? '',
+    ),
     'none' => const NoAction(),
     _ => null,
   };
@@ -343,10 +347,13 @@ final class RedirectAction extends CheckoutAction {
 
 /// App Store / Google Play billing (see [StoreBilling]).
 final class StoreAction extends CheckoutAction {
-  const StoreAction(this.store, this.productId);
+  const StoreAction(this.store, this.productId, this.accountToken);
 
   final String store;
   final String productId;
+
+  /// The server's payment id, attached to the store transaction.
+  final String accountToken;
 }
 
 /// Nothing to pay (credits, 100 % coupon) — the server already settled it.

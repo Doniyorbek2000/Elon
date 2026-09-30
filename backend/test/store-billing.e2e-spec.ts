@@ -146,7 +146,12 @@ describe('Store billing: App Store and Google Play', () => {
     return {
       purchaseId,
       payment,
-      action: res.body.data.action as { type: string; store: string; storeProductId: string },
+      action: res.body.data.action as {
+        type: string;
+        store: string;
+        storeProductId: string;
+        accountToken: string;
+      },
     };
   }
 
@@ -156,8 +161,13 @@ describe('Store billing: App Store and Google Play', () => {
 
   describe('App Store', () => {
     it('hands the app the store product to buy', async () => {
-      const { action } = await buy('apple', 'ios');
-      expect(action).toEqual({ type: 'store', store: 'apple', storeProductId: 'uz.bozor.top7' });
+      const { action, payment } = await buy('apple', 'ios');
+      expect(action).toEqual({
+        type: 'store',
+        store: 'apple',
+        storeProductId: 'uz.bozor.top7',
+        accountToken: payment.id,
+      });
     });
 
     it('activates only after Apple confirms the signed transaction', async () => {
@@ -313,8 +323,13 @@ describe('Store billing: App Store and Google Play', () => {
     });
 
     it('hands the app the store product to buy', async () => {
-      const { action } = await buy('google', 'android');
-      expect(action).toEqual({ type: 'store', store: 'google', storeProductId: 'top7' });
+      const { action, payment } = await buy('google', 'android');
+      expect(action).toEqual({
+        type: 'store',
+        store: 'google',
+        storeProductId: 'top7',
+        accountToken: payment.id,
+      });
     });
 
     it('verifies with Play, acknowledges, and activates', async () => {
@@ -361,6 +376,54 @@ describe('Store billing: App Store and Google Play', () => {
       const { purchaseId } = await buy('google', 'android');
       const res = await receipt(purchaseId, 'this-token-does-not-exist-1234').expect(422);
       expect(res.body.error.details.reason).toBe('purchase_not_found');
+    });
+  });
+
+  describe('recovery of purchases the app lost track of', () => {
+    const recover = (user: TestUser, body: object) => as(ctx.http, user).post('/me/store-receipts', body);
+
+    it('App Store: the transaction itself says which payment it belongs to', async () => {
+      const { purchaseId, payment } = await buy('apple', 'ios');
+      const transactionId = `6000${Date.now()}`;
+      appleTransactions.set(transactionId, {
+        transactionId,
+        productId: 'uz.bozor.top7',
+        appAccountToken: payment.id,
+      });
+      const res = await recover(seller, { store: 'apple', receipt: transactionId }).expect(200);
+      expect(res.body.data.status).toBe('fulfilled');
+      expect(await statusOf(purchaseId)).toBe('FULFILLED');
+    });
+
+    it('Google Play: the purchase token plus product id find the payment', async () => {
+      const { purchaseId, payment } = await buy('google', 'android');
+      const token = `recover-${Date.now()}-abcdefghij`;
+      playPurchases.set(token, {
+        purchaseState: 0,
+        acknowledgementState: 0,
+        orderId: `GPA.r.${Date.now()}`,
+        obfuscatedExternalAccountId: payment.id,
+      });
+      const res = await recover(seller, { store: 'google', receipt: token, productId: 'top7' }).expect(200);
+      expect(res.body.data.status).toBe('fulfilled');
+      expect(await statusOf(purchaseId)).toBe('FULFILLED');
+      await recover(seller, { store: 'google', receipt: token }).expect(422); // product id is needed to look it up
+    });
+
+    it('nobody can claim another user’s payment through recovery', async () => {
+      const { payment } = await buy('apple', 'ios');
+      const transactionId = `7000${Date.now()}`;
+      appleTransactions.set(transactionId, {
+        transactionId,
+        productId: 'uz.bozor.top7',
+        appAccountToken: payment.id,
+      });
+      const stranger = await signIn(ctx.http);
+      const res = await recover(stranger, { store: 'apple', receipt: transactionId }).expect(422);
+      expect(res.body.error.details.reason).toBe('unknown_payment');
+      const unbound = `8000${Date.now()}`;
+      appleTransactions.set(unbound, { transactionId: unbound, productId: 'uz.bozor.top7' });
+      await recover(seller, { store: 'apple', receipt: unbound }).expect(422);
     });
   });
 

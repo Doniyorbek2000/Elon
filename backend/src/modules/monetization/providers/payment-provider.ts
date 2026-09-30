@@ -3,7 +3,7 @@ import { Payment, PaymentProviderKey, Purchase } from '@prisma/client';
 /** What the client must do to pay. Never contains secrets. */
 export type CheckoutAction =
   | { type: 'redirect'; url: string }
-  | { type: 'store'; store: 'apple' | 'google'; storeProductId: string }
+  | { type: 'store'; store: 'apple' | 'google'; storeProductId: string; accountToken: string }
   | { type: 'none' };
 
 /** Provider-reported fact about a payment, normalized. */
@@ -71,6 +71,11 @@ export interface PaymentProvider {
    * returns the verified fact. Throws `ReceiptInvalid` when it does not check out.
    */
   verifyReceipt?(payment: Payment, purchase: Purchase, receipt: string): Promise<ProviderEvent>;
+  /**
+   * Store billing recovery: finds which payment a store receipt belongs to (the
+   * app attaches the payment id to the store transaction) without knowing the purchase.
+   */
+  identifyPayment?(receipt: string, storeProductId?: string): Promise<string>;
   fetchStatus?(payment: Payment): Promise<ProviderEvent | null>;
   refund?(payment: Payment, amountMinor: bigint): Promise<{ succeeded: boolean; providerRefundId?: string }>;
 }

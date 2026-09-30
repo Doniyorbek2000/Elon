@@ -66,7 +66,7 @@ export class GooglePaymentProvider implements PaymentProvider {
     return { ...raw, private_key: readPem(raw.private_key) };
   }
 
-  async createCheckout(_payment: Payment, purchase: Purchase): Promise<{ action: CheckoutAction }> {
+  async createCheckout(payment: Payment, purchase: Purchase): Promise<{ action: CheckoutAction }> {
     this.account();
     const storeProductId = await storeProductFor(this.prisma, this.key, purchase);
     if (!storeProductId) {
@@ -76,7 +76,7 @@ export class GooglePaymentProvider implements PaymentProvider {
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
-    return { action: { type: 'store', store: 'google', storeProductId } };
+    return { action: { type: 'store', store: 'google', storeProductId, accountToken: payment.id } };
   }
 
   /** OAuth2 access token via the service-account JWT bearer flow (cached until shortly before expiry). */
@@ -109,11 +109,11 @@ export class GooglePaymentProvider implements PaymentProvider {
     return `${c.GOOGLE_API_URL}/androidpublisher/v3/applications/${encodeURIComponent(c.GOOGLE_PACKAGE_NAME!)}/purchases/products/${encodeURIComponent(productId)}/tokens/${encodeURIComponent(token)}`;
   }
 
-  async verifyReceipt(payment: Payment, purchase: Purchase, receipt: string): Promise<ProviderEvent> {
-    this.account();
+  private async fetchPurchase(
+    productId: string,
+    receipt: string,
+  ): Promise<{ info: ProductPurchase; auth: Record<string, string> }> {
     if (!/^[\w.\-]{10,400}$/.test(receipt)) throw new ReceiptInvalid('malformed_purchase_token');
-    const productId = await storeProductFor(this.prisma, this.key, purchase);
-    if (!productId) throw new ReceiptInvalid('wrong_product');
     const auth = { Authorization: `Bearer ${await this.accessToken()}` };
     const response = await this.fetchImpl(this.productUrl(productId, receipt), {
       headers: auth,
@@ -122,7 +122,22 @@ export class GooglePaymentProvider implements PaymentProvider {
     if (response.status === 404 || response.status === 410) throw new ReceiptInvalid('purchase_not_found');
     if (response.status === 400) throw new ReceiptInvalid('purchase_rejected');
     if (!response.ok) throw new Error(`Play Developer API HTTP ${response.status}`);
-    const info = (await response.json()) as ProductPurchase;
+    return { info: (await response.json()) as ProductPurchase, auth };
+  }
+
+  async identifyPayment(receipt: string, storeProductId?: string): Promise<string> {
+    this.account();
+    if (!storeProductId) throw new ReceiptInvalid('wrong_product');
+    const { info } = await this.fetchPurchase(storeProductId, receipt);
+    if (!info.obfuscatedExternalAccountId) throw new ReceiptInvalid('account_mismatch');
+    return info.obfuscatedExternalAccountId.toLowerCase();
+  }
+
+  async verifyReceipt(payment: Payment, purchase: Purchase, receipt: string): Promise<ProviderEvent> {
+    this.account();
+    const productId = await storeProductFor(this.prisma, this.key, purchase);
+    if (!productId) throw new ReceiptInvalid('wrong_product');
+    const { info, auth } = await this.fetchPurchase(productId, receipt);
     if (info.purchaseState !== 0)
       throw new ReceiptInvalid(info.purchaseState === 2 ? 'pending' : 'not_purchased');
     if (!info.orderId) throw new ReceiptInvalid('no_order');
