@@ -130,6 +130,8 @@ const Map<String, String> russianStrings = {
       'Этот тип файла не поддерживается (JPEG, PNG, WebP, HEIC)',
   'Bu foydalanuvchi bilan yozishib bo‘lmaydi': 'Переписка с этим пользователем невозможна',
   'Bu hisoblangan hodisalar, kafolat yoki bashorat emas.': 'Это подсчитанные события, а не гарантия или прогноз.',
+  'Bu rasm qoidalarga zid (nomaqbul kontent). Boshqa rasm tanlang':
+      'Это фото нарушает правила (недопустимый контент). Выберите другое',
   'Bu sizning e’loningiz': 'Это ваше объявление',
   'Bu tarifni hozircha ushbu qurilmada sotib olib bo‘lmaydi': 'Этот тариф пока нельзя купить на этом устройстве',
   'Bu xizmat hozircha sotuvda emas': 'Эта услуга пока недоступна для покупки',

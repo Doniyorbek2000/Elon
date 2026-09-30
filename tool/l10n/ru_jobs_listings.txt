@@ -173,3 +173,4 @@ Sotuvchi raqamini yashirgan. Chat orqali yozing. ||| Продавец скрыл
 Band qilingan ||| Забронировано
 Sotilgan ||| Продано
 Arxivda ||| В архиве
+Bu rasm qoidalarga zid (nomaqbul kontent). Boshqa rasm tanlang ||| Это фото нарушает правила (недопустимый контент). Выберите другое

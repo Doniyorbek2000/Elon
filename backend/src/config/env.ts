@@ -87,10 +87,28 @@ const schema = z
     /** Index name prefix so several environments can share one Meilisearch. */
     MEILI_INDEX_PREFIX: z.string().default('bozor'),
 
+    /** Automated image content check (nudity, gore, offensive). `none` disables it. */
+    IMAGE_MODERATION_PROVIDER: z.enum(['none', 'sightengine']).default('none'),
+    SIGHTENGINE_USER: z.string().optional(),
+    SIGHTENGINE_SECRET: z.string().optional(),
+    /** Override for tests / proxies. */
+    SIGHTENGINE_URL: z.string().url().default('https://api.sightengine.com/1.0/check.json'),
+
     SWAGGER_ENABLED: bool.default('true'),
     WEB_BASE_URL: z.string().url().default('https://bozor.uz'),
   })
   .superRefine((env, ctx) => {
+    if (
+      env.IMAGE_MODERATION_PROVIDER === 'sightengine' &&
+      !(env.SIGHTENGINE_USER && env.SIGHTENGINE_SECRET)
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        message:
+          'SIGHTENGINE_USER and SIGHTENGINE_SECRET are required when IMAGE_MODERATION_PROVIDER=sightengine',
+        path: ['SIGHTENGINE_USER'],
+      });
+    }
     if (env.SEARCH_PROVIDER === 'meilisearch' && !env.MEILI_URL) {
       ctx.addIssue({
         code: 'custom',

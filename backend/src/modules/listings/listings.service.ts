@@ -593,6 +593,14 @@ export class ListingsService {
    * signal (stolen pictures): route to moderation instead of publishing.
    */
   private async assessPhotos(listingId: string, sellerId: string): Promise<RiskSignal[]> {
+    const signals: RiskSignal[] = [];
+    const flagged = await this.prisma.media.findMany({
+      where: { listingLinks: { some: { listingId } }, moderation: { in: ['REVIEW', 'UNCHECKED'] } },
+      select: { moderation: true },
+    });
+    if (flagged.some((m) => m.moderation === 'REVIEW'))
+      signals.push({ code: 'image_review', severity: 'WARNING' });
+    else if (flagged.length) signals.push({ code: 'image_unchecked', severity: 'WARNING' });
     const own = await this.prisma.media.findMany({
       where: { listingLinks: { some: { listingId } }, imageHash: { not: null } },
       select: { imageHash: true, hashBand0: true, hashBand1: true, hashBand2: true, hashBand3: true },
@@ -628,10 +636,11 @@ export class ListingsService {
           (c) => c.imageHash != null && hammingDistance(hash, fromSigned(c.imageHash)) <= DUPLICATE_DISTANCE,
         )
       ) {
-        return [{ code: 'duplicate_image', severity: 'WARNING' }];
+        signals.push({ code: 'duplicate_image', severity: 'WARNING' });
+        break;
       }
     }
-    return [];
+    return signals;
   }
 
   /** Average active price in the category (needs ≥ 5 samples to be meaningful). */

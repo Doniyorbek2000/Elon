@@ -648,30 +648,33 @@ model CategoryAttribute {
 /// Uploaded file. Originals are private; derived renditions (thumb/feed/
 /// detail) are generated asynchronously by the worker.
 model Media {
-  id            String       @id @default(uuid()) @db.Uuid
-  ownerId       String       @db.Uuid
-  owner         User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  purpose       MediaPurpose
-  status        MediaStatus  @default(PROCESSING)
-  mimeType      String
-  sizeBytes     Int
-  width         Int?
-  height        Int?
-  originalKey   String
-  thumbKey      String?
-  feedKey       String?
-  detailKey     String?
-  failureReason String?
+  id               String       @id @default(uuid()) @db.Uuid
+  ownerId          String       @db.Uuid
+  owner            User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  purpose          MediaPurpose
+  status           MediaStatus  @default(PROCESSING)
+  mimeType         String
+  sizeBytes        Int
+  width            Int?
+  height           Int?
+  originalKey      String
+  thumbKey         String?
+  feedKey          String?
+  detailKey        String?
+  failureReason    String?
   /// 64-bit perceptual hash (see common/image-hash.ts) of listing photos,
   /// split into four 16-bit bands for indexed near-duplicate lookups.
-  imageHash     BigInt?
-  hashBand0     Int?
-  hashBand1     Int?
-  hashBand2     Int?
-  hashBand3     Int?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  deletedAt     DateTime?
+  /// Automated content check: CLEAN | REVIEW | BLOCKED | UNCHECKED (null = not applicable).
+  moderation       String?
+  moderationLabels String[]     @default([])
+  imageHash        BigInt?
+  hashBand0        Int?
+  hashBand1        Int?
+  hashBand2        Int?
+  hashBand3        Int?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  deletedAt        DateTime?
 
   profileAvatar   Profile?            @relation("ProfileAvatar")
   listingLinks    ListingMedia[]

@@ -41,7 +41,12 @@ Callback URLs to enter in the provider cabinets:
 - Text: `backend/src/common/content-risk.ts` normalizes evasions (spelled-out digits, separators, apostrophe variants)
   before matching phones, cards (Luhn-validated), links, off-platform contact and prepayment wording.
 - Photos: listing photos get a perceptual hash. A photo that matches another seller’s live listing sends the new listing
-  to moderation (`duplicate_image`). Content classification (nudity, violence) is **not** implemented; it needs an external service.
+  to moderation (`duplicate_image`).
+- Photo content: `IMAGE_MODERATION_PROVIDER=sightengine` (+ `SIGHTENGINE_USER`, `SIGHTENGINE_SECRET`) checks every public photo for
+  nudity, gore and offensive content. Explicit/violent images are rejected (`content_policy`), borderline ones send the listing to
+  moderation (`image_review`), and a provider outage marks the photo unchecked (`image_unchecked`) instead of blocking uploads.
+  The adapter follows Sightengine's documented `check.json` format and is tested against a fake server only — verify it with your
+  own account and tune the thresholds in `image-moderation.ts` on real data.
 
 ## Offline behaviour
 

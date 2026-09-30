@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { ListingStatus, MediaPurpose, MediaStatus } from '@prisma/client';
 import sharp, { Metadata } from 'sharp';
 
@@ -12,6 +12,7 @@ import { PrismaService } from '../../infra/prisma.service';
 import { QueueService } from '../../infra/queues';
 import { RateLimiterService } from '../../infra/rate-limiter.service';
 import { StorageService } from '../../infra/storage.service';
+import { IMAGE_MODERATION, ImageModerationProvider } from './image-moderation';
 
 /** Formats accepted after sniffing the actual bytes (client MIME is ignored). */
 const ALLOWED_FORMATS: Record<string, string> = {
@@ -44,6 +45,7 @@ export class MediaService {
     private readonly storage: StorageService,
     private readonly queues: QueueService,
     private readonly limiter: RateLimiterService,
+    @Inject(IMAGE_MODERATION) private readonly moderation: ImageModerationProvider,
   ) {}
 
   async upload(ownerId: string, purpose: MediaPurpose, file: Express.Multer.File | undefined) {
@@ -132,10 +134,24 @@ export class MediaService {
       await this.storage.put(key, output, 'image/webp', cache);
       keys[rendition.column] = key;
     }
+    const check = await this.checkContent(media.purpose, oriented.data);
+    if (check.moderation === 'BLOCKED') {
+      // Explicit or violent content never becomes usable.
+      await this.prisma.media.update({
+        where: { id: media.id },
+        data: { status: MediaStatus.FAILED, failureReason: 'content_policy', ...check },
+      });
+      this.logger.warn(
+        { mediaId: media.id, labels: check.moderationLabels },
+        'Image blocked by content check',
+      );
+      return;
+    }
     await this.prisma.media.update({
       where: { id: media.id },
       data: {
         ...keys,
+        ...check,
         status: MediaStatus.READY,
         width: oriented.info.width,
         height: oriented.info.height,
@@ -143,6 +159,32 @@ export class MediaService {
         ...(await this.perceptualHash(media.purpose, oriented.data)),
       },
     });
+  }
+
+  /**
+   * Automated content check on public images (chat images are private). A
+   * provider outage never blocks uploads: the image is marked UNCHECKED so the
+   * listing that uses it goes to human review instead.
+   */
+  private async checkContent(
+    purpose: MediaPurpose,
+    image: Buffer,
+  ): Promise<{ moderation?: string; moderationLabels?: string[] }> {
+    if (!this.moderation.enabled || purpose === MediaPurpose.CHAT) return {};
+    try {
+      const jpeg = await sharp(image)
+        .resize({ width: 1080, withoutEnlargement: true })
+        .jpeg({ quality: 80 })
+        .toBuffer();
+      const result = await this.moderation.classify(jpeg);
+      const moderation = { block: 'BLOCKED', review: 'REVIEW', clean: 'CLEAN' }[result.verdict];
+      return { moderation, moderationLabels: result.labels };
+    } catch (error) {
+      this.logger.warn(
+        `Image content check failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return { moderation: 'UNCHECKED', moderationLabels: [] };
+    }
   }
 
   /** Only listing photos are compared (avatars and chat images are personal). */
