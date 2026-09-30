@@ -3,6 +3,7 @@ import { PrismaService } from '../src/infra/prisma.service';
 import { SEARCH_PROVIDER, SearchProvider } from '../src/modules/search/search.provider';
 import {
   as,
+  snapshotEnv,
   NAMANGAN_CHUST,
   signIn,
   startTestApp,
@@ -26,7 +27,10 @@ suite('Search: Meilisearch engine', () => {
   let seller: TestUser;
   let buyer: TestUser;
 
+  let restoreEnv: () => void;
+
   beforeAll(async () => {
+    restoreEnv = snapshotEnv();
     Object.assign(process.env, {
       SEARCH_PROVIDER: 'meilisearch',
       MEILI_URL,
@@ -42,6 +46,7 @@ suite('Search: Meilisearch engine', () => {
 
   afterAll(async () => {
     await stopTestApp(ctx);
+    restoreEnv();
   });
 
   const SAMARKAND_URGUT = { regionId: 'samarkand', districtId: 'urgut' };

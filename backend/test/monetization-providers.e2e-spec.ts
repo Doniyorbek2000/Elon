@@ -4,7 +4,7 @@ import request from 'supertest';
 
 import { resetEnvCache } from '../src/config/env';
 import { PrismaService } from '../src/infra/prisma.service';
-import { as, startTestApp, stopTestApp, TestContext, TestUser, signIn } from './helpers';
+import { as, snapshotEnv, startTestApp, stopTestApp, TestContext, TestUser, signIn } from './helpers';
 import {
   createListing,
   idem,
@@ -13,16 +13,6 @@ import {
   priceAndActivate,
   setFlags,
 } from './monetization.helpers';
-
-// Provider credentials exist only for this suite; other suites rely on them being absent.
-Object.assign(process.env, {
-  CLICK_SERVICE_ID: '12345',
-  CLICK_MERCHANT_ID: '67890',
-  CLICK_SECRET_KEY: 'click_test_secret_key',
-  PAYME_MERCHANT_ID: 'payme_test_merchant',
-  PAYME_KEY: 'payme_test_key_0123456789',
-});
-resetEnvCache(); // imports above may already have read the environment
 
 const CLICK = { serviceId: '12345', secret: 'click_test_secret_key' };
 const md5 = (value: string) => createHash('md5').update(value).digest('hex');
@@ -34,7 +24,19 @@ describe('Monetization: Click and Payme adapters', () => {
   let seller: TestUser;
   let listingId: string;
 
+  let restoreEnv: () => void;
+
   beforeAll(async () => {
+    restoreEnv = snapshotEnv();
+    // Provider credentials exist only for this suite; other suites rely on them being absent.
+    Object.assign(process.env, {
+      CLICK_SERVICE_ID: '12345',
+      CLICK_MERCHANT_ID: '67890',
+      CLICK_SECRET_KEY: 'click_test_secret_key',
+      PAYME_MERCHANT_ID: 'payme_test_merchant',
+      PAYME_KEY: 'payme_test_key_0123456789',
+    });
+    resetEnvCache();
     ctx = await startTestApp();
     prisma = ctx.app.get(PrismaService);
     const admin = await makeAdmin(ctx);
@@ -46,6 +48,7 @@ describe('Monetization: Click and Payme adapters', () => {
 
   afterAll(async () => {
     await stopTestApp(ctx);
+    restoreEnv();
   });
 
   async function buy(provider: 'click' | 'payme') {

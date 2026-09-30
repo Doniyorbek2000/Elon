@@ -7,6 +7,7 @@ import { resetEnvCache } from '../src/config/env';
 import { PrismaService } from '../src/infra/prisma.service';
 import {
   as,
+  snapshotEnv,
   jpeg,
   NAMANGAN_CHUST,
   signIn,
@@ -81,8 +82,11 @@ describe('Media: automated content moderation', () => {
   let user: TestUser;
   let fake: Awaited<ReturnType<typeof startFakeSightengine>>;
 
+  let restoreEnv: () => void;
+
   beforeAll(async () => {
     fake = await startFakeSightengine();
+    restoreEnv = snapshotEnv();
     Object.assign(process.env, {
       IMAGE_MODERATION_PROVIDER: 'sightengine',
       SIGHTENGINE_USER: 'test-user',
@@ -97,6 +101,7 @@ describe('Media: automated content moderation', () => {
 
   afterAll(async () => {
     await stopTestApp(ctx);
+    restoreEnv();
     await fake.close();
   });
 

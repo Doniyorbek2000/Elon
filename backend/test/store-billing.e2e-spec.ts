@@ -7,7 +7,7 @@ import request from 'supertest';
 import { resetEnvCache } from '../src/config/env';
 import { PrismaService } from '../src/infra/prisma.service';
 import { fromB64url } from '../src/modules/monetization/providers/jws';
-import { as, signIn, startTestApp, stopTestApp, TestContext, TestUser } from './helpers';
+import { as, snapshotEnv, signIn, startTestApp, stopTestApp, TestContext, TestUser } from './helpers';
 import { createApiKey, createApplePki, createServiceAccount } from './store-fixtures';
 import { createListing, idem, makeAdmin, priceAndActivate, setFlags } from './monetization.helpers';
 
@@ -61,6 +61,8 @@ describe('Store billing: App Store and Google Play', () => {
   const playAcks: string[] = [];
   const oauthAssertions: string[] = [];
 
+  let restoreEnv: () => void;
+
   beforeAll(async () => {
     apple = await listen((req, res) => {
       appleAuthHeaders.push(req.headers.authorization ?? '');
@@ -89,6 +91,7 @@ describe('Store billing: App Store and Google Play', () => {
       }
       json(res, 200, purchase);
     });
+    restoreEnv = snapshotEnv();
     Object.assign(process.env, {
       APPLE_BUNDLE_ID: 'uz.bozor.app',
       APPLE_ISSUER_ID: 'issuer-1234',
@@ -123,6 +126,7 @@ describe('Store billing: App Store and Google Play', () => {
 
   afterAll(async () => {
     await stopTestApp(ctx);
+    restoreEnv();
     await apple.close();
     await play.close();
   });
