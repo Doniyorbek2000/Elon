@@ -5,6 +5,7 @@ import '../../../core/domain/place.dart';
 import '../../../core/domain/promotion.dart';
 import '../../../core/domain/public_profile.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/network/api_client.dart';
 import '../domain/job.dart';
 
@@ -53,7 +54,7 @@ class RemoteJobRepository implements JobRepository {
   /// Résumé places may have no preferred region yet.
   static Place _resumePlace(JsonMap? json) {
     final regionId = json?['regionId'] as String?;
-    if (regionId == null) return const Place(regionId: '', regionName: 'Hudud ko‘rsatilmagan');
+    if (regionId == null) return Place(regionId: '', regionName: tr('Hudud ko‘rsatilmagan'));
     return Place(
       regionId: regionId,
       regionName: json?['regionName'] as String? ?? '',

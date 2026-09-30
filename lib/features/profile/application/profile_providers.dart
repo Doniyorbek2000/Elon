@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/domain/public_profile.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/network/api_client.dart';
 import '../../../data/demo/demo_database.dart';
 
@@ -28,7 +29,7 @@ class DemoProfilesRepository implements ProfilesRepository {
       for (final conversation in _db.conversations.values) conversation.peer,
     ];
     return candidates.where((p) => p.id == userId).firstOrNull ??
-        (throw const NotFoundFailure('Foydalanuvchi topilmadi'));
+        (throw NotFoundFailure(tr('Foydalanuvchi topilmadi')));
   }
 }
 

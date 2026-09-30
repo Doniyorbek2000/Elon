@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/domain/media_image.dart';
 import '../../../core/domain/place.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../jobs/data/remote_job_repository.dart';
 import '../../jobs/domain/job.dart';
 import '../../services/domain/service_provider.dart';
@@ -16,7 +17,7 @@ enum BusinessRole {
 
   static BusinessRole parse(Object? value) => value == 'owner' ? BusinessRole.owner : BusinessRole.manager;
 
-  String get label => this == BusinessRole.owner ? 'Egasi' : 'Menejer';
+  String get label => this == BusinessRole.owner ? tr('Egasi') : tr('Menejer');
 }
 
 @immutable
@@ -106,10 +107,10 @@ class Business {
   final String? shareUrl;
 
   String get verificationLabel => switch (verification) {
-    'verified' => 'Tasdiqlangan',
-    'pending' => 'Tekshiruvda',
-    'rejected' => 'Rad etilgan',
-    _ => 'Tasdiqlanmagan',
+    'verified' => tr('Tasdiqlangan'),
+    'pending' => tr('Tekshiruvda'),
+    'rejected' => tr('Rad etilgan'),
+    _ => tr('Tasdiqlanmagan'),
   };
 }
 
@@ -386,13 +387,13 @@ class AdCampaign {
   bool get payable => status == 'draft' || status == 'awaitingPayment';
 
   String get statusLabel => switch (status) {
-    'draft' => 'Qoralama',
-    'awaitingPayment' => 'To‘lov kutilmoqda',
-    'pendingReview' => 'Tekshiruvda',
-    'active' => 'Faol',
-    'paused' => 'To‘xtatilgan',
-    'rejected' => 'Rad etilgan',
-    'ended' => 'Tugagan',
+    'draft' => tr('Qoralama'),
+    'awaitingPayment' => tr('To‘lov kutilmoqda'),
+    'pendingReview' => tr('Tekshiruvda'),
+    'active' => tr('Faol'),
+    'paused' => tr('To‘xtatilgan'),
+    'rejected' => tr('Rad etilgan'),
+    'ended' => tr('Tugagan'),
     _ => status,
   };
 }

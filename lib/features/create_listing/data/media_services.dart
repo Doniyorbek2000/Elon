@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/config/feature_flags.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/network/api_client.dart';
 import '../domain/media_upload.dart';
 
@@ -68,7 +69,7 @@ class RemoteMediaUploadService implements MediaUploadService {
       await Future<void>.delayed(pollInterval);
       status = (await _api.get<JsonMap>('/media/$id'))['status'] as String?;
     }
-    if (status == 'failed') throw const ValidationFailure('Rasmni qayta ishlab bo‘lmadi. Boshqa rasm tanlang');
+    if (status == 'failed') throw ValidationFailure(tr('Rasmni qayta ishlab bo‘lmadi. Boshqa rasm tanlang'));
     yield UploadProgress(fraction: 1, remoteId: id);
   }
 }

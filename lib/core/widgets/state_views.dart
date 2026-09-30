@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../design/app_colors.dart';
 import '../design/app_tokens.dart';
 import '../errors/app_failure.dart';
@@ -84,13 +85,18 @@ class FailureView extends StatelessWidget {
     final (icon, title, message, tone) = switch (failure) {
       NetworkFailure() => (
         Icons.wifi_off_rounded,
-        'Internet aloqasi yo‘q',
-        'Ulanishni tekshirib, qayta urinib ko‘ring. Saqlangan ma’lumotlar ko‘rinib turadi.',
+        tr('Internet aloqasi yo‘q'),
+        tr('Ulanishni tekshirib, qayta urinib ko‘ring. Saqlangan ma’lumotlar ko‘rinib turadi.'),
         AccentTone.amber,
       ),
-      TimeoutFailure() => (Icons.hourglass_empty_rounded, 'Server javob bermadi', failure.message, AccentTone.amber),
-      NotFoundFailure() => (Icons.search_off_rounded, 'Topilmadi', failure.message, AccentTone.slate),
-      _ => (Icons.error_outline_rounded, 'Nimadir xato ketdi', failure.message, AccentTone.red),
+      TimeoutFailure() => (
+        Icons.hourglass_empty_rounded,
+        tr('Server javob bermadi'),
+        failure.message,
+        AccentTone.amber,
+      ),
+      NotFoundFailure() => (Icons.search_off_rounded, tr('Topilmadi'), failure.message, AccentTone.slate),
+      _ => (Icons.error_outline_rounded, tr('Nimadir xato ketdi'), failure.message, AccentTone.red),
     };
     return EmptyState(
       icon: icon,
@@ -98,7 +104,7 @@ class FailureView extends StatelessWidget {
       message: message,
       tone: tone,
       compact: compact,
-      actionLabel: onRetry == null ? null : 'Qayta urinish',
+      actionLabel: onRetry == null ? null : tr('Qayta urinish'),
       onAction: onRetry,
     );
   }
@@ -121,13 +127,13 @@ class LoadMoreFooter extends StatelessWidget {
       child = TextButton.icon(
         onPressed: onRetry,
         icon: const Icon(Icons.refresh_rounded),
-        label: const Text('Yana yuklashda xato. Qayta urinish'),
+        label: Text(tr('Yana yuklashda xato. Qayta urinish')),
       );
     } else if (isLoading || hasMore) {
       child = const SizedBox.square(dimension: 24, child: CircularProgressIndicator(strokeWidth: 2.4));
     } else {
       child = Text(
-        'Hammasi ko‘rsatildi',
+        tr('Hammasi ko‘rsatildi'),
         style: Theme.of(context).textTheme.bodySmall?.copyWith(color: palette.textTertiary),
       );
     }

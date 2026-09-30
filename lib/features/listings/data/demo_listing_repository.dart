@@ -1,6 +1,7 @@
 import '../../../core/domain/media_image.dart';
 import '../../../core/domain/paged.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../data/demo/demo_database.dart';
 import '../../catalog/domain/category.dart';
 import '../../location/data/uzbekistan_locations.dart';
@@ -92,7 +93,7 @@ class DemoListingRepository implements ListingRepository {
   Future<Listing> getById(String id) async {
     await _db.roundTrip(0.6);
     final listing = _db.listings.where((l) => l.id == id).firstOrNull;
-    if (listing == null) throw const NotFoundFailure('E’lon topilmadi yoki o‘chirilgan');
+    if (listing == null) throw NotFoundFailure(tr('E’lon topilmadi yoki o‘chirilgan'));
     return listing;
   }
 
@@ -140,7 +141,7 @@ class DemoListingRepository implements ListingRepository {
     await _db.roundTrip(0.4);
     final listing = await getById(listingId);
     final phone = _db.seed.phoneBook[listing.seller.id];
-    if (phone == null) throw const NotFoundFailure('Sotuvchi raqamini yashirgan. Chat orqali yozing.');
+    if (phone == null) throw NotFoundFailure(tr('Sotuvchi raqamini yashirgan. Chat orqali yozing.'));
     return phone;
   }
 

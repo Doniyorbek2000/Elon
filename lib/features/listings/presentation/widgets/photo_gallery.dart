@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../../core/design/app_colors.dart';
 import '../../../../core/design/app_tokens.dart';
 import '../../../../core/domain/media_image.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/widgets/app_image.dart';
 
 /// Swipeable photo pager with counter; tap opens the zoomable viewer.
@@ -62,7 +63,11 @@ class _PhotoGalleryState extends State<PhotoGallery> {
     final images = widget.images;
     final count = images.length;
     return Semantics(
-      label: '${widget.semanticTitle} rasmlari, ${count == 0 ? 0 : _index + 1} / $count. Kattalashtirish uchun bosing',
+      label: tr('{semanticTitle} rasmlari, {p1} / {count}. Kattalashtirish uchun bosing', {
+        'semanticTitle': widget.semanticTitle,
+        'p1': count == 0 ? 0 : _index + 1,
+        'count': count,
+      }),
       button: count > 0,
       child: GestureDetector(
         onTap: _openViewer,
@@ -196,7 +201,7 @@ class _PhotoViewerState extends State<PhotoViewer> {
                 child: Row(
                   children: [
                     IconButton(
-                      tooltip: 'Yopish',
+                      tooltip: tr('Yopish'),
                       color: Colors.white,
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.close_rounded),

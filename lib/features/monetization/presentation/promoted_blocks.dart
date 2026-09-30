@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/widgets/app_image.dart';
 import '../../../core/widgets/badges.dart';
 import '../../../core/widgets/common.dart';
@@ -27,13 +28,13 @@ class SponsoredHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       header: true,
-      label: '$title, reklama',
+      label: tr('{title}, reklama', {'title': title}),
       excludeSemantics: true,
       child: Row(
         children: [
           Flexible(child: Text(title, style: Theme.of(context).textTheme.titleMedium)),
           const SizedBox(width: AppSpacing.sm),
-          const StatusPill(label: 'Reklama', dense: true),
+          StatusPill(label: tr('Reklama'), dense: true),
         ],
       ),
     );
@@ -87,7 +88,7 @@ class PromotedListingsBlock extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final listings = ref.watch(promotedListingsProvider(query)).value ?? const [];
     if (listings.isEmpty) return const SizedBox.shrink();
-    return _ListingCarousel(title: 'TOP e’lonlar', listings: listings, gutter: gutter, heroPrefix: 'promoted');
+    return _ListingCarousel(title: tr('TOP e’lonlar'), listings: listings, gutter: gutter, heroPrefix: 'promoted');
   }
 }
 
@@ -112,7 +113,7 @@ class FeaturedListingsBlock extends ConsumerWidget {
         ref.watch(featuredListingsProvider((placement: placement, regionId: regionId, categoryId: categoryId))).value ??
         const [];
     if (listings.isEmpty) return const SizedBox.shrink();
-    return _ListingCarousel(title: 'Tavsiya etilgan', listings: listings, gutter: gutter, heroPrefix: 'featured');
+    return _ListingCarousel(title: tr('Tavsiya etilgan'), listings: listings, gutter: gutter, heroPrefix: 'featured');
   }
 }
 
@@ -131,7 +132,7 @@ class PromotedJobsBlock extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SponsoredHeader(title: 'TOP vakansiyalar'),
+          SponsoredHeader(title: tr('TOP vakansiyalar')),
           const SizedBox(height: AppSpacing.sm),
           for (final job in jobs)
             Padding(
@@ -205,7 +206,7 @@ class PromotedProvidersBlock extends ConsumerWidget {
     final seen = <String>{};
     final providers = [...top, ...featured].where((p) => seen.add(p.id)).toList();
     if (providers.isEmpty) return const SizedBox.shrink();
-    return _ProviderCarousel(title: 'Tavsiya etilgan ustalar', providers: providers, gutter: gutter);
+    return _ProviderCarousel(title: tr('Tavsiya etilgan ustalar'), providers: providers, gutter: gutter);
   }
 }
 
@@ -254,7 +255,7 @@ class AdCardView extends StatelessWidget {
     final palette = context.palette;
     final text = Theme.of(context).textTheme;
     return Semantics(
-      label: 'Reklama: ${ad.title}. ${ad.body}',
+      label: tr('Reklama: {title}. {body}', {'title': ad.title, 'body': ad.body}),
       button: true,
       excludeSemantics: true,
       child: SurfaceCard(
@@ -278,7 +279,7 @@ class AdCardView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const StatusPill(label: 'Reklama', dense: true),
+                  StatusPill(label: tr('Reklama'), dense: true),
                   const SizedBox(height: AppSpacing.xs),
                   Text(ad.title, style: text.titleSmall, maxLines: 1, overflow: TextOverflow.ellipsis),
                   Text(

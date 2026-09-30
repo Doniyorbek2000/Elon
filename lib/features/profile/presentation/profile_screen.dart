@@ -6,6 +6,7 @@ import '../../../app/router/routes.dart';
 import '../../../core/config/feature_flags.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/avatar.dart';
 import '../../../core/widgets/badges.dart';
@@ -29,14 +30,14 @@ class ProfileScreen extends ConsumerWidget {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         leading: IconButton(
-          tooltip: 'Sozlamalar',
+          tooltip: tr('Sozlamalar'),
           icon: const Icon(Icons.settings_outlined),
           onPressed: () => context.push(AppRoutes.settings),
         ),
-        title: const Text('Profil'),
+        title: Text(tr('Profil')),
         actions: [
           IconButton(
-            tooltip: 'Bildirishnomalar',
+            tooltip: tr('Bildirishnomalar'),
             onPressed: () => context.push(AppRoutes.notifications),
             icon: CountBadge(count: unread, child: const Icon(Icons.notifications_none_rounded)),
           ),
@@ -68,17 +69,17 @@ class _GuestCard extends StatelessWidget {
         children: [
           const BrandMark(size: 56),
           const SizedBox(height: AppSpacing.md),
-          Text('Bozor.uz’ga xush kelibsiz', style: text.titleMedium),
+          Text(tr('Bozor.uz’ga xush kelibsiz'), style: text.titleMedium),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'E’lon joylash, chat va ariza topshirish uchun telefon raqamingiz bilan kiring.',
+            tr('E’lon joylash, chat va ariza topshirish uchun telefon raqamingiz bilan kiring.'),
             textAlign: TextAlign.center,
             style: text.bodySmall,
           ),
           const SizedBox(height: AppSpacing.lg),
           SizedBox(
             width: double.infinity,
-            child: FilledButton(onPressed: () => context.push(AppRoutes.verifyPhone), child: const Text('Kirish')),
+            child: FilledButton(onPressed: () => context.push(AppRoutes.verifyPhone), child: Text(tr('Kirish'))),
           ),
         ],
       ),
@@ -118,14 +119,14 @@ class _UserHeader extends ConsumerWidget {
                       VerifiedBadge(level: user.verification, size: 18),
                     ],
                   ),
-                  Text('ID: ${user.displayId}', style: text.bodySmall),
+                  Text(tr('ID: {displayId}', {'displayId': user.displayId}), style: text.bodySmall),
                   const SizedBox(height: AppSpacing.sm),
                   Wrap(
                     spacing: AppSpacing.sm,
                     runSpacing: AppSpacing.xs,
                     children: [
                       ActionChip(
-                        label: const Text('Profilni tahrirlash'),
+                        label: Text(tr('Profilni tahrirlash')),
                         labelStyle: text.labelMedium?.copyWith(color: palette.primary),
                         backgroundColor: palette.primarySoft,
                         onPressed: () => context.push(AppRoutes.editProfile),
@@ -133,7 +134,7 @@ class _UserHeader extends ConsumerWidget {
                       if (!user.isPhoneVerified)
                         ActionChip(
                           avatar: Icon(Icons.warning_amber_rounded, size: 16, color: palette.warning),
-                          label: const Text('Raqamni tasdiqlang'),
+                          label: Text(tr('Raqamni tasdiqlang')),
                           onPressed: () => context.push(AppRoutes.verifyPhone),
                         ),
                     ],
@@ -151,13 +152,13 @@ class _UserHeader extends ConsumerWidget {
               children: [
                 _Stat(
                   value: '${myListings.length}',
-                  label: 'Mening e’lonlarim',
+                  label: tr('Mening e’lonlarim'),
                   onTap: () => context.push(AppRoutes.myListings),
                 ),
                 VerticalDivider(color: palette.border),
-                _Stat(value: '$savedCount', label: 'Saqlanganlar', onTap: () => context.push(AppRoutes.saved)),
+                _Stat(value: '$savedCount', label: tr('Saqlanganlar'), onTap: () => context.push(AppRoutes.saved)),
                 VerticalDivider(color: palette.border),
-                _Stat(value: Formatters.compactCount(views), label: 'Ko‘rishlar'),
+                _Stat(value: Formatters.compactCount(views), label: tr('Ko‘rishlar')),
               ],
             ),
           ),
@@ -212,41 +213,53 @@ class _Menu extends ConsumerWidget {
     final palette = context.palette;
     final items = <(IconData, AccentTone, String, VoidCallback, int)>[
       if (signedIn)
-        (Icons.list_alt_rounded, AccentTone.blue, 'Mening e’lonlarim', () => context.push(AppRoutes.myListings), 0),
+        (Icons.list_alt_rounded, AccentTone.blue, tr('Mening e’lonlarim'), () => context.push(AppRoutes.myListings), 0),
       if (signedIn)
         (
           Icons.assignment_outlined,
           AccentTone.teal,
-          'Mening arizalarim',
+          tr('Mening arizalarim'),
           () => context.push(AppRoutes.applications),
           0,
         ),
       if (signedIn)
-        (Icons.description_outlined, AccentTone.green, 'Mening rezyumem', () => context.push(AppRoutes.resume), 0),
+        (Icons.description_outlined, AccentTone.green, tr('Mening rezyumem'), () => context.push(AppRoutes.resume), 0),
       if (signedIn)
         (
           Icons.business_center_outlined,
           AccentTone.orange,
-          'Vakansiyalarim va arizalar',
+          tr('Vakansiyalarim va arizalar'),
           () => context.push(AppRoutes.employerJobs),
           0,
         ),
       if (signedIn)
-        (Icons.handyman_outlined, AccentTone.purple, 'Usta profilim', () => context.push(AppRoutes.providerEditor), 0),
+        (
+          Icons.handyman_outlined,
+          AccentTone.purple,
+          tr('Usta profilim'),
+          () => context.push(AppRoutes.providerEditor),
+          0,
+        ),
       if (signedIn && ref.watch(featureFlagsProvider).businessAccounts)
-        (Icons.storefront_outlined, AccentTone.blue, 'Biznes profil', () => context.push(AppRoutes.myBusiness), 0),
-      (Icons.favorite_border_rounded, AccentTone.red, 'Saqlanganlar', () => context.push(AppRoutes.saved), 0),
+        (Icons.storefront_outlined, AccentTone.blue, tr('Biznes profil'), () => context.push(AppRoutes.myBusiness), 0),
+      (Icons.favorite_border_rounded, AccentTone.red, tr('Saqlanganlar'), () => context.push(AppRoutes.saved), 0),
       if (signedIn)
         (
           Icons.chat_bubble_outline_rounded,
           AccentTone.indigo,
-          'Chatlar',
+          tr('Chatlar'),
           () => context.go(AppRoutes.chats),
           unreadChats,
         ),
-      (Icons.receipt_long_outlined, AccentTone.amber, 'To‘lovlar va tariflar', () => context.push(AppRoutes.plans), 0),
-      (Icons.settings_outlined, AccentTone.slate, 'Sozlamalar', () => context.push(AppRoutes.settings), 0),
-      (Icons.help_outline_rounded, AccentTone.green, 'Yordam', () => context.push(AppRoutes.help), 0),
+      (
+        Icons.receipt_long_outlined,
+        AccentTone.amber,
+        tr('To‘lovlar va tariflar'),
+        () => context.push(AppRoutes.plans),
+        0,
+      ),
+      (Icons.settings_outlined, AccentTone.slate, tr('Sozlamalar'), () => context.push(AppRoutes.settings), 0),
+      (Icons.help_outline_rounded, AccentTone.green, tr('Yordam'), () => context.push(AppRoutes.help), 0),
     ];
     return Column(
       children: [
@@ -284,13 +297,13 @@ class _Menu extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
             child: ListTile(
               leading: const ToneIcon(icon: Icons.logout_rounded, tone: AccentTone.red, size: 36, radius: AppRadii.sm),
-              title: Text('Chiqish', style: TextStyle(color: palette.danger)),
+              title: Text(tr('Chiqish'), style: TextStyle(color: palette.danger)),
               onTap: () async {
                 final confirmed = await confirmDialog(
                   context,
-                  title: 'Hisobdan chiqasizmi?',
-                  message: 'Saqlangan e’lonlar va qoralamalar shu qurilmada qoladi.',
-                  confirmLabel: 'Chiqish',
+                  title: tr('Hisobdan chiqasizmi?'),
+                  message: tr('Saqlangan e’lonlar va qoralamalar shu qurilmada qoladi.'),
+                  confirmLabel: tr('Chiqish'),
                   destructive: true,
                 );
                 if (confirmed) await ref.read(sessionProvider.notifier).signOut();

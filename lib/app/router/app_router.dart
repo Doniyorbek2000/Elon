@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/widgets/state_views.dart';
 import '../../features/auth/application/session_controller.dart';
 import '../../features/auth/presentation/phone_verification_screen.dart';
@@ -66,9 +67,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       appBar: AppBar(),
       body: EmptyState(
         icon: Icons.link_off_rounded,
-        title: 'Sahifa topilmadi',
-        message: 'Havola eskirgan yoki noto‘g‘ri bo‘lishi mumkin.',
-        actionLabel: 'Bosh sahifaga',
+        title: tr('Sahifa topilmadi'),
+        message: tr('Havola eskirgan yoki noto‘g‘ri bo‘lishi mumkin.'),
+        actionLabel: tr('Bosh sahifaga'),
         onAction: () => context.go(AppRoutes.home),
       ),
     ),

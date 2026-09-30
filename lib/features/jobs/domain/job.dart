@@ -6,6 +6,7 @@ import '../../../core/domain/money.dart';
 import '../../../core/domain/place.dart';
 import '../../../core/domain/promotion.dart';
 import '../../../core/domain/public_profile.dart';
+import '../../../core/l10n/l10n.dart';
 
 /// "Masofaviy" is a work format on the server (`workFormat=remote`); it is
 /// kept here as a filter chip because users search for it like a job type.
@@ -16,9 +17,11 @@ enum EmploymentType {
   temporary('Vaqtinchalik', 'temporary'),
   internship('Amaliyot', 'internship');
 
-  const EmploymentType(this.label, this.apiValue);
+  const EmploymentType(this._label, this.apiValue);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
 
   /// Server `employmentType`.
   final String apiValue;
@@ -35,9 +38,11 @@ enum ExperienceLevel {
   oneToThree('1–3 yil', 'oneTo3'),
   threePlus('3 yildan ortiq', 'threePlus');
 
-  const ExperienceLevel(this.label, this.apiValue);
+  const ExperienceLevel(this._label, this.apiValue);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
   final String apiValue;
 
   static ExperienceLevel fromApi(Object? value) =>
@@ -54,9 +59,11 @@ enum JobStatus {
   rejected('Rad etilgan'),
   archived('Arxivda');
 
-  const JobStatus(this.label);
+  const JobStatus(this._label);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
 
   static JobStatus parse(Object? value) => values.firstWhere((s) => s.name == value, orElse: () => JobStatus.active);
 }
@@ -178,9 +185,11 @@ enum ApplicationStatus {
   rejected('Rad etildi'),
   withdrawn('Qaytarib olindi');
 
-  const ApplicationStatus(this.label);
+  const ApplicationStatus(this._label);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
 
   bool get isOpen => this == submitted || this == viewed || this == shortlisted;
 
@@ -236,9 +245,11 @@ enum ResumeVisibility {
   applicationsOnly('Faqat ariza yuborgan ish beruvchilarga'),
   hidden('Yashirin');
 
-  const ResumeVisibility(this.label);
+  const ResumeVisibility(this._label);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
 }
 
 /// Editable CV of the signed-in user ("Ish qidiraman").

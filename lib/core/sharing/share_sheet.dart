@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../design/app_colors.dart';
 import '../design/app_tokens.dart';
 import '../widgets/app_image.dart';
@@ -28,7 +29,7 @@ class _ShareSheet extends ConsumerWidget {
         messenger?.showSnackBar(SnackBar(content: Text(done)));
       }
     } on Object {
-      messenger?.showSnackBar(const SnackBar(content: Text('Ulashib bo‘lmadi. Qayta urinib ko‘ring.')));
+      messenger?.showSnackBar(SnackBar(content: Text(tr('Ulashib bo‘lmadi. Qayta urinib ko‘ring.'))));
     }
   }
 
@@ -42,14 +43,14 @@ class _ShareSheet extends ConsumerWidget {
         : null;
 
     return SheetScaffold(
-      title: 'Ulashish',
+      title: tr('Ulashish'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.xl),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Semantics(
-              label: 'Havola ko‘rinishi: ${payload.title}',
+              label: tr('Havola ko‘rinishi: {title}', {'title': payload.title}),
               child: Container(
                 decoration: BoxDecoration(
                   color: palette.surfaceMuted,
@@ -88,16 +89,16 @@ class _ShareSheet extends ConsumerWidget {
               style: FilledButton.styleFrom(backgroundColor: const Color(0xFF229ED9), foregroundColor: Colors.white),
               onPressed: () => _run(context, () => share.shareToTelegram(payload)),
               icon: const Icon(Icons.send_rounded),
-              label: const Text('Telegram’da ulashish'),
+              label: Text(tr('Telegram’da ulashish')),
             ),
             const SizedBox(height: AppSpacing.md),
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () => _run(context, () => share.copyLink(payload), done: 'Havola nusxalandi'),
+                    onPressed: () => _run(context, () => share.copyLink(payload), done: tr('Havola nusxalandi')),
                     icon: const Icon(Icons.link_rounded),
-                    label: const Text('Nusxalash'),
+                    label: Text(tr('Nusxalash')),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -105,7 +106,7 @@ class _ShareSheet extends ConsumerWidget {
                   child: OutlinedButton.icon(
                     onPressed: () => _run(context, () => share.shareSystem(payload, origin: origin)),
                     icon: const Icon(Icons.ios_share_rounded),
-                    label: const Text('Boshqa'),
+                    label: Text(tr('Boshqa')),
                   ),
                 ),
               ],

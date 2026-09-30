@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/utils/clock.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/common.dart';
@@ -85,9 +86,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('To‘lov'),
+          title: Text(tr('To‘lov')),
           leading: IconButton(
-            tooltip: 'Yopish',
+            tooltip: tr('Yopish'),
             icon: const Icon(Icons.close_rounded),
             onPressed: waiting ? () => _confirmLeave(controller) : _close,
           ),
@@ -97,10 +98,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.xl),
             child: switch (state.phase) {
-              CheckoutPhase.idle || CheckoutPhase.starting => const _Status(
+              CheckoutPhase.idle || CheckoutPhase.starting => _Status(
                 icon: null,
-                title: 'To‘lov tayyorlanmoqda',
-                message: 'Narx va ma’lumotlar server tomonidan tekshirilmoqda…',
+                title: tr('To‘lov tayyorlanmoqda'),
+                message: tr('Narx va ma’lumotlar server tomonidan tekshirilmoqda…'),
               ),
               CheckoutPhase.awaitingPayment => _Waiting(
                 purchase: state.purchase,
@@ -123,38 +124,37 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               ),
               CheckoutPhase.review => _Status(
                 icon: Icons.hourglass_top_rounded,
-                title: 'To‘lov tekshirilmoqda',
-                message:
-                    'To‘lovingiz qabul qilindi, lekin qo‘shimcha tekshiruv talab qilinadi. '
-                    'Natija bildirishnoma orqali yuboriladi. Pul yechilgan bo‘lsa va xizmat '
-                    'faollashmasa, u qaytariladi.',
-                primaryLabel: 'Yopish',
+                title: tr('To‘lov tekshirilmoqda'),
+                message: tr(
+                  'To‘lovingiz qabul qilindi, lekin qo‘shimcha tekshiruv talab qilinadi. Natija bildirishnoma orqali yuboriladi. Pul yechilgan bo‘lsa va xizmat faollashmasa, u qaytariladi.',
+                ),
+                primaryLabel: tr('Yopish'),
                 onPrimary: _close,
               ),
               CheckoutPhase.failed => _Status(
                 icon: Icons.error_outline_rounded,
                 tone: _Tone.danger,
-                title: 'To‘lov amalga oshmadi',
-                message: state.failure?.message ?? 'Hech narsa faollashtirilmadi va pul yechilmadi.',
-                primaryLabel: 'Qayta urinish',
+                title: tr('To‘lov amalga oshmadi'),
+                message: state.failure?.message ?? tr('Hech narsa faollashtirilmadi va pul yechilmadi.'),
+                primaryLabel: tr('Qayta urinish'),
                 onPrimary: () => controller.start(widget.request),
-                secondaryLabel: 'Yopish',
+                secondaryLabel: tr('Yopish'),
                 onSecondary: _close,
               ),
               CheckoutPhase.cancelled => _Status(
                 icon: Icons.block_rounded,
-                title: 'To‘lov bekor qilindi',
-                message: 'Hech narsa faollashtirilmadi.',
-                primaryLabel: 'Yopish',
+                title: tr('To‘lov bekor qilindi'),
+                message: tr('Hech narsa faollashtirilmadi.'),
+                primaryLabel: tr('Yopish'),
                 onPrimary: _close,
               ),
               CheckoutPhase.unavailable => _Status(
                 icon: Icons.storefront_outlined,
-                title: 'Hozircha mavjud emas',
-                message:
-                    'Bu xizmatni hozircha ushbu qurilmada sotib olib bo‘lmaydi. '
-                    'Imkoniyat yoqilganda sizga xabar beramiz.',
-                primaryLabel: 'Yopish',
+                title: tr('Hozircha mavjud emas'),
+                message: tr(
+                  'Bu xizmatni hozircha ushbu qurilmada sotib olib bo‘lmaydi. Imkoniyat yoqilganda sizga xabar beramiz.',
+                ),
+                primaryLabel: tr('Yopish'),
                 onPrimary: _close,
               ),
             },
@@ -167,9 +167,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   Future<void> _confirmLeave(CheckoutController controller) async {
     final leave = await confirmDialog(
       context,
-      title: 'To‘lov bekor qilinsinmi?',
-      message: 'Agar to‘lovni allaqachon amalga oshirgan bo‘lsangiz, bekor qilmang — natija bir necha daqiqada keladi.',
-      confirmLabel: 'Bekor qilish',
+      title: tr('To‘lov bekor qilinsinmi?'),
+      message: tr(
+        'Agar to‘lovni allaqachon amalga oshirgan bo‘lsangiz, bekor qilmang — natija bir necha daqiqada keladi.',
+      ),
+      confirmLabel: tr('Bekor qilish'),
       destructive: true,
     );
     if (!leave || !mounted) return;
@@ -272,28 +274,28 @@ class _Waiting extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _Status(
+        _Status(
           icon: null,
-          title: 'To‘lov kutilmoqda',
-          message: 'To‘lov sahifasida to‘lovni yakunlang. Tasdiq kelishi bilan xizmat avtomatik faollashadi.',
+          title: tr('To‘lov kutilmoqda'),
+          message: tr('To‘lov sahifasida to‘lovni yakunlang. Tasdiq kelishi bilan xizmat avtomatik faollashadi.'),
         ),
         if (purchase != null) ...[
           const SizedBox(height: AppSpacing.lg),
           SurfaceCard(
             child: Row(
               children: [
-                Expanded(child: Text(purchase!.title, style: text.titleSmall)),
+                Expanded(child: Text(tr(purchase!.title), style: text.titleSmall)),
                 Text(Formatters.money(purchase!.total.money), style: text.titleSmall?.copyWith(color: palette.price)),
               ],
             ),
           ),
         ],
         const SizedBox(height: AppSpacing.xl),
-        if (canReopen) FilledButton(onPressed: onReopen, child: const Text('To‘lov sahifasini ochish')),
+        if (canReopen) FilledButton(onPressed: onReopen, child: Text(tr('To‘lov sahifasini ochish'))),
         const SizedBox(height: AppSpacing.sm),
-        OutlinedButton(onPressed: onCheck, child: const Text('Holatni tekshirish')),
+        OutlinedButton(onPressed: onCheck, child: Text(tr('Holatni tekshirish'))),
         const SizedBox(height: AppSpacing.sm),
-        TextButton(onPressed: onCancel, child: const Text('Bekor qilish')),
+        TextButton(onPressed: onCancel, child: Text(tr('Bekor qilish'))),
       ],
     );
   }
@@ -314,20 +316,20 @@ class _Success extends ConsumerWidget {
     final until = purchase?.activationExpiresAt ?? purchase?.subscriptionEnd;
     final starts = purchase?.activationStartsAt;
     final lines = [
-      if (starts != null && starts.isAfter(now)) 'Boshlanish: ${Formatters.date(starts, now: now)}',
-      if (until != null) 'Amal qiladi: ${Formatters.date(until, now: now)} gacha',
-      if (purchase != null && purchase!.creditsUsed > 0) '${purchase!.creditsUsed} ta kredit ishlatildi',
+      if (starts != null && starts.isAfter(now)) tr('Boshlanish: {p0}', {'p0': Formatters.date(starts, now: now)}),
+      if (until != null) tr('Amal qiladi: {p0} gacha', {'p0': Formatters.date(until, now: now)}),
+      if (purchase != null && purchase!.creditsUsed > 0) tr('{p0} ta kredit ishlatildi', {'p0': purchase!.creditsUsed}),
       if (purchase != null && purchase!.creditsUsed == 0 && !purchase!.total.isZero)
-        'To‘langan: ${Formatters.money(purchase!.total.money)}',
+        tr('To‘langan: {p0}', {'p0': Formatters.money(purchase!.total.money)}),
     ];
     return _Status(
       icon: Icons.check_circle_rounded,
       tone: _Tone.success,
       title: title,
-      message: lines.isEmpty ? 'Xizmat faollashtirildi.' : lines.join('\n'),
-      primaryLabel: actionLabel ?? 'Tayyor',
+      message: lines.isEmpty ? tr('Xizmat faollashtirildi.') : lines.join('\n'),
+      primaryLabel: actionLabel ?? tr('Tayyor'),
       onPrimary: onAction ?? onDone,
-      secondaryLabel: actionLabel == null ? null : 'Yopish',
+      secondaryLabel: actionLabel == null ? null : tr('Yopish'),
       onSecondary: onDone,
     );
   }

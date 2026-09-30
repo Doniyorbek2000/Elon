@@ -6,6 +6,7 @@ import '../../../app/router/routes.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_icons.dart';
 import '../../../core/design/app_tokens.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/widgets/app_search_field.dart';
 import '../../../core/widgets/badges.dart';
 import '../../../core/widgets/common.dart';
@@ -86,8 +87,8 @@ class HomeScreen extends ConsumerWidget {
                 padding: EdgeInsets.fromLTRB(gutter, AppSpacing.sm, gutter - AppSpacing.sm, AppSpacing.sm),
                 sliver: SliverToBoxAdapter(
                   child: SectionHeader(
-                    title: 'Yaqin atrofdagi e’lonlar',
-                    actionLabel: 'Barchasini ko‘rish',
+                    title: tr('Yaqin atrofdagi e’lonlar'),
+                    actionLabel: tr('Barchasini ko‘rish'),
                     onAction: () => context.push(AppRoutes.listingsFor(sort: ListingSort.nearest.name)),
                   ),
                 ),
@@ -98,9 +99,9 @@ class HomeScreen extends ConsumerWidget {
                 heroPrefix: 'home',
                 empty: EmptyState(
                   icon: Icons.location_searching_rounded,
-                  title: 'Yaqin atrofda e’lonlar yo‘q',
-                  message: 'Hududni kengaytiring yoki birinchi bo‘lib e’lon joylang.',
-                  actionLabel: 'Hududni o‘zgartirish',
+                  title: tr('Yaqin atrofda e’lonlar yo‘q'),
+                  message: tr('Hududni kengaytiring yoki birinchi bo‘lib e’lon joylang.'),
+                  actionLabel: tr('Hududni o‘zgartirish'),
                   onAction: () => context.push(AppRoutes.location),
                   compact: true,
                 ),
@@ -128,7 +129,7 @@ class _HomeHeader extends ConsumerWidget {
             alignment: AlignmentDirectional.centerStart,
             child: Semantics(
               button: true,
-              label: 'Joylashuv: ${location.label}. O‘zgartirish',
+              label: tr('Joylashuv: {label}. O‘zgartirish', {'label': location.label}),
               excludeSemantics: true,
               child: InkWell(
                 borderRadius: AppRadii.mdAll,
@@ -157,7 +158,7 @@ class _HomeHeader extends ConsumerWidget {
           ),
         ),
         IconButton(
-          tooltip: 'Bildirishnomalar',
+          tooltip: tr('Bildirishnomalar'),
           onPressed: () => context.push(AppRoutes.notifications),
           icon: CountBadge(count: unread, child: const Icon(Icons.notifications_none_rounded)),
         ),
@@ -179,7 +180,7 @@ class _VerticalTiles extends StatelessWidget {
           Expanded(
             child: _VerticalTile(
               icon: Icons.storefront_rounded,
-              label: 'Bozor',
+              label: tr('Bozor'),
               background: palette.primary,
               foreground: palette.onPrimary,
               iconBackground: Colors.white.withValues(alpha: 0.18),
@@ -190,7 +191,7 @@ class _VerticalTiles extends StatelessWidget {
           Expanded(
             child: _VerticalTile(
               icon: Icons.work_rounded,
-              label: 'Ish',
+              label: tr('Ish'),
               background: palette.tone(AccentTone.green).background,
               foreground: palette.tone(AccentTone.green).foreground,
               iconBackground: palette.tone(AccentTone.green).foreground,
@@ -202,7 +203,7 @@ class _VerticalTiles extends StatelessWidget {
           Expanded(
             child: _VerticalTile(
               icon: Icons.handyman_rounded,
-              label: 'Xizmatlar',
+              label: tr('Xizmatlar'),
               background: palette.tone(AccentTone.orange).background,
               foreground: palette.tone(AccentTone.orange).foreground,
               iconBackground: palette.tone(AccentTone.orange).foreground,
@@ -302,7 +303,7 @@ class _CategoryGrid extends ConsumerWidget {
               SizedBox(
                 width: tileWidth,
                 child: _CategoryTile(
-                  label: category.name,
+                  label: tr(category.name),
                   icon: AppIcons.forKey(category.iconKey),
                   tone: category.tone,
                   onTap: () => _open(context, category),
@@ -311,7 +312,7 @@ class _CategoryGrid extends ConsumerWidget {
             SizedBox(
               width: tileWidth,
               child: _CategoryTile(
-                label: 'Barchasi',
+                label: tr('Barchasi'),
                 icon: Icons.grid_view_rounded,
                 tone: AccentTone.blue,
                 onTap: () => _open(context, null),
@@ -332,6 +333,9 @@ class _CategoryTile extends StatelessWidget {
   final AccentTone tone;
   final VoidCallback onTap;
 
+  Widget _fitLabel(BuildContext context, Widget text) =>
+      label.contains(' ') ? text : FittedBox(fit: BoxFit.scaleDown, child: text);
+
   @override
   Widget build(BuildContext context) {
     return Pressable(
@@ -341,12 +345,17 @@ class _CategoryTile extends StatelessWidget {
         children: [
           ToneIcon(icon: icon, tone: tone, size: 54, radius: AppRadii.lg),
           const SizedBox(height: AppSpacing.xs + 2),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w500, fontSize: 11.5),
+          // Long single words (e.g. Russian «Недвижимость») shrink instead of breaking mid-word.
+          _fitLabel(
+            context,
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: label.contains(' ') ? 2 : 1,
+              softWrap: label.contains(' '),
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w500, fontSize: 11.5),
+            ),
           ),
         ],
       ),

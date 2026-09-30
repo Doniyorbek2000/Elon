@@ -7,6 +7,7 @@ import '../../../core/config/feature_flags.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/sharing/share_service.dart';
 import '../../../core/sharing/share_sheet.dart';
 import '../../../core/utils/external_actions.dart';
@@ -34,18 +35,18 @@ class MyBusinessScreen extends ConsumerWidget {
     final flags = ref.watch(featureFlagsProvider);
     final mine = ref.watch(myBusinessProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Biznes profil')),
+      appBar: AppBar(title: Text(tr('Biznes profil'))),
       body: mine.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => FailureView(error: error, onRetry: () => ref.invalidate(myBusinessProvider)),
         data: (business) => business == null
             ? EmptyState(
                 icon: Icons.storefront_outlined,
-                title: 'Biznesingizni Bozor’da tanishtiring',
+                title: tr('Biznesingizni Bozor’da tanishtiring'),
                 message: flags.businessAccounts
-                    ? 'Biznes profil bepul. Do‘kon sahifasi va kengaytirilgan statistika biznes tariflarida mavjud.'
-                    : 'Biznes profillar tez orada ishga tushadi.',
-                actionLabel: flags.businessAccounts ? 'Biznes profil yaratish' : null,
+                    ? tr('Biznes profil bepul. Do‘kon sahifasi va kengaytirilgan statistika biznes tariflarida mavjud.')
+                    : tr('Biznes profillar tez orada ishga tushadi.'),
+                actionLabel: flags.businessAccounts ? tr('Biznes profil yaratish') : null,
                 onAction: flags.businessAccounts ? () => context.push(AppRoutes.businessEditor) : null,
               )
             : _BusinessDashboard(mine: business),
@@ -74,21 +75,26 @@ class _BusinessDashboard extends ConsumerWidget {
     final phone = await showDialog<String>(
       context: context,
       builder: (dialog) => AlertDialog(
-        title: const Text('Menejer qo‘shish'),
+        title: Text(tr('Menejer qo‘shish')),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.phone,
-          decoration: const InputDecoration(labelText: 'Telefon raqami', hintText: '+998 90 123 45 67'),
+          decoration: InputDecoration(labelText: tr('Telefon raqami'), hintText: '+998 90 123 45 67'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialog), child: const Text('Bekor qilish')),
-          FilledButton(onPressed: () => Navigator.pop(dialog, controller.text), child: const Text('Qo‘shish')),
+          TextButton(onPressed: () => Navigator.pop(dialog), child: Text(tr('Bekor qilish'))),
+          FilledButton(onPressed: () => Navigator.pop(dialog, controller.text), child: Text(tr('Qo‘shish'))),
         ],
       ),
     );
     controller.dispose();
     if (phone == null || phone.trim().isEmpty || !context.mounted) return;
-    await _run(context, ref, () => ref.read(businessRepositoryProvider).addManager(phone.trim()), 'Menejer qo‘shildi');
+    await _run(
+      context,
+      ref,
+      () => ref.read(businessRepositoryProvider).addManager(phone.trim()),
+      tr('Menejer qo‘shildi'),
+    );
   }
 
   @override
@@ -124,7 +130,11 @@ class _BusinessDashboard extends ConsumerWidget {
                               icon: business.verified ? Icons.verified_rounded : null,
                               dense: true,
                             ),
-                            StatusPill(label: 'Tarif: ${mine.planTitle}', style: PillStyle.primary, dense: true),
+                            StatusPill(
+                              label: tr('Tarif: {planTitle}', {'planTitle': tr(mine.planTitle)}),
+                              style: PillStyle.primary,
+                              dense: true,
+                            ),
                           ],
                         ),
                       ],
@@ -137,25 +147,25 @@ class _BusinessDashboard extends ConsumerWidget {
             if (mine.isOwner)
               ListTile(
                 leading: const Icon(Icons.edit_outlined),
-                title: const Text('Ma’lumotlarni tahrirlash'),
+                title: Text(tr('Ma’lumotlarni tahrirlash')),
                 onTap: () => context.push(AppRoutes.businessEditor, extra: business),
               ),
             if (mine.isOwner && !business.verified && business.verification != 'pending')
               ListTile(
                 leading: const Icon(Icons.verified_outlined),
-                title: const Text('Tasdiqlashni so‘rash'),
-                subtitle: const Text('Belgi faqat moderator tekshiruvidan so‘ng beriladi'),
+                title: Text(tr('Tasdiqlashni so‘rash')),
+                subtitle: Text(tr('Belgi faqat moderator tekshiruvidan so‘ng beriladi')),
                 onTap: () => _run(
                   context,
                   ref,
                   () => ref.read(businessRepositoryProvider).requestVerification(),
-                  'So‘rov yuborildi',
+                  tr('So‘rov yuborildi'),
                 ),
               ),
             ListTile(
               leading: const Icon(Icons.storefront_outlined),
-              title: const Text('Do‘kon sahifasi'),
-              subtitle: Text(mine.storefront ? 'Ochiq · havolani ulashing' : 'Biznes tarifida mavjud'),
+              title: Text(tr('Do‘kon sahifasi')),
+              subtitle: Text(mine.storefront ? tr('Ochiq · havolani ulashing') : tr('Biznes tarifida mavjud')),
               onTap: () => mine.storefront
                   ? context.push(AppRoutes.business(business.id))
                   : context.push(AppRoutes.businessPlans),
@@ -163,7 +173,7 @@ class _BusinessDashboard extends ConsumerWidget {
             if (flags.canAdvertise)
               ListTile(
                 leading: const Icon(Icons.campaign_outlined),
-                title: const Text('Mahalliy reklama'),
+                title: Text(tr('Mahalliy reklama')),
                 onTap: () => context.push(AppRoutes.businessAds),
               ),
             const Divider(),
@@ -171,8 +181,14 @@ class _BusinessDashboard extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
               child: Row(
                 children: [
-                  Expanded(child: Text('Jamoa', style: text.titleSmall)),
-                  Text('${mine.managerCount} / ${mine.maxManagers} menejer', style: text.bodySmall),
+                  Expanded(child: Text(tr('Jamoa'), style: text.titleSmall)),
+                  Text(
+                    tr('{managerCount} / {maxManagers} menejer', {
+                      'managerCount': mine.managerCount,
+                      'maxManagers': mine.maxManagers,
+                    }),
+                    style: text.bodySmall,
+                  ),
                 ],
               ),
             ),
@@ -180,17 +196,17 @@ class _BusinessDashboard extends ConsumerWidget {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: AppAvatar(name: member.name, size: 40),
-                title: Text(member.name.isEmpty ? 'Foydalanuvchi' : member.name),
+                title: Text(member.name.isEmpty ? tr('Foydalanuvchi') : member.name),
                 subtitle: Text(member.role.label),
                 trailing: mine.isOwner && member.role == BusinessRole.manager
                     ? IconButton(
-                        tooltip: 'Olib tashlash',
+                        tooltip: tr('Olib tashlash'),
                         icon: Icon(Icons.person_remove_outlined, color: palette.danger),
                         onPressed: () => _run(
                           context,
                           ref,
                           () => ref.read(businessRepositoryProvider).removeManager(member.userId),
-                          'Menejer olib tashlandi',
+                          tr('Menejer olib tashlandi'),
                         ),
                       )
                     : null,
@@ -203,7 +219,9 @@ class _BusinessDashboard extends ConsumerWidget {
                       ? () => _addManager(context, ref)
                       : () => context.push(AppRoutes.businessPlans),
                   icon: const Icon(Icons.person_add_alt_rounded),
-                  label: Text(mine.managerCount < mine.maxManagers ? 'Menejer qo‘shish' : 'Ko‘proq menejer — tariflar'),
+                  label: Text(
+                    mine.managerCount < mine.maxManagers ? tr('Menejer qo‘shish') : tr('Ko‘proq menejer — tariflar'),
+                  ),
                 ),
               ),
           ],
@@ -245,7 +263,7 @@ class _BusinessEditorScreenState extends ConsumerState<BusinessEditorScreen> {
 
   Future<void> _save() async {
     if (_name.text.trim().length < 2) {
-      setState(() => _errors = {'name': 'Nom kamida 2 ta belgidan iborat bo‘lsin'});
+      setState(() => _errors = {'name': tr('Nom kamida 2 ta belgidan iborat bo‘lsin')});
       return;
     }
     final location = ref.read(locationProvider);
@@ -274,7 +292,7 @@ class _BusinessEditorScreenState extends ConsumerState<BusinessEditorScreen> {
       ref.invalidate(myBusinessProvider);
       if (!mounted) return;
       context.pop();
-      showAppSnack(context, 'Saqlandi', icon: Icons.check_rounded);
+      showAppSnack(context, tr('Saqlandi'), icon: Icons.check_rounded);
     } on ValidationFailure catch (failure) {
       if (!mounted) return;
       setState(() {
@@ -310,32 +328,33 @@ class _BusinessEditorScreenState extends ConsumerState<BusinessEditorScreen> {
   Widget build(BuildContext context) {
     final location = ref.watch(locationProvider);
     return Scaffold(
-      appBar: AppBar(title: Text(widget.initial == null ? 'Biznes profil yaratish' : 'Biznes ma’lumotlari')),
+      appBar: AppBar(title: Text(widget.initial == null ? tr('Biznes profil yaratish') : tr('Biznes ma’lumotlari'))),
       body: ContentWidth(
         maxWidth: AppBreakpoints.formMaxWidth,
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.xl),
           children: [
-            _field(_name, 'name', 'Biznes nomi'),
-            _field(_description, 'description', 'Tavsif', lines: 3),
-            _field(_phone, 'phone', 'Telefon', hint: '+998 90 123 45 67', type: TextInputType.phone),
+            _field(_name, 'name', tr('Biznes nomi')),
+            _field(_description, 'description', tr('Tavsif'), lines: 3),
+            _field(_phone, 'phone', tr('Telefon'), hint: '+998 90 123 45 67', type: TextInputType.phone),
             _field(_telegram, 'telegram', 'Telegram', hint: '@username'),
-            _field(_website, 'website', 'Veb-sayt', hint: 'https://…', type: TextInputType.url),
-            _field(_address, 'address', 'Manzil'),
-            _field(_hours, 'openingHours', 'Ish vaqti', hint: 'Du–Sh 09:00–19:00'),
-            if (widget.initial == null) MetaLine(icon: Icons.location_on_outlined, text: 'Hudud: ${location.label}'),
+            _field(_website, 'website', tr('Veb-sayt'), hint: 'https://…', type: TextInputType.url),
+            _field(_address, 'address', tr('Manzil')),
+            _field(_hours, 'openingHours', tr('Ish vaqti'), hint: tr('Du–Sh 09:00–19:00')),
+            if (widget.initial == null)
+              MetaLine(icon: Icons.location_on_outlined, text: tr('Hudud: {label}', {'label': location.label})),
             const SizedBox(height: AppSpacing.xl),
             FilledButton(
               onPressed: _saving ? null : _save,
               child: _saving
                   ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator(strokeWidth: 2.4))
-                  : const Text('Saqlash'),
+                  : Text(tr('Saqlash')),
             ),
             if (widget.initial?.verified ?? false)
               Padding(
                 padding: const EdgeInsets.only(top: AppSpacing.md),
                 child: Text(
-                  'Nomni o‘zgartirsangiz, tasdiqlash qayta tekshiriladi.',
+                  tr('Nomni o‘zgartirsangiz, tasdiqlash qayta tekshiriladi.'),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
@@ -362,18 +381,18 @@ class StorefrontScreen extends ConsumerWidget {
     final palette = context.palette;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Do‘kon'),
+        title: Text(tr('Do‘kon')),
         actions: [
           if (store.value != null)
             IconButton(
-              tooltip: 'Ulashish',
+              tooltip: tr('Ulashish'),
               icon: const Icon(Icons.ios_share_rounded),
               onPressed: () => showShareSheet(
                 context,
                 SharePayload(
                   target: ShareTarget.business,
                   id: businessId,
-                  title: '${store.value!.business.name} — Bozor.uz',
+                  title: tr('{p0} — Bozor.uz', {'p0': store.value!.business.name}),
                   image: store.value!.business.logo,
                   url: ref.read(deepLinksProvider).web(ShareTarget.business, businessId),
                 ),
@@ -409,21 +428,21 @@ class StorefrontScreen extends ConsumerWidget {
                               runSpacing: AppSpacing.xs,
                               children: [
                                 if (b.verified)
-                                  const StatusPill(
-                                    label: 'Tasdiqlangan biznes',
+                                  StatusPill(
+                                    label: tr('Tasdiqlangan biznes'),
                                     style: PillStyle.success,
                                     icon: Icons.verified_rounded,
                                     dense: true,
                                   ),
                                 if (b.businessBadge && !b.verified)
-                                  const StatusPill(label: 'Biznes', style: PillStyle.primary, dense: true),
+                                  StatusPill(label: tr('Biznes'), style: PillStyle.primary, dense: true),
                               ],
                             ),
                             const SizedBox(height: AppSpacing.xs),
                             if (store.rating != null)
                               RatingLabel(rating: store.rating!, count: store.reviewCount, compact: true)
                             else
-                              Text('Hali sharhlar yo‘q', style: text.bodySmall),
+                              Text(tr('Hali sharhlar yo‘q'), style: text.bodySmall),
                           ],
                         ),
                       ),
@@ -436,7 +455,10 @@ class StorefrontScreen extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.md),
                   MetaLine(icon: Icons.location_on_outlined, text: [b.place.shortLabel, ?b.address].join(', ')),
                   if (b.openingHours != null) MetaLine(icon: Icons.schedule_rounded, text: b.openingHours!),
-                  MetaLine(icon: Icons.inventory_2_outlined, text: '${store.activeListings} ta faol e’lon'),
+                  MetaLine(
+                    icon: Icons.inventory_2_outlined,
+                    text: tr('{activeListings} ta faol e’lon', {'activeListings': store.activeListings}),
+                  ),
                   const SizedBox(height: AppSpacing.md),
                   Wrap(
                     spacing: AppSpacing.sm,
@@ -446,7 +468,7 @@ class StorefrontScreen extends ConsumerWidget {
                         FilledButton.icon(
                           onPressed: () => ref.read(externalActionsProvider).call(b.phone!),
                           icon: const Icon(Icons.call_rounded),
-                          label: const Text('Qo‘ng‘iroq'),
+                          label: Text(tr('Qo‘ng‘iroq')),
                         ),
                       if (b.telegram != null)
                         OutlinedButton.icon(
@@ -459,12 +481,12 @@ class StorefrontScreen extends ConsumerWidget {
                         OutlinedButton.icon(
                           onPressed: () => ref.read(externalActionsProvider).openUrl(Uri.parse(b.website!)),
                           icon: const Icon(Icons.language_rounded),
-                          label: const Text('Sayt'),
+                          label: Text(tr('Sayt')),
                         ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.xl),
-                  Text('E’lonlar', style: text.titleMedium),
+                  Text(tr('E’lonlar'), style: text.titleMedium),
                   const SizedBox(height: AppSpacing.sm),
                   listings.when(
                     loading: () => const Padding(
@@ -473,7 +495,10 @@ class StorefrontScreen extends ConsumerWidget {
                     ),
                     error: (error, _) => FailureView(error: error, compact: true),
                     data: (page) => page.items.isEmpty
-                        ? Text('Hozircha e’lonlar yo‘q', style: text.bodySmall?.copyWith(color: palette.textSecondary))
+                        ? Text(
+                            tr('Hozircha e’lonlar yo‘q'),
+                            style: text.bodySmall?.copyWith(color: palette.textSecondary),
+                          )
                         : Column(
                             children: [
                               for (final listing in page.items) ListingTile(listing: listing, heroPrefix: 'store'),
@@ -482,7 +507,7 @@ class StorefrontScreen extends ConsumerWidget {
                   ),
                   if (store.jobs.isNotEmpty) ...[
                     const SizedBox(height: AppSpacing.xl),
-                    Text('Vakansiyalar', style: text.titleMedium),
+                    Text(tr('Vakansiyalar'), style: text.titleMedium),
                     const SizedBox(height: AppSpacing.sm),
                     for (final job in store.jobs)
                       Padding(
@@ -492,7 +517,7 @@ class StorefrontScreen extends ConsumerWidget {
                   ],
                   if (store.providers.isNotEmpty) ...[
                     const SizedBox(height: AppSpacing.xl),
-                    Text('Xizmatlar', style: text.titleMedium),
+                    Text(tr('Xizmatlar'), style: text.titleMedium),
                     const SizedBox(height: AppSpacing.sm),
                     for (final provider in store.providers)
                       Padding(
@@ -502,7 +527,7 @@ class StorefrontScreen extends ConsumerWidget {
                   ],
                   const SizedBox(height: AppSpacing.lg),
                   Text(
-                    'A’zo: ${Formatters.monthYear(b.memberSince)}',
+                    tr('A’zo: {p0}', {'p0': Formatters.monthYear(b.memberSince)}),
                     style: text.bodySmall?.copyWith(color: palette.textSecondary),
                   ),
                 ],
@@ -526,31 +551,33 @@ class CampaignsScreen extends ConsumerWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (dialog) => AlertDialog(
-        title: const Text('Yangi reklama'),
+        title: Text(tr('Yangi reklama')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: title,
               maxLength: 60,
-              decoration: const InputDecoration(labelText: 'Sarlavha'),
+              decoration: InputDecoration(labelText: tr('Sarlavha')),
             ),
             TextField(
               controller: body,
               maxLength: 160,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Matn'),
+              decoration: InputDecoration(labelText: tr('Matn')),
             ),
             Text(
-              'Reklama do‘kon sahifangizga olib boradi va «${mine.business.place.regionName}» hududida '
-              '«Reklama» belgisi bilan ko‘rsatiladi. Moderator tekshiradi.',
+              tr(
+                'Reklama do‘kon sahifangizga olib boradi va «{regionName}» hududida «Reklama» belgisi bilan ko‘rsatiladi. Moderator tekshiradi.',
+                {'regionName': mine.business.place.regionName},
+              ),
               style: Theme.of(dialog).textTheme.bodySmall,
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialog, false), child: const Text('Bekor qilish')),
-          FilledButton(onPressed: () => Navigator.pop(dialog, true), child: const Text('Yaratish')),
+          TextButton(onPressed: () => Navigator.pop(dialog, false), child: Text(tr('Bekor qilish'))),
+          FilledButton(onPressed: () => Navigator.pop(dialog, true), child: Text(tr('Yaratish'))),
         ],
       ),
     );
@@ -591,22 +618,22 @@ class CampaignsScreen extends ConsumerWidget {
     final campaigns = ref.watch(campaignsProvider);
     final text = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Mahalliy reklama')),
+      appBar: AppBar(title: Text(tr('Mahalliy reklama'))),
       floatingActionButton: mine == null
           ? null
           : FloatingActionButton.extended(
               onPressed: () => _create(context, ref, mine),
               icon: const Icon(Icons.add_rounded),
-              label: const Text('Reklama yaratish'),
+              label: Text(tr('Reklama yaratish')),
             ),
       body: campaigns.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => FailureView(error: error, onRetry: () => ref.invalidate(campaignsProvider)),
         data: (items) => items.isEmpty
-            ? const EmptyState(
+            ? EmptyState(
                 icon: Icons.campaign_outlined,
-                title: 'Reklamalar yo‘q',
-                message: 'Hududingizdagi xaridorlarga do‘koningizni ko‘rsating.',
+                title: tr('Reklamalar yo‘q'),
+                message: tr('Hududingizdagi xaridorlarga do‘koningizni ko‘rsating.'),
               )
             : ListView(
                 padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 96),
@@ -626,13 +653,23 @@ class CampaignsScreen extends ConsumerWidget {
                             ),
                             Text(c.body, style: text.bodySmall),
                             const SizedBox(height: AppSpacing.sm),
-                            Text('Ko‘rsatildi: ${c.impressions} · Bosildi: ${c.clicks}', style: text.bodySmall),
-                            if (c.rejectReason != null) Text('Sabab: ${c.rejectReason}', style: text.bodySmall),
+                            Text(
+                              tr('Ko‘rsatildi: {impressions} · Bosildi: {clicks}', {
+                                'impressions': c.impressions,
+                                'clicks': c.clicks,
+                              }),
+                              style: text.bodySmall,
+                            ),
+                            if (c.rejectReason != null)
+                              Text(
+                                tr('Sabab: {rejectReason}', {'rejectReason': c.rejectReason}),
+                                style: text.bodySmall,
+                              ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 if (c.payable)
-                                  TextButton(onPressed: () => _pay(context, ref, c), child: const Text('To‘lash')),
+                                  TextButton(onPressed: () => _pay(context, ref, c), child: Text(tr('To‘lash'))),
                                 if (c.status == 'active' || c.status == 'paused')
                                   TextButton(
                                     onPressed: () async {
@@ -645,7 +682,7 @@ class CampaignsScreen extends ConsumerWidget {
                                         if (context.mounted) showAppSnack(context, error.asFailure().message);
                                       }
                                     },
-                                    child: Text(c.status == 'active' ? 'To‘xtatish' : 'Davom ettirish'),
+                                    child: Text(c.status == 'active' ? tr('To‘xtatish') : tr('Davom ettirish')),
                                   ),
                               ],
                             ),
@@ -684,7 +721,7 @@ class _ListingStatsScreenState extends ConsumerState<ListingStatsScreen> {
     final text = Theme.of(context).textTheme;
     final palette = context.palette;
     return Scaffold(
-      appBar: AppBar(title: const Text('E’lon statistikasi')),
+      appBar: AppBar(title: Text(tr('E’lon statistikasi'))),
       body: stats.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => FailureView(
@@ -700,21 +737,24 @@ class _ListingStatsScreenState extends ConsumerState<ListingStatsScreen> {
                   padding: EdgeInsets.zero,
                   items: const [7, 30, 90],
                   selected: _days,
-                  labelOf: (d) => '$d kun',
+                  labelOf: (d) => tr('{d} kun', {'d': d}),
                   onSelected: (d) => setState(() => _days = d),
                 )
               else
-                Text('So‘nggi 7 kun', style: text.titleSmall),
+                Text(tr('So‘nggi 7 kun'), style: text.titleSmall),
               const SizedBox(height: AppSpacing.md),
               _TotalsGrid(totals: s.totals),
               const SizedBox(height: AppSpacing.md),
               Text(
-                'Jami: ${s.lifetimeViews} ko‘rish · ${s.lifetimeFavorites} sevimli',
+                tr('Jami: {lifetimeViews} ko‘rish · {lifetimeFavorites} sevimli', {
+                  'lifetimeViews': s.lifetimeViews,
+                  'lifetimeFavorites': s.lifetimeFavorites,
+                }),
                 style: text.bodySmall?.copyWith(color: palette.textSecondary),
               ),
               if (s.advanced && s.daily.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.xl),
-                Text('Kunlik ko‘rishlar', style: text.titleSmall),
+                Text(tr('Kunlik ko‘rishlar'), style: text.titleSmall),
                 const SizedBox(height: AppSpacing.sm),
                 _DailyBars(days: s.daily),
               ],
@@ -726,14 +766,14 @@ class _ListingStatsScreenState extends ConsumerState<ListingStatsScreen> {
                       ? () => context.push(AppRoutes.businessPlans)
                       : null,
                   child: Text(
-                    'Kunlik grafik va 90 kunlik statistika biznes tariflarida mavjud.',
+                    tr('Kunlik grafik va 90 kunlik statistika biznes tariflarida mavjud.'),
                     style: text.bodyMedium,
                   ),
                 ),
               ],
               if (promotions.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.xl),
-                Text('Targ‘ibot natijalari', style: text.titleSmall),
+                Text(tr('Targ‘ibot natijalari'), style: text.titleSmall),
                 for (final p in promotions) _PromotionResultTile(promotion: p),
               ],
             ],
@@ -752,11 +792,11 @@ class _TotalsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      (Icons.visibility_outlined, 'Ko‘rishlar', totals.views),
-      (Icons.favorite_border_rounded, 'Sevimlilar', totals.favorites),
-      (Icons.call_outlined, 'Raqam ko‘rildi', totals.contacts),
-      (Icons.chat_bubble_outline_rounded, 'Chatlar', totals.chats),
-      (Icons.ios_share_rounded, 'Ulashishlar', totals.shares),
+      (Icons.visibility_outlined, tr('Ko‘rishlar'), totals.views),
+      (Icons.favorite_border_rounded, tr('Sevimlilar'), totals.favorites),
+      (Icons.call_outlined, tr('Raqam ko‘rildi'), totals.contacts),
+      (Icons.chat_bubble_outline_rounded, tr('Chatlar'), totals.chats),
+      (Icons.ios_share_rounded, tr('Ulashishlar'), totals.shares),
     ];
     final text = Theme.of(context).textTheme;
     return Wrap(
@@ -837,16 +877,25 @@ class _PromotionResultTile extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(promotion.title, style: text.titleSmall),
+            Text(tr(promotion.title), style: text.titleSmall),
             if (results != null) ...[
               Text(
-                'Davomida: ${results.during.views} ko‘rish, ${results.during.contacts} raqam, ${results.during.chats} chat',
+                tr('Davomida: {views} ko‘rish, {contacts} raqam, {chats} chat', {
+                  'views': results.during.views,
+                  'contacts': results.during.contacts,
+                  'chats': results.during.chats,
+                }),
               ),
               if (results.comparable && results.before != null)
-                Text('Oldingi shuncha davr: ${results.before!.views} ko‘rish, ${results.before!.contacts} raqam')
+                Text(
+                  tr('Oldingi shuncha davr: {p0} ko‘rish, {p1} raqam', {
+                    'p0': results.before!.views,
+                    'p1': results.before!.contacts,
+                  }),
+                )
               else
-                Text('Taqqoslash uchun oldingi davr ma’lumoti yetarli emas.', style: text.bodySmall),
-              Text('Bu hisoblangan hodisalar, kafolat yoki bashorat emas.', style: text.bodySmall),
+                Text(tr('Taqqoslash uchun oldingi davr ma’lumoti yetarli emas.'), style: text.bodySmall),
+              Text(tr('Bu hisoblangan hodisalar, kafolat yoki bashorat emas.'), style: text.bodySmall),
             ],
           ],
         ),

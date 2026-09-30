@@ -7,6 +7,7 @@ import '../../../core/config/feature_flags.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/utils/clock.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/badges.dart';
@@ -38,7 +39,7 @@ class PaymentsScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('To‘lovlar va tariflar')),
+      appBar: AppBar(title: Text(tr('To‘lovlar va tariflar'))),
       body: RefreshIndicator.adaptive(
         onRefresh: refresh,
         child: NotificationListener<ScrollNotification>(
@@ -57,14 +58,14 @@ class PaymentsScreen extends ConsumerWidget {
                   OutlinedButton.icon(
                     onPressed: () => context.push(AppRoutes.businessPlans),
                     icon: const Icon(Icons.workspace_premium_outlined),
-                    label: const Text('Biznes uchun tariflar'),
+                    label: Text(tr('Biznes uchun tariflar')),
                   ),
                 ],
                 if (signedIn) ...[
                   const _SubscriptionsSection(),
                   if (flags.promotionCredits) const _CreditsSection(),
                   const SizedBox(height: AppSpacing.xl),
-                  Text('To‘lovlar tarixi', style: text.titleSmall),
+                  Text(tr('To‘lovlar tarixi'), style: text.titleSmall),
                   const SizedBox(height: AppSpacing.sm),
                   history.when(
                     loading: () => const Padding(
@@ -77,7 +78,7 @@ class PaymentsScreen extends ConsumerWidget {
                       onRetry: () => ref.invalidate(purchaseHistoryProvider),
                     ),
                     data: (page) => page.items.isEmpty
-                        ? const EmptyState(icon: Icons.receipt_long_outlined, title: 'To‘lovlar yo‘q', compact: true)
+                        ? EmptyState(icon: Icons.receipt_long_outlined, title: tr('To‘lovlar yo‘q'), compact: true)
                         : Column(
                             children: [
                               for (final purchase in page.items) _PurchaseTile(purchase: purchase),
@@ -100,7 +101,8 @@ class PaymentsScreen extends ConsumerWidget {
   }
 }
 
-String _limit(int? value, String unit) => value == null ? 'Cheksiz $unit' : '$value ta $unit';
+String _limit(int? value, String unit) =>
+    value == null ? tr('Cheksiz {unit}', {'unit': unit}) : tr('{value} ta {unit}', {'value': value, 'unit': unit});
 
 class _CurrentPlanCard extends ConsumerWidget {
   const _CurrentPlanCard();
@@ -127,12 +129,17 @@ class _CurrentPlanCard extends ConsumerWidget {
                 color: paid ? palette.vip : palette.success,
               ),
               const SizedBox(width: AppSpacing.sm),
-              Expanded(child: Text(paid ? 'Tarif: ${mine.planTitle}' : 'Bepul tarif', style: text.titleMedium)),
+              Expanded(
+                child: Text(
+                  paid ? tr('Tarif: {planTitle}', {'planTitle': tr(mine.planTitle)}) : tr('Bepul tarif'),
+                  style: text.titleMedium,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Ko‘rish, qidirish, chat, sevimlilar, e’lon joylash va ishga ariza berish — bepul.',
+            tr('Ko‘rish, qidirish, chat, sevimlilar, e’lon joylash va ishga ariza berish — bepul.'),
             style: text.bodyMedium,
           ),
           if (activeLimit != null || mine != null) ...[
@@ -141,14 +148,17 @@ class _CurrentPlanCard extends ConsumerWidget {
               MetaLine(
                 icon: Icons.inventory_2_outlined,
                 text: activeLimit == null
-                    ? 'Faol e’lonlar: ${mine.activeListings}'
-                    : 'Faol e’lonlar: ${mine.activeListings} / $activeLimit',
+                    ? tr('Faol e’lonlar: {activeListings}', {'activeListings': mine.activeListings})
+                    : tr('Faol e’lonlar: {activeListings} / {activeLimit}', {
+                        'activeListings': mine.activeListings,
+                        'activeLimit': activeLimit,
+                      }),
               )
             else
-              MetaLine(icon: Icons.inventory_2_outlined, text: _limit(activeLimit, 'faol e’lon')),
+              MetaLine(icon: Icons.inventory_2_outlined, text: _limit(activeLimit, tr('faol e’lon'))),
             MetaLine(
               icon: Icons.photo_library_outlined,
-              text: 'E’londa ${mine?.entitlements.photoLimit ?? free?.photoLimit ?? '—'} tagacha rasm',
+              text: tr('E’londa {p0} tagacha rasm', {'p0': mine?.entitlements.photoLimit ?? free?.photoLimit ?? '—'}),
             ),
           ],
         ],
@@ -172,7 +182,7 @@ class _SubscriptionsSection extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Obunalar', style: text.titleSmall),
+          Text(tr('Obunalar'), style: text.titleSmall),
           const SizedBox(height: AppSpacing.sm),
           for (final s in live)
             SurfaceCard(
@@ -181,14 +191,14 @@ class _SubscriptionsSection extends ConsumerWidget {
                 children: [
                   Row(
                     children: [
-                      Expanded(child: Text(s.planTitle, style: text.titleSmall)),
+                      Expanded(child: Text(tr(s.planTitle), style: text.titleSmall)),
                       StatusPill(label: s.statusLabel, style: PillStyle.success, dense: true),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.xs),
-                  Text('${Formatters.date(s.currentPeriodEnd, now: now)} gacha', style: text.bodySmall),
+                  Text(tr('{p0} gacha', {'p0': Formatters.date(s.currentPeriodEnd, now: now)}), style: text.bodySmall),
                   if (s.method?.isStore ?? false)
-                    Text('Obuna ${s.method!.label} orqali boshqariladi', style: text.bodySmall),
+                    Text(tr('Obuna {p0} orqali boshqariladi', {'p0': s.method!.label}), style: text.bodySmall),
                   if (s.cancellableHere)
                     Align(
                       alignment: AlignmentDirectional.centerEnd,
@@ -196,11 +206,12 @@ class _SubscriptionsSection extends ConsumerWidget {
                         onPressed: () async {
                           final ok = await confirmDialog(
                             context,
-                            title: 'Obuna bekor qilinsinmi?',
-                            message:
-                                'Tarif ${Formatters.date(s.currentPeriodEnd, now: now)} gacha ishlaydi, keyin bepul '
-                                'tarifga o‘tasiz. E’lonlaringiz o‘chirilmaydi.',
-                            confirmLabel: 'Bekor qilish',
+                            title: tr('Obuna bekor qilinsinmi?'),
+                            message: tr(
+                              'Tarif {p0} gacha ishlaydi, keyin bepul tarifga o‘tasiz. E’lonlaringiz o‘chirilmaydi.',
+                              {'p0': Formatters.date(s.currentPeriodEnd, now: now)},
+                            ),
+                            confirmLabel: tr('Bekor qilish'),
                             destructive: true,
                           );
                           if (!ok) return;
@@ -208,10 +219,10 @@ class _SubscriptionsSection extends ConsumerWidget {
                             await ref.read(monetizationRepositoryProvider).cancelSubscription(s.id);
                             ref.invalidate(mySubscriptionsProvider);
                           } on Object {
-                            if (context.mounted) showAppSnack(context, 'Bekor qilib bo‘lmadi');
+                            if (context.mounted) showAppSnack(context, tr('Bekor qilib bo‘lmadi'));
                           }
                         },
-                        child: const Text('Obunani bekor qilish'),
+                        child: Text(tr('Obunani bekor qilish')),
                       ),
                     ),
                 ],
@@ -238,8 +249,8 @@ class _CreditsSection extends ConsumerWidget {
           children: [
             const Icon(Icons.toll_rounded),
             const SizedBox(width: AppSpacing.md),
-            Expanded(child: Text('Reklama kreditlari', style: text.titleSmall)),
-            Text('${credits.balance} ta', style: text.titleSmall),
+            Expanded(child: Text(tr('Reklama kreditlari'), style: text.titleSmall)),
+            Text(tr('{balance} ta', {'balance': credits.balance}), style: text.titleSmall),
           ],
         ),
       ),
@@ -259,10 +270,12 @@ class _PurchaseTile extends ConsumerWidget {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       onTap: () => context.push(AppRoutes.purchase(purchase.id)),
-      title: Text(purchase.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+      title: Text(tr(purchase.title), maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text('${Formatters.date(purchase.createdAt, now: now)} · ${purchase.status.label}'),
       trailing: Text(
-        purchase.creditsUsed > 0 ? '${purchase.creditsUsed} kredit' : Formatters.money(purchase.total.money),
+        purchase.creditsUsed > 0
+            ? tr('{creditsUsed} kredit', {'creditsUsed': purchase.creditsUsed})
+            : Formatters.money(purchase.total.money),
         style: text.titleSmall,
       ),
     );
@@ -282,7 +295,7 @@ class PurchaseDetailScreen extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final palette = context.palette;
     return Scaffold(
-      appBar: AppBar(title: const Text('Chek')),
+      appBar: AppBar(title: Text(tr('Chek'))),
       body: detail.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) =>
@@ -292,7 +305,7 @@ class PurchaseDetailScreen extends ConsumerWidget {
           child: ListView(
             padding: const EdgeInsets.all(AppSpacing.lg),
             children: [
-              Text(p.title, style: text.titleLarge),
+              Text(tr(p.title), style: text.titleLarge),
               const SizedBox(height: AppSpacing.xs),
               StatusPill(
                 label: p.status.label,
@@ -305,31 +318,32 @@ class PurchaseDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.lg),
               InfoTile(
-                label: 'Sana',
+                label: tr('Sana'),
                 value: '${Formatters.date(p.createdAt, now: now)}, ${Formatters.clock(p.createdAt)}',
               ),
               if (p.creditsUsed > 0)
-                InfoTile(label: 'Kreditlar', value: '${p.creditsUsed} ta')
+                InfoTile(label: tr('Kreditlar'), value: tr('{creditsUsed} ta', {'creditsUsed': p.creditsUsed}))
               else ...[
-                InfoTile(label: 'Narx', value: Formatters.money(p.list.money)),
-                if (!p.discount.isZero) InfoTile(label: 'Chegirma', value: '−${Formatters.money(p.discount.money)}'),
-                InfoTile(label: 'Jami', value: Formatters.money(p.total.money)),
+                InfoTile(label: tr('Narx'), value: Formatters.money(p.list.money)),
+                if (!p.discount.isZero)
+                  InfoTile(label: tr('Chegirma'), value: '−${Formatters.money(p.discount.money)}'),
+                InfoTile(label: tr('Jami'), value: Formatters.money(p.total.money)),
               ],
               if (p.activationExpiresAt != null)
                 InfoTile(
-                  label: 'Amal qilish muddati',
+                  label: tr('Amal qilish muddati'),
                   value:
                       '${p.activationStartsAt == null ? '' : '${Formatters.date(p.activationStartsAt!, now: now)} — '}'
                       '${Formatters.date(p.activationExpiresAt!, now: now)}',
                 ),
               if (p.subscriptionEnd != null)
                 InfoTile(
-                  label: 'Tarif muddati',
-                  value: '${Formatters.date(p.subscriptionEnd!, now: now)} gacha',
+                  label: tr('Tarif muddati'),
+                  value: tr('{p0} gacha', {'p0': Formatters.date(p.subscriptionEnd!, now: now)}),
                 ),
               if (p.payments.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.lg),
-                Text('To‘lovlar', style: text.titleSmall),
+                Text(tr('To‘lovlar'), style: text.titleSmall),
                 for (final payment in p.payments)
                   SurfaceCard(
                     padding: const EdgeInsets.all(AppSpacing.md),
@@ -345,11 +359,14 @@ class PurchaseDetailScreen extends ConsumerWidget {
                         Text(Formatters.money(payment.amount.money), style: text.bodyMedium),
                         for (final refund in payment.refunds)
                           Text(
-                            'Qaytarish: ${Formatters.money(refund.amount.money)} · ${switch (refund.status) {
-                              'succeeded' => 'bajarildi',
-                              'failed' => 'amalga oshmadi',
-                              _ => 'jarayonda',
-                            }}',
+                            tr('Qaytarish: {p0} · {p1}', {
+                              'p0': Formatters.money(refund.amount.money),
+                              'p1': switch (refund.status) {
+                                'succeeded' => 'bajarildi',
+                                'failed' => tr('amalga oshmadi'),
+                                _ => 'jarayonda',
+                              },
+                            }),
                             style: text.bodySmall?.copyWith(color: palette.textSecondary),
                           ),
                       ],
@@ -363,19 +380,21 @@ class PurchaseDetailScreen extends ConsumerWidget {
                     try {
                       await ref.read(monetizationRepositoryProvider).cancelPurchase(p.id);
                     } on Object {
-                      if (context.mounted) showAppSnack(context, 'Bekor qilib bo‘lmadi');
+                      if (context.mounted) showAppSnack(context, tr('Bekor qilib bo‘lmadi'));
                     }
                     ref
                       ..invalidate(purchaseDetailProvider(purchaseId))
                       ..invalidate(purchaseHistoryProvider);
                   },
-                  child: const Text('To‘lovni bekor qilish'),
+                  child: Text(tr('To‘lovni bekor qilish')),
                 ),
               ],
               const SizedBox(height: AppSpacing.xl),
               Text(
-                'Karta ma’lumotlari ilovada saqlanmaydi. Savollar bo‘lsa, qo‘llab-quvvatlash xizmatiga chek '
-                'raqamini yuboring: ${p.id.substring(0, 8)}',
+                tr(
+                  'Karta ma’lumotlari ilovada saqlanmaydi. Savollar bo‘lsa, qo‘llab-quvvatlash xizmatiga chek raqamini yuboring: {p0}',
+                  {'p0': p.id.substring(0, 8)},
+                ),
                 style: text.bodySmall?.copyWith(color: palette.textSecondary),
               ),
             ],
@@ -407,7 +426,7 @@ class BusinessPlansScreen extends ConsumerWidget {
     if (!context.mounted) return;
     final methods = quote.methods.where((m) => m != PaymentMethod.credits && m != PaymentMethod.free).toList();
     if (methods.isEmpty) {
-      showAppSnack(context, 'Bu tarifni hozircha ushbu qurilmada sotib olib bo‘lmaydi');
+      showAppSnack(context, tr('Bu tarifni hozircha ushbu qurilmada sotib olib bo‘lmaydi'));
       return;
     }
     final method = methods.length == 1
@@ -427,7 +446,7 @@ class BusinessPlansScreen extends ConsumerWidget {
     final purchase = await openCheckout(
       context,
       controller.request(method: method, planPriceId: price.id),
-      successTitle: '${plan.title} tarifi faollashtirildi',
+      successTitle: tr('{title} tarifi faollashtirildi', {'title': tr(plan.title)}),
     );
     if (purchase != null) {
       ref
@@ -444,7 +463,7 @@ class BusinessPlansScreen extends ConsumerWidget {
     final current = ref.watch(myEntitlementsProvider).value?.planId ?? 'FREE';
     final text = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Biznes uchun')),
+      appBar: AppBar(title: Text(tr('Biznes uchun'))),
       body: plans.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => FailureView(error: error, onRetry: () => ref.invalidate(plansProvider)),
@@ -453,49 +472,57 @@ class BusinessPlansScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(AppSpacing.lg),
             children: [
               Text(
-                'Do‘kon sahifasi, kengaytirilgan statistika va jamoa bilan ishlash. Bepul imkoniyatlar saqlanib qoladi.',
+                tr(
+                  'Do‘kon sahifasi, kengaytirilgan statistika va jamoa bilan ishlash. Bepul imkoniyatlar saqlanib qoladi.',
+                ),
                 style: text.bodyMedium,
               ),
               const SizedBox(height: AppSpacing.lg),
               _PlanCard(
-                title: 'Bepul',
+                title: tr('Bepul'),
                 current: current == 'FREE',
                 rows: [
-                  _limit(free?.activeListingLimit, 'faol e’lon'),
-                  if (free?.photoLimit != null) 'E’londa ${free!.photoLimit} tagacha rasm',
-                  'Asosiy statistika (7 kun)',
-                  'Chat, qidiruv, sevimlilar — cheksiz',
+                  _limit(free?.activeListingLimit, tr('faol e’lon')),
+                  if (free?.photoLimit != null) tr('E’londa {p0} tagacha rasm', {'p0': free!.photoLimit}),
+                  tr('Asosiy statistika (7 kun)'),
+                  tr('Chat, qidiruv, sevimlilar — cheksiz'),
                 ],
               ),
               if (plans.isEmpty)
-                const EmptyState(
+                EmptyState(
                   icon: Icons.workspace_premium_outlined,
-                  title: 'Biznes tariflar hali ishga tushmagan',
+                  title: tr('Biznes tariflar hali ishga tushmagan'),
                   compact: true,
                 ),
               for (final plan in plans)
                 _PlanCard(
-                  title: plan.title,
-                  description: plan.description,
+                  title: tr(plan.title),
+                  description: tr(plan.description),
                   current: current == plan.id,
                   rows: [
-                    _limit(plan.entitlements.activeListingLimit, 'faol e’lon'),
-                    'E’londa ${plan.entitlements.photoLimit} tagacha rasm',
-                    if (plan.entitlements.storefront) 'Do‘kon sahifasi va havola',
-                    if (plan.entitlements.businessBadge) 'Biznes belgisi',
-                    plan.entitlements.advancedAnalytics ? 'Kengaytirilgan statistika (90 kun)' : 'Asosiy statistika',
-                    if (plan.entitlements.maxManagers > 0) '${plan.entitlements.maxManagers} tagacha menejer',
+                    _limit(plan.entitlements.activeListingLimit, tr('faol e’lon')),
+                    tr('E’londa {photoLimit} tagacha rasm', {'photoLimit': plan.entitlements.photoLimit}),
+                    if (plan.entitlements.storefront) tr('Do‘kon sahifasi va havola'),
+                    if (plan.entitlements.businessBadge) tr('Biznes belgisi'),
+                    plan.entitlements.advancedAnalytics
+                        ? tr('Kengaytirilgan statistika (90 kun)')
+                        : tr('Asosiy statistika'),
+                    if (plan.entitlements.maxManagers > 0)
+                      tr('{maxManagers} tagacha menejer', {'maxManagers': plan.entitlements.maxManagers}),
                     if (plan.entitlements.monthlyPromotionCredits > 0)
-                      'Har oy ${plan.entitlements.monthlyPromotionCredits} ta reklama krediti',
-                    if (plan.entitlements.prioritySupport) 'Ustuvor qo‘llab-quvvatlash',
+                      tr('Har oy {monthlyPromotionCredits} ta reklama krediti', {
+                        'monthlyPromotionCredits': plan.entitlements.monthlyPromotionCredits,
+                      }),
+                    if (plan.entitlements.prioritySupport) tr('Ustuvor qo‘llab-quvvatlash'),
                   ],
                   prices: plan.prices,
                   onChoose: (price) => _choose(context, ref, plan, price),
                 ),
               const SizedBox(height: AppSpacing.md),
               Text(
-                '«Tasdiqlangan biznes» belgisi pul evaziga berilmaydi — u faqat hujjatlar tekshirilgandan so‘ng '
-                'qo‘yiladi.',
+                tr(
+                  '«Tasdiqlangan biznes» belgisi pul evaziga berilmaydi — u faqat hujjatlar tekshirilgandan so‘ng qo‘yiladi.',
+                ),
                 style: text.bodySmall,
               ),
             ],
@@ -537,7 +564,7 @@ class _PlanCard extends StatelessWidget {
             Row(
               children: [
                 Expanded(child: Text(title, style: text.titleMedium)),
-                if (current) const StatusPill(label: 'Joriy tarif', style: PillStyle.primary, dense: true),
+                if (current) StatusPill(label: tr('Joriy tarif'), style: PillStyle.primary, dense: true),
               ],
             ),
             if (description != null && description!.isNotEmpty) Text(description!, style: text.bodySmall),

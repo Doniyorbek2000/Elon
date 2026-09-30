@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/design/app_tokens.dart';
 import '../../../../core/domain/paged.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/widgets/skeleton.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../application/listing_providers.dart';
@@ -64,10 +65,10 @@ class ListingFeedSlivers extends ConsumerWidget {
           return SliverToBoxAdapter(
             child:
                 empty ??
-                const EmptyState(
+                EmptyState(
                   icon: Icons.inventory_2_outlined,
-                  title: 'Hech narsa topilmadi',
-                  message: 'Filtrlarni o‘zgartirib yoki hududni kengaytirib ko‘ring.',
+                  title: tr('Hech narsa topilmadi'),
+                  message: tr('Filtrlarni o‘zgartirib yoki hududni kengaytirib ko‘ring.'),
                   compact: true,
                 ),
           );
@@ -173,11 +174,11 @@ class _OfflineBanner extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
-                  'Internet yo‘q. Saqlangan e’lonlar ko‘rsatilmoqda.',
+                  tr('Internet yo‘q. Saqlangan e’lonlar ko‘rsatilmoqda.'),
                   style: text.bodySmall?.copyWith(color: scheme.onSecondaryContainer),
                 ),
               ),
-              TextButton(onPressed: onRetry, child: const Text('Yangilash')),
+              TextButton(onPressed: onRetry, child: Text(tr('Yangilash'))),
             ],
           ),
         ),

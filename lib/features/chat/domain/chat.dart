@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/domain/media_image.dart';
 import '../../../core/domain/public_profile.dart';
+import '../../../core/l10n/l10n.dart';
 
 /// `candidate`: employer ↔ job seeker about a CV (server context `direct`).
 enum ConversationSubject { listing, job, service, candidate, direct }
@@ -162,8 +163,8 @@ class ChatMessage {
 
   String get preview => switch (kind) {
     MessageKind.text || MessageKind.system => text ?? '',
-    MessageKind.image => '📷 Rasm',
-    MessageKind.listing => '🔗 E’lon',
+    MessageKind.image => tr('📷 Rasm'),
+    MessageKind.listing => tr('🔗 E’lon'),
   };
 }
 

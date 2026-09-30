@@ -10,6 +10,7 @@ import '../../../core/config/feature_flags.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/sharing/share_service.dart';
 import '../../../core/sharing/share_sheet.dart';
 import '../../../core/widgets/common.dart';
@@ -50,9 +51,9 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
         _controller.acknowledgeRestore();
         showAppSnack(
           context,
-          'Qoralama tiklandi',
+          tr('Qoralama tiklandi'),
           icon: Icons.restore_rounded,
-          action: SnackBarAction(label: 'Yangidan', onPressed: () => _controller.discard()),
+          action: SnackBarAction(label: tr('Yangidan'), onPressed: () => _controller.discard()),
         );
       }
     });
@@ -77,11 +78,11 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
       return;
     }
     if (_controller.riskSignals().any((s) => s.severity == RiskSeverity.blocking)) {
-      showAppSnack(context, 'E’londan karta raqamini olib tashlang', icon: Icons.gpp_bad_outlined);
+      showAppSnack(context, tr('E’londan karta raqamini olib tashlang'), icon: Icons.gpp_bad_outlined);
       return;
     }
     if (ref.read(createListingProvider).uploadsPending) {
-      showAppSnack(context, 'Rasmlar yuklanmoqda, biroz kuting…', icon: Icons.cloud_upload_outlined);
+      showAppSnack(context, tr('Rasmlar yuklanmoqda, biroz kuting…'), icon: Icons.cloud_upload_outlined);
       return;
     }
     setState(() => _publishing = true);
@@ -104,7 +105,7 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
         failure.message,
         icon: Icons.error_outline_rounded,
         action: upgrade
-            ? SnackBarAction(label: 'Tariflar', onPressed: () => context.push(AppRoutes.businessPlans))
+            ? SnackBarAction(label: tr('Tariflar'), onPressed: () => context.push(AppRoutes.businessPlans))
             : null,
       );
     }
@@ -119,11 +120,11 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
     final choice = await showAppSheet<_CloseChoice>(
       context,
       builder: (context) => SheetScaffold(
-        title: 'Chiqishdan oldin',
+        title: tr('Chiqishdan oldin'),
         body: Padding(
           padding: const EdgeInsets.fromLTRB(AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.lg),
           child: Text(
-            'Kiritgan ma’lumotlaringiz qoralama sifatida saqlanadi. Keyin davom ettirishingiz mumkin.',
+            tr('Kiritgan ma’lumotlaringiz qoralama sifatida saqlanadi. Keyin davom ettirishingiz mumkin.'),
             style: Theme.of(context).textTheme.bodyMedium,
           ),
         ),
@@ -132,13 +133,13 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
           children: [
             FilledButton(
               onPressed: () => Navigator.pop(context, _CloseChoice.save),
-              child: const Text('Saqlash va chiqish'),
+              child: Text(tr('Saqlash va chiqish')),
             ),
             const SizedBox(height: AppSpacing.sm),
             TextButton(
               style: TextButton.styleFrom(foregroundColor: context.palette.danger),
               onPressed: () => Navigator.pop(context, _CloseChoice.discard),
-              child: const Text('Qoralamani o‘chirish'),
+              child: Text(tr('Qoralamani o‘chirish')),
             ),
           ],
         ),
@@ -176,8 +177,8 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          leading: IconButton(tooltip: 'Yopish', icon: const Icon(Icons.close_rounded), onPressed: _close),
-          title: const Text('Yangi e’lon'),
+          leading: IconButton(tooltip: tr('Yopish'), icon: const Icon(Icons.close_rounded), onPressed: _close),
+          title: Text(tr('Yangi e’lon')),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(76),
             child: _StepIndicator(current: step, onTap: _controller.goTo),
@@ -208,7 +209,7 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
         bottomNavigationBar: StickyActionBar(
           children: [
             if (step.index > 0)
-              OutlinedButton(onPressed: _publishing ? null : _controller.back, child: const Text('Orqaga')),
+              OutlinedButton(onPressed: _publishing ? null : _controller.back, child: Text(tr('Orqaga'))),
             FilledButton(
               onPressed: _publishing ? null : (isLast ? _publish : _next),
               child: _publishing
@@ -220,7 +221,10 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Flexible(
-                          child: Text(isLast ? 'E’lonni joylash' : 'Davom etish', overflow: TextOverflow.ellipsis),
+                          child: Text(
+                            isLast ? tr('E’lonni joylash') : tr('Davom etish'),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         Icon(isLast ? Icons.check_rounded : Icons.arrow_forward_rounded, size: AppIconSize.md),
@@ -264,7 +268,11 @@ class _StepIndicator extends StatelessWidget {
                 ),
               ),
             Semantics(
-              label: '${step.index + 1}-qadam: ${step.label}${step == current ? ', joriy' : ''}',
+              label: tr('{p0}-qadam: {label}{p2}', {
+                'p0': step.index + 1,
+                'label': step.label,
+                'p2': step == current ? tr(', joriy') : '',
+              }),
               button: step.index < current.index,
               excludeSemantics: true,
               child: GestureDetector(
@@ -380,21 +388,21 @@ class _PublishedViewState extends ConsumerState<_PublishedView> with SingleTicke
                         pending ? Icons.hourglass_top_rounded : Icons.check_rounded,
                         size: 56,
                         color: color,
-                        semanticLabel: pending ? 'Tekshiruvga yuborildi' : 'Joylandi',
+                        semanticLabel: pending ? tr('Tekshiruvga yuborildi') : tr('Joylandi'),
                       ),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xxl),
                   Text(
-                    pending ? 'E’lon tekshiruvga yuborildi' : 'E’loningiz joylandi!',
+                    pending ? tr('E’lon tekshiruvga yuborildi') : tr('E’loningiz joylandi!'),
                     style: text.headlineSmall,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
                     pending
-                        ? 'Moderator tekshiruvidan so‘ng e’lon hammaga ko‘rinadi. Sizga bildirishnoma yuboramiz.'
-                        : 'Ko‘proq xaridor topish uchun e’lonni Telegram guruhlaringizda ulashing.',
+                        ? tr('Moderator tekshiruvidan so‘ng e’lon hammaga ko‘rinadi. Sizga bildirishnoma yuboramiz.')
+                        : tr('Ko‘proq xaridor topish uchun e’lonni Telegram guruhlaringizda ulashing.'),
                     style: text.bodyMedium?.copyWith(color: palette.textSecondary),
                     textAlign: TextAlign.center,
                   ),
@@ -416,7 +424,7 @@ class _PublishedViewState extends ConsumerState<_PublishedView> with SingleTicke
                         ),
                       ),
                       icon: const Icon(Icons.send_rounded),
-                      label: const Text('Telegram’da ulashish'),
+                      label: Text(tr('Telegram’da ulashish')),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
@@ -426,11 +434,11 @@ class _PublishedViewState extends ConsumerState<_PublishedView> with SingleTicke
                       onPressed: () => context.pushReplacement(
                         item.target == ShareTarget.job ? AppRoutes.job(item.id) : AppRoutes.listing(item.id),
                       ),
-                      child: Text(item.target == ShareTarget.job ? 'Vakansiyani ko‘rish' : 'E’lonni ko‘rish'),
+                      child: Text(item.target == ShareTarget.job ? tr('Vakansiyani ko‘rish') : tr('E’lonni ko‘rish')),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
-                  TextButton(onPressed: () => context.go(AppRoutes.home), child: const Text('Bosh sahifaga qaytish')),
+                  TextButton(onPressed: () => context.go(AppRoutes.home), child: Text(tr('Bosh sahifaga qaytish'))),
                 ],
               ),
             ),

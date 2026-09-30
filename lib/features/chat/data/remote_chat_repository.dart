@@ -6,6 +6,7 @@ import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../../../core/domain/media_image.dart';
 import '../../../core/domain/public_profile.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../../core/network/api_client.dart';
 import '../../create_listing/domain/media_upload.dart';
@@ -305,14 +306,14 @@ class RemoteChatRepository implements ChatRepository {
   @override
   Future<Conversation> openConversation({required PublicProfile peer, ConversationContext? context}) async {
     if (context == null) {
-      throw const ValidationFailure('Chat e’lon, vakansiya yoki usta sahifasidan boshlanadi');
+      throw ValidationFailure(tr('Chat e’lon, vakansiya yoki usta sahifasidan boshlanadi'));
     }
     final contextType = switch (context.subject) {
       ConversationSubject.listing => 'listing',
       ConversationSubject.job => 'job',
       ConversationSubject.service => 'service',
       ConversationSubject.candidate => 'candidate',
-      ConversationSubject.direct => throw const ValidationFailure('Noma’lum chat turi'),
+      ConversationSubject.direct => throw ValidationFailure(tr('Noma’lum chat turi')),
     };
     final conversation = Conversation.fromJson(
       await _api.post<JsonMap>('/conversations', body: {'contextType': contextType, 'contextId': context.refId}),
@@ -342,7 +343,7 @@ class RemoteChatRepository implements ChatRepository {
   @override
   Future<void> sendImage(String conversationId, MediaImage image) async {
     final localPath = image.localPath;
-    if (localPath == null) throw const ValidationFailure('Rasm topilmadi');
+    if (localPath == null) throw ValidationFailure(tr('Rasm topilmadi'));
     final message = ChatMessage(
       id: 'local_${_newClientId()}',
       clientId: _newClientId(),
@@ -395,7 +396,7 @@ class RemoteChatRepository implements ChatRepository {
                     ? const BlockedFailure()
                     : error['code'] == 'RATE_LIMITED'
                     ? const RateLimitFailure()
-                    : ValidationFailure(error['message'] as String? ?? 'Xabar yuborilmadi'),
+                    : ValidationFailure(error['message'] as String? ?? tr('Xabar yuborilmadi')),
               );
             }
           },

@@ -1,0 +1,202 @@
+Qo‘ng‘iroq ||| Позвонить
+Tavsif ||| Описание
+To‘xtatish ||| Приостановить
+Ko‘proq mijoz toping ||| Найдите больше клиентов
+Qo‘shish ||| Добавить
+Hali sharhlar yo‘q ||| Отзывов пока нет
+Xizmatlar ||| Услуги
+Foydalanuvchi ||| Пользователь
+Biznes profil ||| Бизнес-профиль
+Biznesingizni Bozor’da tanishtiring ||| Представьте свой бизнес на Bozor
+Biznes profil bepul. Do‘kon sahifasi va kengaytirilgan statistika biznes tariflarida mavjud. ||| Бизнес-профиль бесплатный. Страница магазина и расширенная статистика доступны на бизнес-тарифах.
+Biznes profillar tez orada ishga tushadi. ||| Бизнес-профили скоро заработают.
+Biznes profil yaratish ||| Создать бизнес-профиль
+Menejer qo‘shish ||| Добавить менеджера
+Telefon raqami ||| Номер телефона
+Menejer qo‘shildi ||| Менеджер добавлен
+Tarif: {planTitle} ||| Тариф: {planTitle}
+Ma’lumotlarni tahrirlash ||| Редактировать данные
+Tasdiqlashni so‘rash ||| Запросить подтверждение
+Belgi faqat moderator tekshiruvidan so‘ng beriladi ||| Значок выдаётся только после проверки модератором
+So‘rov yuborildi ||| Запрос отправлен
+Do‘kon sahifasi ||| Страница магазина
+Ochiq · havolani ulashing ||| Открыта · поделитесь ссылкой
+Biznes tarifida mavjud ||| Доступно на бизнес-тарифе
+Mahalliy reklama ||| Местная реклама
+Jamoa ||| Команда
+{managerCount} / {maxManagers} menejer ||| Менеджеров: {managerCount} из {maxManagers}
+Olib tashlash ||| Удалить
+Menejer olib tashlandi ||| Менеджер удалён
+Ko‘proq menejer — tariflar ||| Больше менеджеров — тарифы
+Nom kamida 2 ta belgidan iborat bo‘lsin ||| Название должно содержать не менее 2 символов
+Saqlandi ||| Сохранено
+Biznes ma’lumotlari ||| Данные бизнеса
+Biznes nomi ||| Название бизнеса
+Telefon ||| Телефон
+Veb-sayt ||| Веб-сайт
+Manzil ||| Адрес
+Ish vaqti ||| Часы работы
+Du–Sh 09:00–19:00 ||| Пн–Сб 09:00–19:00
+Hudud: {label} ||| Регион: {label}
+Nomni o‘zgartirsangiz, tasdiqlash qayta tekshiriladi. ||| При смене названия подтверждение будет проверено заново.
+Do‘kon ||| Магазин
+{p0} — Bozor.uz ||| {p0} — Bozor.uz
+Tasdiqlangan biznes ||| Проверенный бизнес
+Biznes ||| Бизнес
+{activeListings} ta faol e’lon ||| Активных объявлений: {activeListings}
+Sayt ||| Сайт
+E’lonlar ||| Объявления
+Hozircha e’lonlar yo‘q ||| Объявлений пока нет
+Vakansiyalar ||| Вакансии
+A’zo: {p0} ||| На сайте с {p0}
+Yangi reklama ||| Новая реклама
+Sarlavha ||| Заголовок
+Matn ||| Текст
+Yaratish ||| Создать
+Reklama yaratish ||| Создать рекламу
+Reklamalar yo‘q ||| Реклам нет
+Hududingizdagi xaridorlarga do‘koningizni ko‘rsating. ||| Покажите свой магазин покупателям в вашем регионе.
+Ko‘rsatildi: {impressions} · Bosildi: {clicks} ||| Показов: {impressions} · Кликов: {clicks}
+Sabab: {rejectReason} ||| Причина: {rejectReason}
+To‘lash ||| Оплатить
+Davom ettirish ||| Продолжить
+E’lon statistikasi ||| Статистика объявления
+{d} kun ||| {d} дн.
+So‘nggi 7 kun ||| Последние 7 дней
+Jami: {lifetimeViews} ko‘rish · {lifetimeFavorites} sevimli ||| Всего: просмотров — {lifetimeViews}, в избранном — {lifetimeFavorites}
+Kunlik ko‘rishlar ||| Просмотры по дням
+Kunlik grafik va 90 kunlik statistika biznes tariflarida mavjud. ||| График по дням и статистика за 90 дней доступны на бизнес-тарифах.
+Targ‘ibot natijalari ||| Результаты продвижения
+Ko‘rishlar ||| Просмотры
+Sevimlilar ||| Избранное
+Raqam ko‘rildi ||| Номер показан
+Chatlar ||| Чаты
+Ulashishlar ||| Поделились
+Davomida: {views} ko‘rish, {contacts} raqam, {chats} chat ||| За период: просмотров — {views}, номеров — {contacts}, чатов — {chats}
+Oldingi shuncha davr: {p0} ko‘rish, {p1} raqam ||| Предыдущий такой же период: просмотров — {p0}, номеров — {p1}
+Taqqoslash uchun oldingi davr ma’lumoti yetarli emas. ||| Недостаточно данных за прошлый период для сравнения.
+Bu hisoblangan hodisalar, kafolat yoki bashorat emas. ||| Это подсчитанные события, а не гарантия или прогноз.
+Egasi ||| Владелец
+Menejer ||| Менеджер
+Tasdiqlangan ||| Подтверждён
+Tekshiruvda ||| На проверке
+Rad etilgan ||| Отклонено
+Qoralama ||| Черновик
+To‘lov kutilmoqda ||| Ожидает оплаты
+Faol ||| Активно
+To‘xtatilgan ||| Приостановлено
+Tugagan ||| Завершено
+To‘lovlar va tariflar ||| Платежи и тарифы
+Biznes uchun tariflar ||| Тарифы для бизнеса
+To‘lovlar tarixi ||| История платежей
+To‘lovlar yo‘q ||| Платежей нет
+Cheksiz {unit} ||| Без ограничений: {unit}
+{value} ta {unit} ||| {unit}: {value}
+Bepul tarif ||| Бесплатный тариф
+Ko‘rish, qidirish, chat, sevimlilar, e’lon joylash va ishga ariza berish — bepul. ||| Просмотр, поиск, чат, избранное, подача объявлений и отклики на вакансии — бесплатно.
+Faol e’lonlar: {activeListings} ||| Активных объявлений: {activeListings}
+Faol e’lonlar: {activeListings} / {activeLimit} ||| Активных объявлений: {activeListings} из {activeLimit}
+faol e’lon ||| активных объявлений
+E’londa {p0} tagacha rasm ||| До {p0} фото в объявлении
+Obunalar ||| Подписки
+Obuna {p0} orqali boshqariladi ||| Подпиской управляет {p0}
+Obuna bekor qilinsinmi? ||| Отменить подписку?
+Bekor qilib bo‘lmadi ||| Не удалось отменить
+Obunani bekor qilish ||| Отменить подписку
+Reklama kreditlari ||| Рекламные кредиты
+{balance} ta ||| {balance} шт.
+{creditsUsed} kredit ||| Кредитов: {creditsUsed}
+Chek ||| Чек
+Sana ||| Дата
+Kreditlar ||| Кредиты
+{creditsUsed} ta ||| {creditsUsed} шт.
+Chegirma ||| Скидка
+Jami ||| Итого
+Amal qilish muddati ||| Срок действия
+Tarif muddati ||| Срок тарифа
+To‘lovlar ||| Платежи
+Qaytarish: {p0} · {p1} ||| Возврат: {p0} · {p1}
+amalga oshmadi ||| не прошёл
+To‘lovni bekor qilish ||| Отменить платёж
+Bu tarifni hozircha ushbu qurilmada sotib olib bo‘lmaydi ||| Этот тариф пока нельзя купить на этом устройстве
+{title} tarifi faollashtirildi ||| Тариф «{title}» активирован
+Biznes uchun ||| Для бизнеса
+Bepul ||| Бесплатно
+Asosiy statistika (7 kun) ||| Базовая статистика (7 дней)
+Chat, qidiruv, sevimlilar — cheksiz ||| Чат, поиск, избранное — без ограничений
+Biznes tariflar hali ishga tushmagan ||| Бизнес-тарифы ещё не запущены
+E’londa {photoLimit} tagacha rasm ||| До {photoLimit} фото в объявлении
+Do‘kon sahifasi va havola ||| Страница магазина и ссылка
+Biznes belgisi ||| Бизнес-значок
+Kengaytirilgan statistika (90 kun) ||| Расширенная статистика (90 дней)
+Asosiy statistika ||| Базовая статистика
+{maxManagers} tagacha menejer ||| До {maxManagers} менеджеров
+Har oy {monthlyPromotionCredits} ta reklama krediti ||| Ежемесячно {monthlyPromotionCredits} рекламных кредитов
+Ustuvor qo‘llab-quvvatlash ||| Приоритетная поддержка
+Joriy tarif ||| Текущий тариф
+Vakansiyani ko‘proq odamga ko‘rsating ||| Покажите вакансию большему числу людей
+Reklamani ishga tushirish ||| Запустить рекламу
+E’lonni tezroq soting ||| Продайте быстрее
+Faqat faol e’lonlarni targ‘ib qilish mumkin ||| Продвигать можно только активные объявления
+Hozircha takliflar yo‘q ||| Предложений пока нет
+Targ‘ib qilish xizmatlari hali yoqilmagan. ||| Услуги продвижения ещё не включены.
+Keyingi ko‘tarish: {p0}, {p1} ||| Следующее поднятие: {p0}, {p1}
+To‘lov usuli ||| Способ оплаты
+Bu xizmatni hozircha ushbu qurilmada sotib olib bo‘lmaydi. ||| Эту услугу пока нельзя купить на этом устройстве.
+Kredit ({creditCost} ta, balans {creditBalance}) ||| Кредиты (нужно {creditCost}, баланс {creditBalance})
+Promo kod ||| Промокод
+Qo‘llash ||| Применить
+Chegirma: −{p0} ||| Скидка: −{p0}
+Davom etish · {creditCost} kredit ||| Продолжить · кредитов: {creditCost}
+Davom etish · {p0} ||| Продолжить · {p0}
+{durationDays} kun ||| {durationDays} дн.
+{title}, reklama ||| {title}, реклама
+Reklama ||| Реклама
+TOP e’lonlar ||| ТОП-объявления
+Tavsiya etilgan ||| Рекомендуемые
+TOP vakansiyalar ||| ТОП-вакансии
+Tavsiya etilgan ustalar ||| Рекомендуемые мастера
+Reklama: {title}. {body} ||| Реклама: {title}. {body}
+To‘lov ||| Оплата
+To‘lov tayyorlanmoqda ||| Готовим оплату
+Narx va ma’lumotlar server tomonidan tekshirilmoqda… ||| Сервер проверяет цену и данные…
+To‘lov tekshirilmoqda ||| Проверяем оплату
+To‘lov amalga oshmadi ||| Платёж не прошёл
+Hech narsa faollashtirilmadi va pul yechilmadi. ||| Ничего не активировано, деньги не списаны.
+To‘lov bekor qilindi ||| Платёж отменён
+Hech narsa faollashtirilmadi. ||| Ничего не активировано.
+Hozircha mavjud emas ||| Пока недоступно
+To‘lov bekor qilinsinmi? ||| Отменить платёж?
+To‘lov sahifasida to‘lovni yakunlang. Tasdiq kelishi bilan xizmat avtomatik faollashadi. ||| Завершите оплату на странице платежа. После подтверждения услуга включится автоматически.
+To‘lov sahifasini ochish ||| Открыть страницу оплаты
+Holatni tekshirish ||| Проверить статус
+Boshlanish: {p0} ||| Начало: {p0}
+Amal qiladi: {p0} gacha ||| Действует до {p0}
+{p0} ta kredit ishlatildi ||| Использовано кредитов: {p0}
+To‘langan: {p0} ||| Оплачено: {p0}
+Xizmat faollashtirildi. ||| Услуга активирована.
+Tayyor ||| Готово
+TOP faollashtirildi ||| ТОП активирован
+VIP faollashtirildi ||| VIP активирован
+E’lon yuqoriga ko‘tarildi ||| Объявление поднято вверх
+Tavsiya faollashtirildi ||| Рекомендация активирована
+«Shoshilinch» belgisi qo‘shildi ||| Добавлена отметка «Срочно»
+Reklama tekshiruvga yuborildi ||| Реклама отправлена на проверку
+Xizmat faollashtirildi ||| Услуга активирована
+Test to‘lov ||| Тестовый платёж
+App Store ||| App Store
+Google Play ||| Google Play
+Reklama krediti ||| Рекламный кредит
+Faollashtirildi ||| Активировано
+To‘lov o‘tmadi ||| Оплата не прошла
+Bekor qilindi ||| Отменено
+Qaytarildi ||| Возвращено
+Tekshirilmoqda ||| Проверяется
+Kutilmoqda ||| Ожидается
+To‘landi ||| Оплачено
+Xato ||| Ошибка
+To‘liq qaytarildi ||| Возвращено полностью
+Qisman qaytarildi ||| Возвращено частично
+Muddat oxirida tugaydi ||| Закончится в конце срока
+Imtiyozli davr ||| Льготный период
+Bekor qilingan ||| Отменена

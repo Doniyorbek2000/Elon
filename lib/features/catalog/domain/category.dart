@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/design/app_colors.dart';
+import '../../../core/l10n/l10n.dart';
 
 /// Which vertical a category belongs to. Jobs and services have dedicated
 /// experiences; marketplace categories share the listing flow.
@@ -72,26 +73,26 @@ class AttributeField {
 
   /// Human-readable value (units appended, multi-select joined).
   String displayValue(String value) => switch (type) {
-    AttributeInputType.boolean => value == 'true' ? 'Ha' : 'Yo‘q',
+    AttributeInputType.boolean => value == 'true' ? tr('Ha') : tr('Yo‘q'),
     AttributeInputType.multiSelect => value.split(multiSelectSeparator).join(', '),
     _ => unit == null ? value : '$value $unit',
   };
 
   String? validate(String? value) {
     final trimmed = value?.trim() ?? '';
-    if (trimmed.isEmpty) return required ? '$label kiritilishi shart' : null;
+    if (trimmed.isEmpty) return required ? tr('{label} kiritilishi shart', {'label': label}) : null;
     if (type == AttributeInputType.multiSelect &&
         trimmed.split(multiSelectSeparator).any((v) => v.isNotEmpty && !options.contains(v))) {
-      return 'Ro‘yxatdan tanlang';
+      return tr('Ro‘yxatdan tanlang');
     }
     if (type == AttributeInputType.number) {
       final number = int.tryParse(trimmed.replaceAll(RegExp(r'\s'), ''));
-      if (number == null) return 'Faqat raqam kiriting';
-      if (min != null && number < min!) return 'Kamida $min';
-      if (max != null && number > max!) return 'Ko‘pi bilan $max';
+      if (number == null) return tr('Faqat raqam kiriting');
+      if (min != null && number < min!) return tr('Kamida {min}', {'min': min});
+      if (max != null && number > max!) return tr('Ko‘pi bilan {max}', {'max': max});
     }
     if (type == AttributeInputType.select && options.isNotEmpty && !options.contains(trimmed)) {
-      return 'Ro‘yxatdan tanlang';
+      return tr('Ro‘yxatdan tanlang');
     }
     return null;
   }
@@ -118,7 +119,7 @@ class CategoryFormSchema {
   final bool allowUsd;
   final String titleHint;
 
-  String get priceLabel => priceMode == PriceMode.salary ? 'Maosh' : 'Narx';
+  String get priceLabel => priceMode == PriceMode.salary ? tr('Maosh') : tr('Narx');
 
   static const generic = CategoryFormSchema();
 

@@ -7,6 +7,7 @@ import '../../../core/config/feature_flags.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/utils/clock.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/avatar.dart';
@@ -32,11 +33,11 @@ class EmployerJobsScreen extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final now = ref.watch(clockProvider)();
     return Scaffold(
-      appBar: AppBar(title: const Text('Mening vakansiyalarim')),
+      appBar: AppBar(title: Text(tr('Mening vakansiyalarim'))),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(AppRoutes.createIn('jobs')),
         icon: const Icon(Icons.add_rounded),
-        label: const Text('Vakansiya'),
+        label: Text(tr('Vakansiya')),
       ),
       body: ref
           .watch(myJobsProvider)
@@ -46,9 +47,9 @@ class EmployerJobsScreen extends ConsumerWidget {
             data: (jobs) => jobs.isEmpty
                 ? EmptyState(
                     icon: Icons.work_outline_rounded,
-                    title: 'Vakansiyalar yo‘q',
-                    message: 'Xodim kerak bo‘lsa, vakansiya joylang — arizalar shu yerda ko‘rinadi.',
-                    actionLabel: 'Vakansiya joylash',
+                    title: tr('Vakansiyalar yo‘q'),
+                    message: tr('Xodim kerak bo‘lsa, vakansiya joylang — arizalar shu yerda ko‘rinadi.'),
+                    actionLabel: tr('Vakansiya joylash'),
                     onAction: () => context.push(AppRoutes.createIn('jobs')),
                   )
                 : RefreshIndicator.adaptive(
@@ -72,8 +73,10 @@ class EmployerJobsScreen extends ConsumerWidget {
                                       Text(job.place.shortLabel, style: text.bodySmall),
                                       const SizedBox(height: AppSpacing.xs),
                                       Text(
-                                        '${job.applicationCount ?? 0} ta ariza · '
-                                        '${Formatters.relativeTime(job.publishedAt, now)}',
+                                        tr('{p0} ta ariza · {p1}', {
+                                          'p0': job.applicationCount ?? 0,
+                                          'p1': Formatters.relativeTime(job.publishedAt, now),
+                                        }),
                                         style: text.bodySmall,
                                       ),
                                     ],
@@ -116,7 +119,7 @@ class _JobMenu extends ConsumerWidget {
     try {
       await ref.read(jobRepositoryProvider).setJobStatus(job.id, status);
       ref.invalidate(myJobsProvider);
-      if (context.mounted) showAppSnack(context, 'Holat yangilandi: ${status.label}');
+      if (context.mounted) showAppSnack(context, tr('Holat yangilandi: {label}', {'label': status.label}));
     } on Object catch (error) {
       if (context.mounted) showAppSnack(context, error.asFailure().message, icon: Icons.error_outline_rounded);
     }
@@ -134,17 +137,17 @@ class _JobMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => PopupMenuButton<Object>(
-    tooltip: 'Amallar',
+    tooltip: tr('Amallar'),
     onSelected: (value) => value is JobStatus ? _set(context, ref, value) : _promote(context, ref),
     itemBuilder: (_) => [
       if (job.status == JobStatus.active && ref.read(featureFlagsProvider).canPromoteJobs)
-        const PopupMenuItem<Object>(value: 'promote', child: Text('TOP / Shoshilinch')),
-      if (job.status == JobStatus.active) const PopupMenuItem(value: JobStatus.paused, child: Text('To‘xtatish')),
+        PopupMenuItem<Object>(value: 'promote', child: Text(tr('TOP / Shoshilinch'))),
+      if (job.status == JobStatus.active) PopupMenuItem(value: JobStatus.paused, child: Text(tr('To‘xtatish'))),
       if (job.status == JobStatus.paused || job.status == JobStatus.expired)
-        const PopupMenuItem(value: JobStatus.active, child: Text('Faollashtirish')),
+        PopupMenuItem(value: JobStatus.active, child: Text(tr('Faollashtirish'))),
       if (job.status == JobStatus.active || job.status == JobStatus.paused)
-        const PopupMenuItem(value: JobStatus.filled, child: Text('Xodim topildi')),
-      if (job.status != JobStatus.archived) const PopupMenuItem(value: JobStatus.archived, child: Text('Arxivlash')),
+        PopupMenuItem(value: JobStatus.filled, child: Text(tr('Xodim topildi'))),
+      if (job.status != JobStatus.archived) PopupMenuItem(value: JobStatus.archived, child: Text(tr('Arxivlash'))),
     ],
   );
 }
@@ -160,17 +163,17 @@ class ApplicantsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final job = ref.watch(jobDetailProvider(jobId)).value;
     return Scaffold(
-      appBar: AppBar(title: Text(job == null ? 'Arizalar' : 'Arizalar · ${job.title}')),
+      appBar: AppBar(title: Text(job == null ? tr('Arizalar') : tr('Arizalar · {title}', {'title': job.title}))),
       body: ref
           .watch(applicantsProvider(jobId))
           .when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, _) => FailureView(error: error, onRetry: () => ref.invalidate(applicantsProvider(jobId))),
             data: (applicants) => applicants.isEmpty
-                ? const EmptyState(
+                ? EmptyState(
                     icon: Icons.inbox_outlined,
-                    title: 'Hali ariza yo‘q',
-                    message: 'Nomzodlar ariza yuborganda shu yerda ko‘rasiz va sizga bildirishnoma keladi.',
+                    title: tr('Hali ariza yo‘q'),
+                    message: tr('Nomzodlar ariza yuborganda shu yerda ko‘rasiz va sizga bildirishnoma keladi.'),
                   )
                 : RefreshIndicator.adaptive(
                     onRefresh: () => ref.refresh(applicantsProvider(jobId).future),
@@ -200,7 +203,7 @@ class _ApplicantCard extends ConsumerWidget {
     try {
       await ref.read(jobRepositoryProvider).setApplicationStatus(applicant.applicationId, status);
       ref.invalidate(applicantsProvider(jobId));
-      if (context.mounted) showAppSnack(context, 'Nomzodga xabar yuborildi: ${status.label}');
+      if (context.mounted) showAppSnack(context, tr('Nomzodga xabar yuborildi: {label}', {'label': status.label}));
     } on Object catch (error) {
       if (context.mounted) showAppSnack(context, error.asFailure().message, icon: Icons.error_outline_rounded);
     }
@@ -229,8 +232,11 @@ class _ApplicantCard extends ConsumerWidget {
                     Text(applicant.profile.name, style: text.titleSmall),
                     Text(
                       resume == null
-                          ? 'Rezyume yashirilgan'
-                          : '${resume.desiredPosition} · ${resume.experienceYears} yil tajriba',
+                          ? tr('Rezyume yashirilgan')
+                          : tr('{desiredPosition} · {experienceYears} yil tajriba', {
+                              'desiredPosition': resume.desiredPosition,
+                              'experienceYears': resume.experienceYears,
+                            }),
                       style: text.bodySmall,
                     ),
                     Text(Formatters.relativeTime(applicant.appliedAt, now), style: text.labelSmall),
@@ -262,7 +268,7 @@ class _ApplicantCard extends ConsumerWidget {
                 OutlinedButton.icon(
                   onPressed: () => showContactSheet(context, person: applicant.profile, loadPhone: () async => phone),
                   icon: const Icon(Icons.call_rounded, size: 18),
-                  label: const Text('Qo‘ng‘iroq'),
+                  label: Text(tr('Qo‘ng‘iroq')),
                 ),
               if (resume != null)
                 OutlinedButton.icon(
@@ -277,11 +283,11 @@ class _ApplicantCard extends ConsumerWidget {
                     ),
                   ),
                   icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
-                  label: const Text('Chat'),
+                  label: Text(tr('Chat')),
                 ),
               if (applicant.status.isOpen)
                 PopupMenuButton<ApplicationStatus>(
-                  tooltip: 'Qaror',
+                  tooltip: tr('Qaror'),
                   onSelected: (status) => _decide(context, ref, status),
                   itemBuilder: (_) => [
                     for (final status in _decisions)
@@ -289,7 +295,7 @@ class _ApplicantCard extends ConsumerWidget {
                   ],
                   child: Chip(
                     avatar: Icon(Icons.how_to_reg_rounded, size: 18, color: palette.primary),
-                    label: const Text('Qaror'),
+                    label: Text(tr('Qaror')),
                   ),
                 ),
             ],
@@ -344,8 +350,8 @@ class _ResumeEditScreenState extends ConsumerState<ResumeEditScreen> {
 
   Future<void> _save() async {
     final errors = <String, String>{
-      if (_title.text.trim().length < 2) 'title': 'Lavozimni kiriting',
-      if (int.tryParse(_experience.text) == null) 'experience': 'Raqam kiriting',
+      if (_title.text.trim().length < 2) 'title': tr('Lavozimni kiriting'),
+      if (int.tryParse(_experience.text) == null) 'experience': tr('Raqam kiriting'),
     };
     setState(() => _errors = errors);
     if (errors.isNotEmpty) return;
@@ -372,7 +378,7 @@ class _ResumeEditScreenState extends ConsumerState<ResumeEditScreen> {
           );
       ref.invalidate(myResumeProvider);
       if (mounted) {
-        showAppSnack(context, 'Rezyume saqlandi');
+        showAppSnack(context, tr('Rezyume saqlandi'));
         context.pop();
       }
     } on Object catch (error) {
@@ -391,7 +397,7 @@ class _ResumeEditScreenState extends ConsumerState<ResumeEditScreen> {
     final text = Theme.of(context).textTheme;
     final resume = ref.watch(myResumeProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Mening rezyumem')),
+      appBar: AppBar(title: Text(tr('Mening rezyumem'))),
       body: resume.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => FailureView(error: error, onRetry: () => ref.invalidate(myResumeProvider)),
@@ -402,29 +408,29 @@ class _ResumeEditScreenState extends ConsumerState<ResumeEditScreen> {
             child: ListView(
               padding: const EdgeInsets.all(AppSpacing.lg),
               children: [
-                Text('Ish qidiraman', style: text.titleMedium),
+                Text(tr('Ish qidiraman'), style: text.titleMedium),
                 const SizedBox(height: AppSpacing.md),
                 TextField(
                   controller: _title,
                   textCapitalization: TextCapitalization.sentences,
-                  decoration: InputDecoration(labelText: 'Lavozim', errorText: _errors['title']),
+                  decoration: InputDecoration(labelText: tr('Lavozim'), errorText: _errors['title']),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 TextField(
                   controller: _experience,
                   keyboardType: TextInputType.number,
-                  decoration: InputDecoration(labelText: 'Tajriba (yil)', errorText: _errors['experience']),
+                  decoration: InputDecoration(labelText: tr('Tajriba (yil)'), errorText: _errors['experience']),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 TextField(
                   controller: _skills,
-                  decoration: const InputDecoration(labelText: 'Ko‘nikmalar', hintText: 'Masalan: savdo, 1C, Excel'),
+                  decoration: InputDecoration(labelText: tr('Ko‘nikmalar'), hintText: tr('Masalan: savdo, 1C, Excel')),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 TextField(
                   controller: _salary,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Kutilayotgan maosh (so‘m)'),
+                  decoration: InputDecoration(labelText: tr('Kutilayotgan maosh (so‘m)')),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 TextField(
@@ -432,10 +438,10 @@ class _ResumeEditScreenState extends ConsumerState<ResumeEditScreen> {
                   minLines: 3,
                   maxLines: 8,
                   maxLength: 2000,
-                  decoration: const InputDecoration(labelText: 'O‘zingiz haqingizda'),
+                  decoration: InputDecoration(labelText: tr('O‘zingiz haqingizda')),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                Text('Bandlik turi', style: text.titleSmall),
+                Text(tr('Bandlik turi'), style: text.titleSmall),
                 const SizedBox(height: AppSpacing.sm),
                 Wrap(
                   spacing: AppSpacing.sm,
@@ -451,7 +457,7 @@ class _ResumeEditScreenState extends ConsumerState<ResumeEditScreen> {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                Text('Kim ko‘ra oladi', style: text.titleSmall),
+                Text(tr('Kim ko‘ra oladi'), style: text.titleSmall),
                 RadioGroup<ResumeVisibility>(
                   groupValue: _visibility,
                   onChanged: (value) => setState(() => _visibility = value ?? _visibility),
@@ -471,7 +477,7 @@ class _ResumeEditScreenState extends ConsumerState<ResumeEditScreen> {
                   onPressed: _saving ? null : _save,
                   child: _saving
                       ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Text('Saqlash'),
+                      : Text(tr('Saqlash')),
                 ),
               ],
             ),

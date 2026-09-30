@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../features/saved/application/saved_items_controller.dart';
 import '../design/app_colors.dart';
 import '../design/app_tokens.dart';
@@ -78,7 +79,7 @@ class _FavoriteButtonState extends ConsumerState<FavoriteButton> with SingleTick
     return Semantics(
       button: true,
       toggled: saved,
-      label: saved ? 'Saqlanganlardan olib tashlash' : 'Saqlash',
+      label: saved ? tr('Saqlanganlardan olib tashlash') : tr('Saqlash'),
       excludeSemantics: true,
       child: SizedBox.square(
         dimension: AppTouch.minTarget,

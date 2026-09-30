@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router/routes.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/utils/input_formatters.dart';
 import '../../../core/widgets/app_search_field.dart';
 import '../../../core/widgets/common.dart';
@@ -53,7 +54,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
     final selectedType = _refinements.types.length == 1 ? _refinements.types.first : null;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Ish')),
+      appBar: AppBar(title: Text(tr('Ish'))),
       body: RefreshIndicator.adaptive(
         onRefresh: () async {
           ref.invalidate(jobSearchProvider(query));
@@ -78,7 +79,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
               sliver: SliverToBoxAdapter(
                 child: AppSearchField(
                   controller: _search,
-                  hint: _hiring ? 'Kasb yoki ko‘nikma...' : 'Kasb yoki kompaniya...',
+                  hint: _hiring ? tr('Kasb yoki ko‘nikma...') : tr('Kasb yoki kompaniya...'),
                   activeFilters: _refinements.activeFilterCount - (selectedType != null ? 1 : 0),
                   onFilterTap: _openFilters,
                   onSubmitted: (value) => setState(() => _refinements = _refinements.copyWith(text: value.trim())),
@@ -93,7 +94,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
                   padding: EdgeInsets.symmetric(horizontal: gutter),
                   items: const [null, ...EmploymentType.values],
                   selected: selectedType,
-                  labelOf: (type) => type?.label ?? 'Barchasi',
+                  labelOf: (type) => type?.label ?? tr('Barchasi'),
                   onSelected: (type) =>
                       setState(() => _refinements = _refinements.copyWith(types: type == null ? const {} : {type})),
                 ),
@@ -177,8 +178,8 @@ class _IntentSwitch extends StatelessWidget {
       decoration: BoxDecoration(color: palette.surfaceMuted, borderRadius: AppRadii.mdAll),
       child: Row(
         children: [
-          segment('Ish qidiraman', Icons.person_search_rounded, false),
-          segment('Ishchi qidiraman', Icons.groups_rounded, true),
+          segment(tr('Ish qidiraman'), Icons.person_search_rounded, false),
+          segment(tr('Ishchi qidiraman'), Icons.groups_rounded, true),
         ],
       ),
     );
@@ -206,9 +207,9 @@ class _PostVacancyCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Vakansiya joylash', style: text.titleSmall?.copyWith(color: Colors.white)),
+                Text(tr('Vakansiya joylash'), style: text.titleSmall?.copyWith(color: Colors.white)),
                 Text(
-                  'Bepul. Hududingizdagi nomzodlar ko‘radi.',
+                  tr('Bepul. Hududingizdagi nomzodlar ko‘radi.'),
                   style: text.bodySmall?.copyWith(color: Colors.white.withValues(alpha: 0.85)),
                 ),
               ],
@@ -251,11 +252,11 @@ class _JobResults extends ConsumerWidget {
             child: FailureView(error: error, compact: true, onRetry: () => ref.invalidate(jobSearchProvider(query))),
           ),
           data: (jobs) => jobs.isEmpty
-              ? const SliverToBoxAdapter(
+              ? SliverToBoxAdapter(
                   child: EmptyState(
                     icon: Icons.work_off_outlined,
-                    title: 'Vakansiya topilmadi',
-                    message: 'Filtrlarni o‘zgartiring yoki keyinroq qayta tekshiring.',
+                    title: tr('Vakansiya topilmadi'),
+                    message: tr('Filtrlarni o‘zgartiring yoki keyinroq qayta tekshiring.'),
                     compact: true,
                   ),
                 )
@@ -288,11 +289,11 @@ class _CandidateResults extends ConsumerWidget {
             ),
           ),
           data: (candidates) => candidates.isEmpty
-              ? const SliverToBoxAdapter(
+              ? SliverToBoxAdapter(
                   child: EmptyState(
                     icon: Icons.person_search_outlined,
-                    title: 'Nomzod topilmadi',
-                    message: 'Vakansiya joylang — mos nomzodlar o‘zlari bog‘lanadi.',
+                    title: tr('Nomzod topilmadi'),
+                    message: tr('Vakansiya joylang — mos nomzodlar o‘zlari bog‘lanadi.'),
                     compact: true,
                   ),
                 )
@@ -333,20 +334,20 @@ class _JobFilterSheetState extends State<_JobFilterSheet> {
       child: Text(value, style: text.titleSmall),
     );
     return SheetScaffold(
-      title: 'Filtrlar',
+      title: tr('Filtrlar'),
       trailing: TextButton(
         onPressed: () {
           _salary.clear();
           setState(() => _query = JobQuery(text: _query.text));
         },
-        child: const Text('Tozalash'),
+        child: Text(tr('Tozalash')),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            label('Bandlik turi'),
+            label(tr('Bandlik turi')),
             Wrap(
               spacing: AppSpacing.sm,
               runSpacing: AppSpacing.sm,
@@ -366,14 +367,14 @@ class _JobFilterSheetState extends State<_JobFilterSheet> {
                   ),
               ],
             ),
-            label('Tajriba'),
+            label(tr('Tajriba')),
             Wrap(
               spacing: AppSpacing.sm,
               runSpacing: AppSpacing.sm,
               children: [
                 for (final level in <ExperienceLevel?>[null, ...ExperienceLevel.values])
                   ChoiceChip(
-                    label: Text(level?.label ?? 'Farqi yo‘q'),
+                    label: Text(level?.label ?? tr('Farqi yo‘q')),
                     selected: _query.experience == level,
                     labelStyle: text.labelMedium?.copyWith(
                       color: _query.experience == level ? palette.onPrimary : palette.textPrimary,
@@ -382,17 +383,17 @@ class _JobFilterSheetState extends State<_JobFilterSheet> {
                   ),
               ],
             ),
-            label('Maosh (dan)'),
+            label(tr('Maosh (dan)')),
             TextField(
               controller: _salary,
               keyboardType: TextInputType.number,
               inputFormatters: const [ThousandsInputFormatter()],
-              decoration: const InputDecoration(hintText: 'Masalan: 4 000 000', suffixText: 'so‘m'),
+              decoration: InputDecoration(hintText: tr('Masalan: 4 000 000'), suffixText: tr('so‘m')),
             ),
             const SizedBox(height: AppSpacing.md),
             SwitchListTile.adaptive(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Avval yuqori maoshlilar'),
+              title: Text(tr('Avval yuqori maoshlilar')),
               value: _query.sortBySalary,
               onChanged: (value) => setState(() => _query = _query.copyWith(sortBySalary: value)),
             ),
@@ -402,7 +403,7 @@ class _JobFilterSheetState extends State<_JobFilterSheet> {
       actions: FilledButton(
         onPressed: () =>
             Navigator.pop(context, _query.copyWith(minSalary: () => ThousandsInputFormatter.parse(_salary.text))),
-        child: const Text('Natijalarni ko‘rsatish'),
+        child: Text(tr('Natijalarni ko‘rsatish')),
       ),
     );
   }

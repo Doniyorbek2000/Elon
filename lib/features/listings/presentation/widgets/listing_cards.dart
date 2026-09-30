@@ -6,6 +6,7 @@ import '../../../../app/router/routes.dart';
 import '../../../../core/design/app_colors.dart';
 import '../../../../core/design/app_icons.dart';
 import '../../../../core/design/app_tokens.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/clock.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_image.dart';
@@ -34,7 +35,7 @@ class PriceText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final price = listing.price;
-    final text = price == null ? 'Kelishiladi' : Formatters.money(price);
+    final text = price == null ? tr('Kelishiladi') : Formatters.money(price);
     return Text(
       text,
       maxLines: 1,
@@ -53,7 +54,7 @@ String _meta(Listing listing, DateTime now, {bool compact = false}) =>
 
 String _semantics(Listing listing, DateTime now) => [
   listing.title,
-  listing.price == null ? 'Narx kelishiladi' : Formatters.money(listing.price!).replaceAll(' ', ' '),
+  listing.price == null ? tr('Narx kelishiladi') : Formatters.money(listing.price!).replaceAll(' ', ' '),
   listing.place.shortLabel,
   Formatters.relativeTime(listing.publishedAt, now),
 ].join(', ');

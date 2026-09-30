@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/domain/money.dart';
+import '../../../core/l10n/l10n.dart';
 
 enum ReportTargetType { listing, user, job, provider, conversation }
 
@@ -14,9 +15,11 @@ enum ReportReason {
   offensive('Haqoratli kontent'),
   other('Boshqa sabab');
 
-  const ReportReason(this.label);
+  const ReportReason(this._label);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
 }
 
 @immutable
@@ -78,36 +81,36 @@ abstract final class ListingRiskAssessor {
     final signals = <RiskSignal>[];
     if (ContentRiskRules.containsCard(text)) {
       signals.add(
-        const RiskSignal(
+        RiskSignal(
           'card_number',
-          'Karta raqamini e’londa ko‘rsatmang — firibgarlar undan foydalanishi mumkin.',
+          tr('Karta raqamini e’londa ko‘rsatmang — firibgarlar undan foydalanishi mumkin.'),
           RiskSeverity.blocking,
         ),
       );
     }
     if (ContentRiskRules.containsPhone(text)) {
       signals.add(
-        const RiskSignal(
+        RiskSignal(
           'phone_in_text',
-          'Telefon raqamini matnga yozish shart emas — xaridorlar «Qo‘ng‘iroq» tugmasi orqali bog‘lanadi.',
+          tr('Telefon raqamini matnga yozish shart emas — xaridorlar «Qo‘ng‘iroq» tugmasi orqali bog‘lanadi.'),
           RiskSeverity.warning,
         ),
       );
     }
     if (ContentRiskRules.containsLink(text)) {
       signals.add(
-        const RiskSignal(
+        RiskSignal(
           'external_link',
-          'Tashqi havolalar va Telegram manzillari e’lonni tekshiruvga yuboradi.',
+          tr('Tashqi havolalar va Telegram manzillari e’lonni tekshiruvga yuboradi.'),
           RiskSeverity.warning,
         ),
       );
     }
     if (ContentRiskRules.asksPrepayment(text)) {
       signals.add(
-        const RiskSignal(
+        RiskSignal(
           'prepayment',
-          'Oldindan to‘lov talab qilish qoidalarga zid. E’lon moderatsiyadan o‘tadi.',
+          tr('Oldindan to‘lov talab qilish qoidalarga zid. E’lon moderatsiyadan o‘tadi.'),
           RiskSeverity.warning,
         ),
       );
@@ -115,9 +118,9 @@ abstract final class ListingRiskAssessor {
     final letters = title.replaceAll(RegExp(r'[^A-Za-zА-Яа-я]'), '');
     if (letters.length >= 8 && letters == letters.toUpperCase()) {
       signals.add(
-        const RiskSignal(
+        RiskSignal(
           'caps_title',
-          'Sarlavhani katta harflar bilan yozmang — bu o‘qishni qiyinlashtiradi.',
+          tr('Sarlavhani katta harflar bilan yozmang — bu o‘qishni qiyinlashtiradi.'),
           RiskSeverity.info,
         ),
       );
@@ -127,9 +130,9 @@ abstract final class ListingRiskAssessor {
         price.approxUzs > 0 &&
         price.approxUzs < referencePrice.approxUzs * 0.25) {
       signals.add(
-        const RiskSignal(
+        RiskSignal(
           'price_outlier',
-          'Narx shu turdagi e’lonlardan juda past. Narxni tekshiring.',
+          tr('Narx shu turdagi e’lonlardan juda past. Narxni tekshiring.'),
           RiskSeverity.warning,
         ),
       );
@@ -164,18 +167,18 @@ class MessageGuard {
   MessageCheck check(String text, DateTime now) {
     _recent.removeWhere((sentAt) => now.difference(sentAt) > window);
     if (_recent.length >= maxMessages) {
-      return const MessageCheck(MessageVerdict.throttle, 'Juda tez yozyapsiz. Bir necha soniya kuting.');
+      return MessageCheck(MessageVerdict.throttle, tr('Juda tez yozyapsiz. Bir necha soniya kuting.'));
     }
     if (ContentRiskRules.containsCard(text)) {
-      return const MessageCheck(
+      return MessageCheck(
         MessageVerdict.warn,
-        'Karta ma’lumotlarini begonalarga yubormang. Pulni faqat mahsulotni ko‘rgandan keyin to‘lang.',
+        tr('Karta ma’lumotlarini begonalarga yubormang. Pulni faqat mahsulotni ko‘rgandan keyin to‘lang.'),
       );
     }
     if (ContentRiskRules.asksPrepayment(text)) {
-      return const MessageCheck(
+      return MessageCheck(
         MessageVerdict.warn,
-        'Oldindan to‘lov — firibgarlikning eng keng tarqalgan usuli. Ehtiyot bo‘ling.',
+        tr('Oldindan to‘lov — firibgarlikning eng keng tarqalgan usuli. Ehtiyot bo‘ling.'),
       );
     }
     return const MessageCheck(MessageVerdict.allow);

@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router/routes.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/widgets/brand.dart';
 import '../../../core/widgets/common.dart';
 import '../../settings/application/settings_controller.dart';
@@ -70,10 +71,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with Single
     final palette = context.palette;
     final text = Theme.of(context).textTheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    const pillars = [
-      (Icons.storefront_rounded, 'E’lonlar', 'Sotish va sotib olish', AccentTone.orange),
-      (Icons.work_rounded, 'Ish', 'Yaqin joydagi ishlar', AccentTone.indigo),
-      (Icons.handyman_rounded, 'Xizmatlar', 'Ustalar va xizmatlar', AccentTone.blue),
+    final pillars = [
+      (Icons.storefront_rounded, tr('E’lonlar'), tr('Sotish va sotib olish'), AccentTone.orange),
+      (Icons.work_rounded, tr('Ish'), tr('Yaqin joydagi ishlar'), AccentTone.indigo),
+      (Icons.handyman_rounded, tr('Xizmatlar'), tr('Ustalar va xizmatlar'), AccentTone.blue),
     ];
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -102,7 +103,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with Single
                               _staggered(
                                 2,
                                 Text(
-                                  'Hududingizdagi hamma narsa\nbitta ilovada',
+                                  tr('Hududingizdagi hamma narsa\nbitta ilovada'),
                                   textAlign: TextAlign.center,
                                   style: text.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w500,
@@ -131,12 +132,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with Single
                                       minimumSize: const Size.fromHeight(AppTouch.buttonHeight + 4),
                                       shape: const StadiumBorder(),
                                     ),
-                                    child: const Row(
+                                    child: Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        Text('Boshlash'),
-                                        SizedBox(width: AppSpacing.sm),
-                                        Icon(Icons.arrow_forward_rounded, size: AppIconSize.md),
+                                        Text(tr('Boshlash')),
+                                        const SizedBox(width: AppSpacing.sm),
+                                        const Icon(Icons.arrow_forward_rounded, size: AppIconSize.md),
                                       ],
                                     ),
                                   ),
@@ -144,7 +145,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with Single
                               ),
                               const SizedBox(height: AppSpacing.md),
                               Text(
-                                'Bepul. Ro‘yxatdan o‘tmasdan ko‘rishingiz mumkin.',
+                                tr('Bepul. Ro‘yxatdan o‘tmasdan ko‘rishingiz mumkin.'),
                                 textAlign: TextAlign.center,
                                 style: text.bodySmall,
                               ),

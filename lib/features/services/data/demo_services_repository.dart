@@ -1,5 +1,6 @@
 import '../../../core/domain/money.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../data/demo/demo_database.dart';
 import '../../search/domain/search_normalizer.dart';
 import '../domain/service_provider.dart';
@@ -55,7 +56,7 @@ class DemoServicesRepository implements ServicesRepository {
   @override
   Future<ServiceProvider> getProvider(String id) async {
     await _db.roundTrip(0.6);
-    return _db.providers.where((p) => p.id == id).firstOrNull ?? (throw const NotFoundFailure('Usta topilmadi'));
+    return _db.providers.where((p) => p.id == id).firstOrNull ?? (throw NotFoundFailure(tr('Usta topilmadi')));
   }
 
   @override
@@ -63,7 +64,7 @@ class DemoServicesRepository implements ServicesRepository {
     await _db.roundTrip(0.4);
     final provider = await getProvider(providerId);
     return _db.seed.phoneBook[provider.profile.id] ??
-        (throw const NotFoundFailure('Raqam yashirilgan. Chat orqali yozing.'));
+        (throw NotFoundFailure(tr('Raqam yashirilgan. Chat orqali yozing.')));
   }
 
   ServiceProvider? _mine;
@@ -98,7 +99,7 @@ class DemoServicesRepository implements ServicesRepository {
   Future<void> addOffering(OfferingDraft draft) async {
     await _db.roundTrip(0.6);
     final mine = _mine;
-    if (mine == null) throw const ValidationFailure('Avval usta profilini yarating');
+    if (mine == null) throw ValidationFailure(tr('Avval usta profilini yarating'));
     _mine = ServiceProvider(
       id: mine.id,
       profile: mine.profile,
@@ -146,8 +147,8 @@ class DemoServicesRepository implements ServicesRepository {
   @override
   Future<void> submitReview(String providerId, {required int rating, String? text}) async {
     await _db.roundTrip(0.4);
-    throw const ValidationFailure(
-      'Sharh qoldirish uchun avval usta bilan yozishgan bo‘lishingiz kerak',
+    throw ValidationFailure(
+      tr('Sharh qoldirish uchun avval usta bilan yozishgan bo‘lishingiz kerak'),
       code: 'NOT_ELIGIBLE',
     );
   }

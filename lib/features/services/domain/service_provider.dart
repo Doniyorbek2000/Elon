@@ -6,6 +6,7 @@ import '../../../core/domain/money.dart';
 import '../../../core/domain/place.dart';
 import '../../../core/domain/promotion.dart';
 import '../../../core/domain/public_profile.dart';
+import '../../../core/l10n/l10n.dart';
 
 @immutable
 class ServiceCategory {
@@ -44,7 +45,7 @@ class Review {
 
   factory Review.fromJson(Map<String, dynamic> json) => Review(
     id: json['id'] as String,
-    authorName: json['authorName'] as String? ?? 'Foydalanuvchi',
+    authorName: json['authorName'] as String? ?? tr('Foydalanuvchi'),
     authorAvatar: json['authorAvatar'] == null
         ? null
         : MediaImage.fromJson(json['authorAvatar'] as Map<String, dynamic>),
@@ -60,9 +61,11 @@ enum PricingType {
   hourly('Soatbay'),
   negotiable('Kelishiladi');
 
-  const PricingType(this.label);
+  const PricingType(this._label);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
 }
 
 /// A concrete service a provider sells ("Kran almashtirish — 100 000 so‘mdan").
@@ -245,9 +248,11 @@ enum ProviderFilter {
   top('TOP'),
   topRated('Yuqori reyting');
 
-  const ProviderFilter(this.label);
+  const ProviderFilter(this._label);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
 }
 
 @immutable

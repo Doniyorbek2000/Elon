@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/utils/clock.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/avatar.dart';
@@ -55,10 +56,10 @@ class _CandidateView extends ConsumerWidget {
     final profile = candidate.profile;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Rezyume'),
+        title: Text(tr('Rezyume')),
         actions: [
           IconButton(
-            tooltip: 'Shikoyat',
+            tooltip: tr('Shikoyat'),
             icon: const Icon(Icons.flag_outlined),
             onPressed: () => showReportSheet(context, type: ReportTargetType.user, targetId: profile.id),
           ),
@@ -96,24 +97,27 @@ class _CandidateView extends ConsumerWidget {
                   child: Row(
                     children: [
                       Expanded(
-                        child: InfoTile(label: 'Tajriba', value: '${candidate.experienceYears} yil'),
+                        child: InfoTile(
+                          label: tr('Tajriba'),
+                          value: tr('{experienceYears} yil', {'experienceYears': candidate.experienceYears}),
+                        ),
                       ),
                       Expanded(
                         child: InfoTile(
-                          label: 'Kutilayotgan maosh',
+                          label: tr('Kutilayotgan maosh'),
                           value: candidate.expectedSalary == null
-                              ? 'Kelishiladi'
+                              ? tr('Kelishiladi')
                               : Formatters.money(candidate.expectedSalary!),
                         ),
                       ),
                       Expanded(
-                        child: InfoTile(label: 'Hudud', value: candidate.place.shortLabel),
+                        child: InfoTile(label: tr('Hudud'), value: candidate.place.shortLabel),
                       ),
                     ],
                   ),
                 ),
                 DetailSection(
-                  title: 'Ko‘nikmalar',
+                  title: tr('Ko‘nikmalar'),
                   child: Wrap(
                     spacing: AppSpacing.sm,
                     runSpacing: AppSpacing.sm,
@@ -123,7 +127,7 @@ class _CandidateView extends ConsumerWidget {
                   ),
                 ),
                 DetailSection(
-                  title: 'Qulay bandlik',
+                  title: tr('Qulay bandlik'),
                   child: Wrap(
                     spacing: AppSpacing.sm,
                     runSpacing: AppSpacing.sm,
@@ -131,11 +135,14 @@ class _CandidateView extends ConsumerWidget {
                   ),
                 ),
                 DetailSection(
-                  title: 'O‘zi haqida',
+                  title: tr('O‘zi haqida'),
                   child: Text(candidate.about, style: text.bodyMedium),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                Text('Yangilangan: ${Formatters.relativeTime(candidate.updatedAt, now)}', style: text.bodySmall),
+                Text(
+                  tr('Yangilangan: {p0}', {'p0': Formatters.relativeTime(candidate.updatedAt, now)}),
+                  style: text.bodySmall,
+                ),
               ],
             ),
           ),
@@ -151,7 +158,7 @@ class _CandidateView extends ConsumerWidget {
               loadPhone: () => ref.read(jobRepositoryProvider).revealCandidatePhone(candidate.id),
             ),
             icon: const Icon(Icons.call_rounded),
-            label: const Text('Qo‘ng‘iroq'),
+            label: Text(tr('Qo‘ng‘iroq')),
           ),
           FilledButton.icon(
             onPressed: () => startChat(
@@ -162,12 +169,12 @@ class _CandidateView extends ConsumerWidget {
                 subject: ConversationSubject.candidate,
                 refId: candidate.id,
                 title: candidate.desiredPosition,
-                subtitle: '${candidate.experienceYears} yil tajriba',
+                subtitle: tr('{experienceYears} yil tajriba', {'experienceYears': candidate.experienceYears}),
                 image: profile.avatar,
               ),
             ),
             icon: const Icon(Icons.chat_bubble_rounded),
-            label: const Text('Chat'),
+            label: Text(tr('Chat')),
           ),
         ],
       ),

@@ -1,0 +1,40 @@
+Ma’lumot ||| Данные
+To‘liq stavka ||| Полная занятость
+Yarim stavka ||| Частичная занятость
+Masofaviy ||| Удалённо
+Vaqtinchalik ||| Временная работа
+Amaliyot ||| Стажировка
+Tajribasiz ||| Без опыта
+1 yilgacha ||| До 1 года
+1–3 yil ||| 1–3 года
+3 yildan ortiq ||| Более 3 лет
+Yopilgan ||| Закрыта
+Yuborildi ||| Отправлен
+Ko‘rildi ||| Просмотрен
+Suhbatga taklif ||| Приглашён на собеседование
+Qabul qilindi ||| Принят
+Rad etildi ||| Отклонён
+Qaytarib olindi ||| Отозван
+Hammaga ko‘rinadi ||| Видно всем
+Faqat ariza yuborgan ish beruvchilarga ||| Только работодателям, на чьи вакансии вы откликнулись
+Yashirin ||| Скрыто
+Eng yangi ||| Сначала новые
+Narxi arzon ||| Сначала дешёвые
+Narxi qimmat ||| Сначала дорогие
+Eng mashhur ||| Самые популярные
+Yaqin ||| Ближайшие
+Arxiv ||| Архив
+Qat’iy narx ||| Фиксированная цена
+…dan boshlab ||| От…
+Soatbay ||| Почасовая
+Hammasi ||| Все
+TOP ||| ТОП
+Yuqori reyting ||| Высокий рейтинг
+Firibgarlik yoki aldov ||| Мошенничество или обман
+Taqiqlangan mahsulot yoki xizmat ||| Запрещённый товар или услуга
+Noto‘g‘ri narx yoki ma’lumot ||| Неверная цена или информация
+Noto‘g‘ri kategoriya ||| Неверная категория
+Takroriy e’lon ||| Повторное объявление
+Spam yoki reklama ||| Спам или реклама
+Haqoratli kontent ||| Оскорбительный контент
+Boshqa sabab ||| Другая причина

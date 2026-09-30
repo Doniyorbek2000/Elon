@@ -50,8 +50,9 @@ Server errors are never masked by the cache.
 
 ## Known gaps
 
-- **Languages**: the app is Uzbek (Latin) only. Russian needs about a thousand strings extracted (`gen-l10n`), Russian
-  category names on the server and localized notification texts; it is not started.
+- **Languages**: Uzbek (Latin) and Russian. Every UI string is written in Uzbek in the code as `tr('…')`; Russian lives in
+  `tool/l10n/*.txt` (`uzbek ||| russian`) and is compiled into `lib/core/l10n/ru.dart` with `python3 tool/l10n/build.py`.
+  `test/unit/l10n_test.dart` fails when a `tr()` string has no Russian entry. Demo seed data and user-generated text are not translated.
 - **Search**: PostgreSQL trigram/token search behind the `SearchProvider` interface; move to Meilisearch/Typesense when
   volume or typo-tolerance demands it.
 - **Load testing**: none yet (chat, search, feed).

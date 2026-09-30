@@ -1,12 +1,17 @@
+import '../l10n/l10n.dart';
+
 /// Typed failures surfaced from the data layer. UI maps these to copy/icons;
 /// repositories never leak transport exceptions (Dio, platform) upward.
 sealed class AppFailure implements Exception {
-  const AppFailure(this.message);
+  const AppFailure(String message) : _message = message;
 
-  final String message;
+  /// Uzbek source text; shown through [message] in the current language.
+  final String _message;
+
+  String get message => tr(_message);
 
   @override
-  String toString() => '$runtimeType: $message';
+  String toString() => '$runtimeType: $_message';
 }
 
 final class NetworkFailure extends AppFailure {

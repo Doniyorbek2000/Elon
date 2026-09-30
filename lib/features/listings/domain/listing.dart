@@ -5,14 +5,15 @@ import '../../../core/domain/money.dart';
 import '../../../core/domain/place.dart';
 import '../../../core/domain/promotion.dart';
 import '../../../core/domain/public_profile.dart';
+import '../../../core/l10n/l10n.dart';
 
 enum ItemCondition {
   newItem,
   used;
 
   String get label => switch (this) {
-    ItemCondition.newItem => 'Yangi',
-    ItemCondition.used => 'Ishlatilgan',
+    ItemCondition.newItem => tr('Yangi'),
+    ItemCondition.used => tr('Ishlatilgan'),
   };
 
   /// Wire value used by the API (`new` | `used`).
@@ -38,14 +39,14 @@ enum ListingStatus {
   archived;
 
   String get label => switch (this) {
-    ListingStatus.draft => 'Qoralama',
-    ListingStatus.active => 'Faol',
-    ListingStatus.pendingReview => 'Tekshiruvda',
-    ListingStatus.reserved => 'Band qilingan',
-    ListingStatus.rejected => 'Rad etilgan',
-    ListingStatus.sold => 'Sotilgan',
-    ListingStatus.expired => 'Muddati tugagan',
-    ListingStatus.archived => 'Arxivda',
+    ListingStatus.draft => tr('Qoralama'),
+    ListingStatus.active => tr('Faol'),
+    ListingStatus.pendingReview => tr('Tekshiruvda'),
+    ListingStatus.reserved => tr('Band qilingan'),
+    ListingStatus.rejected => tr('Rad etilgan'),
+    ListingStatus.sold => tr('Sotilgan'),
+    ListingStatus.expired => tr('Muddati tugagan'),
+    ListingStatus.archived => tr('Arxivda'),
   };
 
   static ListingStatus parse(Object? value) =>

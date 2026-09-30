@@ -5,6 +5,7 @@ import '../../../core/config/feature_flags.dart';
 import '../../../core/design/app_colors.dart';
 import '../../../core/design/app_tokens.dart';
 import '../../../core/errors/app_failure.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/utils/clock.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/common.dart';
@@ -58,10 +59,10 @@ class _PromoteSheetState extends ConsumerState<PromoteSheet> {
   OfferKey get _key => (target: widget.target, targetId: widget.targetId);
 
   String get _title => switch (widget.target) {
-    PromotionTarget.job => 'Vakansiyani ko‘proq odamga ko‘rsating',
-    PromotionTarget.provider => 'Ko‘proq mijoz toping',
-    PromotionTarget.business => 'Reklamani ishga tushirish',
-    _ => 'E’lonni tezroq soting',
+    PromotionTarget.job => tr('Vakansiyani ko‘proq odamga ko‘rsating'),
+    PromotionTarget.provider => tr('Ko‘proq mijoz toping'),
+    PromotionTarget.business => tr('Reklamani ishga tushirish'),
+    _ => tr('E’lonni tezroq soting'),
   };
 
   bool _bumpBlocked(PromotionProduct product, PromotionOffer offer, DateTime now) =>
@@ -152,16 +153,16 @@ class _PromoteSheetState extends ConsumerState<PromoteSheet> {
               Text(widget.itemTitle, style: text.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
               const SizedBox(height: AppSpacing.md),
               if (!offer.eligible)
-                const EmptyState(
+                EmptyState(
                   icon: Icons.info_outline_rounded,
-                  title: 'Faqat faol e’lonlarni targ‘ib qilish mumkin',
+                  title: tr('Faqat faol e’lonlarni targ‘ib qilish mumkin'),
                   compact: true,
                 )
               else if (products.isEmpty)
-                const EmptyState(
+                EmptyState(
                   icon: Icons.storefront_outlined,
-                  title: 'Hozircha takliflar yo‘q',
-                  message: 'Targ‘ib qilish xizmatlari hali yoqilmagan.',
+                  title: tr('Hozircha takliflar yo‘q'),
+                  message: tr('Targ‘ib qilish xizmatlari hali yoqilmagan.'),
                   compact: true,
                 )
               else ...[
@@ -172,8 +173,10 @@ class _PromoteSheetState extends ConsumerState<PromoteSheet> {
                       product: product,
                       selected: product.id == _productId,
                       disabledReason: _bumpBlocked(product, offer, now)
-                          ? 'Keyingi ko‘tarish: ${Formatters.date(offer.bumpAvailableAt!, now: now)}, '
-                                '${Formatters.clock(offer.bumpAvailableAt!)}'
+                          ? tr('Keyingi ko‘tarish: {p0}, {p1}', {
+                              'p0': Formatters.date(offer.bumpAvailableAt!, now: now),
+                              'p1': Formatters.clock(offer.bumpAvailableAt!),
+                            })
                           : null,
                       onTap: () => setState(() {
                         _productId = product.id;
@@ -184,18 +187,22 @@ class _PromoteSheetState extends ConsumerState<PromoteSheet> {
                   ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Ko‘rsatilish va ko‘rishlar soni kafolatlanmaydi. Reklama e’lonlari «TOP», «VIP» yoki «Tavsiya» '
-                  'belgisi bilan ko‘rsatiladi.',
+                  tr(
+                    'Ko‘rsatilish va ko‘rishlar soni kafolatlanmaydi. Reklama e’lonlari «TOP», «VIP» yoki «Tavsiya» belgisi bilan ko‘rsatiladi.',
+                  ),
                   style: text.bodySmall?.copyWith(color: palette.textSecondary),
                 ),
                 if (selected != null) ...[
                   const SizedBox(height: AppSpacing.lg),
-                  Text('To‘lov usuli', style: text.titleSmall),
+                  Text(tr('To‘lov usuli'), style: text.titleSmall),
                   const SizedBox(height: AppSpacing.sm),
                   if (methods.isEmpty)
                     SurfaceCard(
                       color: palette.surfaceMuted,
-                      child: Text('Bu xizmatni hozircha ushbu qurilmada sotib olib bo‘lmaydi.', style: text.bodyMedium),
+                      child: Text(
+                        tr('Bu xizmatni hozircha ushbu qurilmada sotib olib bo‘lmaydi.'),
+                        style: text.bodyMedium,
+                      ),
                     )
                   else
                     Wrap(
@@ -206,7 +213,10 @@ class _PromoteSheetState extends ConsumerState<PromoteSheet> {
                           ChoiceChip(
                             label: Text(
                               m == PaymentMethod.credits
-                                  ? 'Kredit (${selected.creditCost} ta, balans ${offer.creditBalance})'
+                                  ? tr('Kredit ({creditCost} ta, balans {creditBalance})', {
+                                      'creditCost': selected.creditCost,
+                                      'creditBalance': offer.creditBalance,
+                                    })
                                   : m.label,
                             ),
                             selected: m == method,
@@ -223,7 +233,7 @@ class _PromoteSheetState extends ConsumerState<PromoteSheet> {
                           child: TextField(
                             controller: _coupon,
                             textCapitalization: TextCapitalization.characters,
-                            decoration: InputDecoration(labelText: 'Promo kod', errorText: _couponError),
+                            decoration: InputDecoration(labelText: tr('Promo kod'), errorText: _couponError),
                           ),
                         ),
                         const SizedBox(width: AppSpacing.sm),
@@ -231,7 +241,7 @@ class _PromoteSheetState extends ConsumerState<PromoteSheet> {
                           padding: const EdgeInsets.only(top: AppSpacing.xs),
                           child: OutlinedButton(
                             onPressed: _quoting || _coupon.text.trim().length < 3 ? null : () => _applyCoupon(selected),
-                            child: const Text('Qo‘llash'),
+                            child: Text(tr('Qo‘llash')),
                           ),
                         ),
                       ],
@@ -240,7 +250,7 @@ class _PromoteSheetState extends ConsumerState<PromoteSheet> {
                       Padding(
                         padding: const EdgeInsets.only(top: AppSpacing.xs),
                         child: Text(
-                          'Chegirma: −${Formatters.money(_quote!.discount.money)}',
+                          tr('Chegirma: −{p0}', {'p0': Formatters.money(_quote!.discount.money)}),
                           style: text.bodySmall?.copyWith(color: palette.success),
                         ),
                       ),
@@ -255,8 +265,8 @@ class _PromoteSheetState extends ConsumerState<PromoteSheet> {
                   onPressed: _quoting ? null : () => _continue(selected, method),
                   child: Text(
                     method == PaymentMethod.credits
-                        ? 'Davom etish · ${selected.creditCost} kredit'
-                        : 'Davom etish · ${Formatters.money(price!.money)}',
+                        ? tr('Davom etish · {creditCost} kredit', {'creditCost': selected.creditCost})
+                        : tr('Davom etish · {p0}', {'p0': Formatters.money(price!.money)}),
                   ),
                 ),
         );
@@ -278,7 +288,9 @@ class _ProductTile extends StatelessWidget {
     final palette = context.palette;
     final text = Theme.of(context).textTheme;
     final disabled = disabledReason != null;
-    final duration = product.durationDays == null ? null : '${product.durationDays} kun';
+    final duration = product.durationDays == null
+        ? null
+        : tr('{durationDays} kun', {'durationDays': product.durationDays});
     return Semantics(
       selected: selected,
       enabled: !disabled,
@@ -299,8 +311,8 @@ class _ProductTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text([product.title, ?duration].join(' · '), style: text.titleSmall),
-                    Text(disabledReason ?? product.description, style: text.bodySmall),
+                    Text([tr(product.title), ?duration].join(' · '), style: text.titleSmall),
+                    Text(disabledReason ?? tr(product.description), style: text.bodySmall),
                   ],
                 ),
               ),

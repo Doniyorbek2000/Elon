@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/config/feature_flags.dart';
 import '../../../core/domain/money.dart';
+import '../../../core/l10n/l10n.dart';
 
 typedef Json = Map<String, dynamic>;
 
@@ -61,13 +62,15 @@ enum ProductKind {
 
   /// Success headline after activation, e.g. "TOP faollashtirildi".
   String get activatedTitle => switch (this) {
-    ProductKind.listingTop || ProductKind.jobTop || ProductKind.providerTop => 'TOP faollashtirildi',
-    ProductKind.listingVip => 'VIP faollashtirildi',
-    ProductKind.listingBump => 'E’lon yuqoriga ko‘tarildi',
-    ProductKind.listingFeatured || ProductKind.jobFeatured || ProductKind.providerFeatured => 'Tavsiya faollashtirildi',
-    ProductKind.jobUrgent => '«Shoshilinch» belgisi qo‘shildi',
-    ProductKind.adCampaign => 'Reklama tekshiruvga yuborildi',
-    ProductKind.unknown => 'Xizmat faollashtirildi',
+    ProductKind.listingTop || ProductKind.jobTop || ProductKind.providerTop => tr('TOP faollashtirildi'),
+    ProductKind.listingVip => tr('VIP faollashtirildi'),
+    ProductKind.listingBump => tr('E’lon yuqoriga ko‘tarildi'),
+    ProductKind.listingFeatured ||
+    ProductKind.jobFeatured ||
+    ProductKind.providerFeatured => tr('Tavsiya faollashtirildi'),
+    ProductKind.jobUrgent => tr('«Shoshilinch» belgisi qo‘shildi'),
+    ProductKind.adCampaign => tr('Reklama tekshiruvga yuborildi'),
+    ProductKind.unknown => tr('Xizmat faollashtirildi'),
   };
 }
 
@@ -122,13 +125,13 @@ enum PaymentMethod {
   static PaymentMethod? parse(Object? value) => PaymentMethod.values.where((m) => m.name == value).firstOrNull;
 
   String get label => switch (this) {
-    PaymentMethod.dev => 'Test to‘lov',
+    PaymentMethod.dev => tr('Test to‘lov'),
     PaymentMethod.payme => 'Payme',
     PaymentMethod.click => 'Click',
-    PaymentMethod.apple => 'App Store',
-    PaymentMethod.google => 'Google Play',
-    PaymentMethod.credits => 'Reklama krediti',
-    PaymentMethod.free => 'Bepul',
+    PaymentMethod.apple => tr('App Store'),
+    PaymentMethod.google => tr('Google Play'),
+    PaymentMethod.credits => tr('Reklama krediti'),
+    PaymentMethod.free => tr('Bepul'),
   };
 
   bool get isStore => this == PaymentMethod.apple || this == PaymentMethod.google;
@@ -365,22 +368,22 @@ enum PurchaseStatus {
   bool get isFinal => this != PurchaseStatus.awaitingPayment;
 
   String get label => switch (this) {
-    PurchaseStatus.awaitingPayment => 'To‘lov kutilmoqda',
-    PurchaseStatus.fulfilled => 'Faollashtirildi',
-    PurchaseStatus.failed => 'To‘lov o‘tmadi',
-    PurchaseStatus.cancelled => 'Bekor qilindi',
-    PurchaseStatus.refunded => 'Qaytarildi',
-    PurchaseStatus.needsReview => 'Tekshirilmoqda',
+    PurchaseStatus.awaitingPayment => tr('To‘lov kutilmoqda'),
+    PurchaseStatus.fulfilled => tr('Faollashtirildi'),
+    PurchaseStatus.failed => tr('To‘lov o‘tmadi'),
+    PurchaseStatus.cancelled => tr('Bekor qilindi'),
+    PurchaseStatus.refunded => tr('Qaytarildi'),
+    PurchaseStatus.needsReview => tr('Tekshirilmoqda'),
   };
 }
 
 String paymentStatusLabel(String? status) => switch (status) {
-  'created' || 'pending' => 'Kutilmoqda',
-  'succeeded' => 'To‘landi',
-  'failed' => 'Xato',
-  'cancelled' => 'Bekor qilindi',
-  'refunded' => 'To‘liq qaytarildi',
-  'partiallyRefunded' => 'Qisman qaytarildi',
+  'created' || 'pending' => tr('Kutilmoqda'),
+  'succeeded' => tr('To‘landi'),
+  'failed' => tr('Xato'),
+  'cancelled' => tr('Bekor qilindi'),
+  'refunded' => tr('To‘liq qaytarildi'),
+  'partiallyRefunded' => tr('Qisman qaytarildi'),
   _ => '—',
 };
 
@@ -577,11 +580,11 @@ class Subscription {
   bool get cancellableHere => isLive && !cancelAtPeriodEnd && !(method?.isStore ?? false);
 
   String get statusLabel => switch (status) {
-    'active' => cancelAtPeriodEnd ? 'Muddat oxirida tugaydi' : 'Faol',
-    'gracePeriod' => 'Imtiyozli davr',
-    'pastDue' => 'To‘lov kutilmoqda',
-    'cancelled' => 'Bekor qilingan',
-    'expired' => 'Muddati tugagan',
+    'active' => cancelAtPeriodEnd ? tr('Muddat oxirida tugaydi') : tr('Faol'),
+    'gracePeriod' => tr('Imtiyozli davr'),
+    'pastDue' => tr('To‘lov kutilmoqda'),
+    'cancelled' => tr('Bekor qilingan'),
+    'expired' => tr('Muddati tugagan'),
     _ => status,
   };
 }

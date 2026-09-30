@@ -132,11 +132,16 @@ Future<TestHarness> pumpBozorApp(
   Size size = const Size(390, 844),
   double textScale = 1,
   ThemeMode? themeMode,
+  String? language,
 }) async {
   setDevice(tester, size, textScale: textScale);
   final harness = await TestHarness.create(
     onboarded: onboarded,
-    prefs: {if (themeMode != null) StoreKeys.themeMode: themeMode.name},
+    prefs: {
+      if (themeMode != null) StoreKeys.themeMode: themeMode.name,
+      // Always explicit: the global language must not leak between tests.
+      StoreKeys.language: language ?? 'uz',
+    },
   );
   final container = harness.createContainer();
   addTearDown(container.dispose);

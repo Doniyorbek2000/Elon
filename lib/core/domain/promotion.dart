@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../../core/l10n/l10n.dart';
+
 /// Paid-visibility labels asserted by the server (`promotion`, `badges`).
 /// They are separate from quality signals (rating, verification) and are
 /// always shown so paid placement is never disguised as organic.
@@ -12,8 +14,8 @@ enum PromotionType {
   String get badge => switch (this) {
     PromotionType.vip => 'VIP',
     PromotionType.top => 'TOP',
-    PromotionType.featured => 'Tavsiya',
-    PromotionType.urgent => 'Shoshilinch',
+    PromotionType.featured => tr('Tavsiya'),
+    PromotionType.urgent => tr('Shoshilinch'),
   };
 
   static PromotionType? parse(Object? value) => PromotionType.values.where((type) => type.name == value).firstOrNull;
